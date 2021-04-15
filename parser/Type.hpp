@@ -22,6 +22,6 @@ namespace parser {
 
             string mName;
             enum BUILTIN_TYPE mType;
-            vector<Type> mFiled; //It;s for struct
+            vector<Type> mFiled; //It's for struct
     };
 }

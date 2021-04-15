@@ -14,7 +14,7 @@ namespace parser {
             string mName; //Emty -> no name given
             Type mType;
 
-            void DebugPrint() const;
+            void DebugPrint(size_t indent) const;
     };
 
     class FunctionDefinition {
