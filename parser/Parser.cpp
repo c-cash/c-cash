@@ -170,6 +170,11 @@ namespace parser {
             stringLiteralStatement.mType =  Type("string", UINT8);
             result = stringLiteralStatement;
             ++mCurrentToken; 
+        } else if (expectOperator("(").has_value()) {
+            result = expectExpression();
+            if (!expectOperator(")").has_value()) {
+                throw runtime_error("Unbalanced '(' in parenthesized expression.");
+            }
         }
 
         if(!result.has_value()){

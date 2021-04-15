@@ -33,12 +33,8 @@ namespace parser {
                 }
                 currentToken.mType = STRING_LITERAL;
                 continue;
-            } else if (currentToken.mType == POTENTIAL_COMMENT && currCh != '/'){
-                currentToken.mType = OPERATOR;
-                endToken(currentToken, tokens);
-                continue;
             }
-
+            
             switch (currCh) {
                 case '0':
                 case '1':
@@ -86,8 +82,8 @@ namespace parser {
                 case '=':
                 case '+':
                 case '*':
-                case '-': 
-                case '/':
+                case '-':
+                case '/': 
                 case ',':
                     if(currentToken.mType != STRING_LITERAL){
                         endToken(currentToken, tokens);
@@ -133,15 +129,12 @@ namespace parser {
                     }
                     break;
                 
-                case '/':
+                case '#':
                     if(currentToken.mType == STRING_LITERAL){
                         currentToken.mText.append(1, currCh);
-                    } else if(currentToken.mType == POTENTIAL_COMMENT){
-                        currentToken.mType = COMMENT;
-                        currentToken.mText.erase();
                     } else {
                         endToken(currentToken, tokens);
-                        currentToken.mType = POTENTIAL_COMMENT;
+                        currentToken.mType = COMMENT;
                         currentToken.mText.append(1, currCh);
                     }
                     break;

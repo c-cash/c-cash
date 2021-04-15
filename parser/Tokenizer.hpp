@@ -16,7 +16,6 @@ namespace parser {
         OPERATOR,
         STRING_ESCAPE_SEQUENCE,
         POTENTIAL_DOUBLE,
-        POTENTIAL_COMMENT,
         COMMENT
     };
 
@@ -29,7 +28,6 @@ namespace parser {
         "OPERATOR",
         "STRING_ESCAPE_SEQUENCE",
         "POTENTIAL_DOUBLE",
-        "POTENTIAL_COMMENT",
         "COMMENT"
     };
 
