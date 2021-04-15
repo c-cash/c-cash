@@ -87,6 +87,7 @@ namespace parser {
                 case '+':
                 case '*':
                 case '-': 
+                case '/':
                 case ',':
                     if(currentToken.mType != STRING_LITERAL){
                         endToken(currentToken, tokens);
