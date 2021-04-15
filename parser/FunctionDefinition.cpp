@@ -7,18 +7,18 @@ namespace parser {
         cout << mName << (" (\n");
 
         for(ParameterDefinition param : mParameters) {
-            param.DebugPrint();
+            param.DebugPrint(1);
         }
 
         cout << ") {\n";
 
         for(Statement statement : mStatements) {
-            statement.DebugPrint();
+            statement.DebugPrint(0);
         }
         cout << "}" << endl;
     }
 
-    void ParameterDefinition::DebugPrint() const{
-        cout << mType.mName << " " << mName << endl;
+    void ParameterDefinition::DebugPrint(size_t indent) const{
+        cout << string(indent, '\t') << mType.mName << " " << mName << endl;
     }
 }
