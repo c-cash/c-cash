@@ -5,9 +5,11 @@
 
 #include "parser/Tokenizer.hpp"
 #include "parser/Parser.hpp"
+#include "interpreter/Interpreter.hpp"
 
 using namespace std;
 using namespace parser;
+using namespace interpreter;
 
 int main (int argc, char **argv) {
     try{
@@ -23,14 +25,19 @@ int main (int argc, char **argv) {
 
         Tokenaizer tokenaizer;
         vector<Token> tokens = tokenaizer.parse(allCode);
- /*   
+    
         for(Token currToken : tokens){
             currToken.DebugPrint();
         }
-*/   
+   
         Parser parser;
         parser.parse(tokens);
         parser.DebugPrint();
+
+        map<string, FunctionDefinition> functions = parser.mFunction;
+        
+        //Interpreter interpreter;
+        //interpreter.interpreter(functions);
     } catch(exception& err) {
         cerr << "Error: " << err.what() << endl;
         return 2;

@@ -1,5 +1,8 @@
-void main(int argc, char argv) {
-    double foo = 1.5;
-    printf("Hello it has been %d years since I learned C.\n", 2020 - (1995 * 2 + 1));
+void main() {
+    double foo = 1000000.6 + 43232.5 * 2312312; 
+    int abc;
+    write("string 1", "string 2");
+    write("Hello it has been %d years since I learned C.\n", foo);
 }
-#Elo Elo
+
+#elo elo trzy dwa zero 

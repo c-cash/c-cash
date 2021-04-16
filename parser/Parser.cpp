@@ -88,7 +88,7 @@ namespace parser {
         mTypes["int"] = Type("signed int", INT32);
         mTypes["uint"] = Type("unsigned int", UINT32);
         mTypes["char"] = Type("signed char", INT8);
-        mTypes["uchar"] = Type("uin8_t", UINT8);
+        mTypes["uchar"] = Type("unsigned char", UINT8);
         mTypes["double"] = Type("double", DOUBLE);
     }
 
@@ -104,7 +104,7 @@ namespace parser {
 
     optional<Token> Parser::expectOperator(const string &name) {
         if(mCurrentToken == mEndToken) { return nullopt; }
-        if(mCurrentToken->mType != OPERATOR) {return nullopt;}
+        if(mCurrentToken->mType != OPERATOR ) {return nullopt;}
         if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
 
         Token returnToken = *mCurrentToken;
@@ -135,7 +135,7 @@ namespace parser {
             optional<Statement> statement = expectStatement();
             if(statement.has_value()) { statements.push_back(statement.value()); }
 
-            if(!expectOperator(";").has_value()) { throw runtime_error("Expected ';' at end of statement."); }
+            if(!expectOperator(";").has_value()) { cout << mCurrentToken->mText << " "; throw runtime_error("Expected ';' at end of statement."); }
         }
 
         return statements;
@@ -200,7 +200,7 @@ namespace parser {
 
         Statement statment;
 
-        statment.mKind = StatementKind::VARIBLE_DECLARATION;
+        statment.mKind = StatementKind::VARIABLE_DECLARATION;
         statment.mName = possibleVaribleName->mText;
         statment.mType = possibleType.value();
 
@@ -224,9 +224,10 @@ namespace parser {
             mCurrentToken = startToken;
             return nullopt;
         }
-
+        
         if(!expectOperator("(").has_value()){
             mCurrentToken = startToken;
+            cout << mCurrentToken->mText << endl;
             return nullopt;
         }
 
@@ -236,6 +237,7 @@ namespace parser {
 
         while (!expectOperator(")").has_value()){
             optional<Statement> parameter = expectExpression();
+            cout << 1 << parameter->mName << endl;
             if(!parameter.has_value()) {
                 throw runtime_error("Expected expression as parameter.");
             }
@@ -289,7 +291,7 @@ namespace parser {
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
 				operationCall.mParameters.push_back(lhs.value());
-				operationCall.mParameters.push_back(lhs.value());
+				operationCall.mParameters.push_back(rhs.value());
 				lhs = operationCall;
 			}
 		}
