@@ -23,11 +23,12 @@ namespace parser {
 
             void DebugPrint() const;
 
+            map<string, FunctionDefinition> mFunction;
+
         private:
             vector<Token>::iterator mCurrentToken;
             vector<Token>::iterator mEndToken;
             map<string, Type> mTypes;
-            map<string, FunctionDefinition> mFunction;
 
             optional<Type> expectType();
             //! Empty string means match any identifier.
