@@ -1,14 +1,14 @@
 #include "Interpreter.hpp"
-#include "Functions.hpp"
 
 #include <iostream>
+#include <string>
 #include <stdexcept>
 
 namespace interpreter{
     using namespace std;
     using namespace parser;
 
-    void Interpreter::executeCommands(FunctionDefinition &commandsFunc){
+    void Interpreter::executeCommands(FunctionDefinition &commandsFunc, map<string, parser::FunctionDefinition> &mFunctions){
         Functions func;
         for(auto cmd : commandsFunc.mStatements){
             switch (cmd.mKind) {
@@ -19,10 +19,22 @@ namespace interpreter{
                     if(cmd.mName == "write"){
                         func.writeFunc(cmd);
                         break;
+                    } else if(cmd.mName == "read"){
+                        func.readFunc(cmd);
+                        break;
+                    } else {
+                        if(mFunctions.find(cmd.mName) != mFunctions.end()){
+                            executeCommands(mFunctions[cmd.mName], mFunctions);
+                        } else {
+                            throw runtime_error("Don't find function");
+                        }
                     }
                     break;
-                default:
+                case StatementKind::VARIABLE_CALL:
+                    func.changeVarValue(cmd);
                     break;
+                default:
+                    throw runtime_error("Don't find function!");
             }
         }
     }
@@ -31,6 +43,6 @@ namespace interpreter{
         if(mFunctions.find("main") == mFunctions.end()){
             throw runtime_error("Main function not found.");
         }
-        executeCommands(mFunctions["main"]);
+        executeCommands(mFunctions["main"], mFunctions);
     }
 }

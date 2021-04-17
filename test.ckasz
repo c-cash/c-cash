@@ -1,8 +1,11 @@
 void main() {
-    double foo = 1000000.6 + 43232.5 * 2312312; 
-    int abc;
-    write("string 1", "string 2");
-    write("Hello it has been %d years since I learned C.\n", foo);
+    int sum = 3 + 3 * 2;
+    double x = 0;
+    read(x);
+    write("x = ", x, " sum = ", sum, "\n");
+    creators();
 }
 
-#elo elo trzy dwa zero 
+void creators() {
+    write("C$ was created by Infus and Antis\n");
+}

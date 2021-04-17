@@ -3,6 +3,7 @@
 #include "../parser/FunctionDefinition.hpp"
 #include "../parser/Statement.hpp"
 #include "../parser/Type.hpp"
+#include "Functions.hpp"
 
 #include <string>
 #include <map>
@@ -15,6 +16,6 @@ namespace interpreter {
         public:
             void interpreter(map<string, FunctionDefinition> &mFunctions);
         private:
-            void executeCommands(FunctionDefinition &commandsFunc);
+            void executeCommands(FunctionDefinition &commandsFunc, map<string, parser::FunctionDefinition> &mFunctions);
     };
 }
