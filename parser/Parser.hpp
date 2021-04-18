@@ -46,6 +46,7 @@ namespace parser {
             optional<Statement> expectVariableCall();
             optional<Statement> expectExpressionFunc();
             optional<Statement> expectOneValueFunc();
+            optional<Statement> parseIfStatement();
 
             size_t operatorPrecedence(const string &operatorName);
             Statement * findRightmostStatement(Statement *lhs, size_t rhsPrecedence);

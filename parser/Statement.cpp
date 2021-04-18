@@ -7,7 +7,7 @@ namespace parser {
     void Statement::DebugPrint(size_t indent){
         cout << string(indent, '\t') << sStatementKindStrings[int(mKind)] << " ";
         cout << mType.mName << " " << mName << " (\n";
-        for(Statement statement : mParameters){
+        for(Statement statement : mStatements){
             statement.DebugPrint(indent + 1);
         }
         cout << string(indent, '\t') << ")" << endl;
