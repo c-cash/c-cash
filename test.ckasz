@@ -1,9 +1,22 @@
 void main() {
     int sum = 3 + 3 * 2;
     double x = 0;
-    read(x);
-    write("x = ", x, " sum = ", sum, "\n");
+    int y;
+    int z;
+    
+    if(z > y) {
+        write("Antis");
+    }
+
+    write("Wszytaj x = ");
+    read(x, z);
+
+    write("x = ", x, " sum = ", sum, " y = ", y, "\n");
     creators();
+
+    if(a > 0){
+        
+    }
 }
 
 void creators() {

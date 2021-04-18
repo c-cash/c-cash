@@ -32,12 +32,12 @@ int main (int argc, char **argv) {
     */
         Parser parser;
         parser.parse(tokens);
-        //parser.DebugPrint();
+        parser.DebugPrint();
 
         map<string, FunctionDefinition> functions = parser.mFunction;
         
-        Interpreter interpreter;
-        interpreter.interpreter(functions);
+        //Interpreter interpreter;
+        //interpreter.interpreter(functions);
     } catch(exception& err) {
         cerr << "Error: " << err.what() << endl;
         return 2;

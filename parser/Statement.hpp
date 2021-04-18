@@ -27,11 +27,20 @@ namespace parser {
         "VARIBLE_CALL_FUNC"
     };
 
+    class ParameterDefinitionIf {
+        public:
+            string mName; //Emty -> no name given
+            Type mType;
+
+            void DebugPrint(size_t indent) const;
+    };
+
     class Statement {
         public:
             string mName;
             Type mType{Type("void", VOID)};
-            vector<Statement> mParameters;
+            vector<Statement> mStatements;
+            vector<ParameterDefinitionIf> mParameters;
             StatementKind mKind{StatementKind::FUNCTION_CALL};
 
             void DebugPrint(size_t indent);

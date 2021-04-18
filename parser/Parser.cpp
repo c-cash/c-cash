@@ -242,7 +242,7 @@ namespace parser {
                 throw runtime_error("Expected initial value to right of '=' in variable declaration");
             }
 
-            statment.mParameters.push_back(initialValue.value());
+            statment.mStatements.push_back(initialValue.value());
         }
 
         return statment;
@@ -270,7 +270,7 @@ namespace parser {
                 throw runtime_error("Expected initial value to right of '=' in variable declaration");
             }
 
-            statment.mParameters.push_back(initialValue.value());
+            statment.mStatements.push_back(initialValue.value());
         }
 
         return statment;
@@ -299,7 +299,7 @@ namespace parser {
             if(!parameter.has_value()) {
                 throw runtime_error("Expected expression as parameter.");
             }
-            functionCall.mParameters.push_back(parameter.value());
+            functionCall.mStatements.push_back(parameter.value());
 
             if(expectOperator(")").has_value()) break;
             if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate parameter, found '") + mCurrentToken->mText + ".");
@@ -309,10 +309,16 @@ namespace parser {
     }
 
     optional<Statement> Parser::expectStatement() {
-        optional<Statement> result = expectExpression();
+        optional<Statement> result;
+        //IF it's if, elif or else
+        if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "if" || mCurrentToken->mText == "elif" || mCurrentToken->mText == "else")) {
+            result = parseIfStatement();
+        } else {
+            result = expectExpression();
 
-        if(!result.has_value()){
-            result = expectVariableDeclaration();
+            if(!result.has_value()){
+                result = expectVariableDeclaration();
+            }
         }
 
         return result;
@@ -342,14 +348,14 @@ namespace parser {
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
 				operationCall.mParameters.push_back(rightmostStatement->mParameters.at(1));
-				operationCall.mParameters.push_back(rhs.value());
-				rightmostStatement->mParameters[1] = operationCall;
+				operationCall.mStatements.push_back(rhs.value());
+				rightmostStatement->mStatements[1] = operationCall;
             } else {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mParameters.push_back(lhs.value());
-				operationCall.mParameters.push_back(rhs.value());
+				operationCall.mStatements.push_back(lhs.value());
+				operationCall.mStatements.push_back(rhs.value());
 				lhs = operationCall;
 			}
 		}
@@ -380,15 +386,15 @@ namespace parser {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mParameters.push_back(rightmostStatement->mParameters.at(1));
-				operationCall.mParameters.push_back(rhs.value());
-				rightmostStatement->mParameters[1] = operationCall;
+				operationCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
+				operationCall.mStatements.push_back(rhs.value());
+				rightmostStatement->mStatements[1] = operationCall;
             } else {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mParameters.push_back(lhs.value());
-				operationCall.mParameters.push_back(rhs.value());
+				operationCall.mStatements.push_back(lhs.value());
+				operationCall.mStatements.push_back(rhs.value());
 				lhs = operationCall;
 			}
 		}
@@ -400,7 +406,7 @@ namespace parser {
 		if(lhs->mKind != StatementKind::OPERATOR_CALL) { return nullptr; }
 		if(operatorPrecedence(lhs->mName) >= rhsPrecedence) { return nullptr; }
         
-        Statement * rhs = &lhs->mParameters.at(1);
+        Statement * rhs = &lhs->mStatements.at(1);
         rhs = findRightmostStatement(rhs, rhsPrecedence);
         if(rhs == nullptr) {return lhs;}
         return rhs;
@@ -412,5 +418,32 @@ namespace parser {
             return 0;
         }
 		return foundOperator->second.mPrecedence;
+    }
+
+    optional<Statement> Parser::parseIfStatement() {
+        Statement ifS;
+        while (!expectOperator(")").has_value()) {
+            optional<Type> possibleParamType = expectType();
+            if(!possibleParamType.has_value()){
+                throw runtime_error("Expected a type at start of argument list.");
+            }
+
+            optional<Token> possibleVaribleName = expectIdentifier();
+
+            ParameterDefinitionIf param;
+            param.mType = possibleParamType->mName;
+            if(possibleVaribleName.has_value()){
+                param.mName = possibleVaribleName->mText;
+            }
+            ifS.mParameters.push_back(param);
+
+            if(expectOperator(")").has_value()) break;
+        }
+        /*for(auto i : ifS.mParameters){
+            cout << i.mName << " ";
+        }*/
+        cout << '\n';
+
+        return ifS;
     }
 }
