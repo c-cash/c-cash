@@ -13,9 +13,10 @@ namespace interpreter {
     using namespace parser;
 
     class Interpreter {
-        public:
+        public:       
             void interpreter(map<string, FunctionDefinition> &mFunctions);
         private:
             void executeCommands(FunctionDefinition &commandsFunc, map<string, parser::FunctionDefinition> &mFunctions);
+            void executeCommand(Functions &func, Statement cmd, map<string, parser::FunctionDefinition> &mFunctions);
     };
 }

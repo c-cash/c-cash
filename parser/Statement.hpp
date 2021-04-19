@@ -29,22 +29,11 @@ namespace parser {
         "LOGIC_CALL"
     };
 
-    class ParameterDefinitionIf {
-        public:
-            string mName;
-            Type mType{Type("void", VOID)};
-            vector<ParameterDefinitionIf> mParameters;
-            StatementKind mKind{StatementKind::FUNCTION_CALL};
-
-            void DebugPrint(size_t indent) const;
-    };
-
     class Statement {
         public:
             string mName;
             Type mType{Type("void", VOID)};
             vector<Statement> mStatements;
-            vector<ParameterDefinitionIf> mParameters;
             StatementKind mKind{StatementKind::FUNCTION_CALL};
 
             void DebugPrint(size_t indent);

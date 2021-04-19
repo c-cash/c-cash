@@ -16,6 +16,17 @@ namespace parser {
 		{"/", OperatorEntry{"/", 10}} 
 	};
 
+    static map<string, OperatorEntry> sLogics {
+		{"<", OperatorEntry{"<", 1}}, 
+		{">", OperatorEntry{">", 1}}, 
+		{"==", OperatorEntry{"==", 1}}, 
+		{"!=", OperatorEntry{"!=", 1}},
+        {"<=", OperatorEntry{"<=", 1}}, 
+		{">=", OperatorEntry{">=", 1}}, 
+		{"and", OperatorEntry{"and", 10}}, 
+		{"or", OperatorEntry{"or", 10}} 
+	};
+
 	bool Parser::expectFunctionDefinition() {
 		vector<Token>::iterator parseStart = mCurrentToken;
 		optional<Type> possibleType = expectType();
@@ -444,13 +455,13 @@ namespace parser {
 
         if(ifS.mName == "IF" || ifS.mName == "ELIF"){
             ++mCurrentToken;
-
             while (!expectOperator(")").has_value()) {
-                optional<ParameterDefinitionIf> parameter = expectLogicExpressionFunc();
+                optional<Statement> parameter = expectLogicExpressionFunc();
                 if(!parameter.has_value()) {
                     throw runtime_error("Expected logic expression as parameter.");
                 }
-                ifS.mParameters.push_back(parameter);
+                cout << parameter->mName << endl;
+                ifS.mStatements.push_back(parameter.value());
 
                 if(expectOperator(")").has_value()) break;
             }
@@ -460,19 +471,19 @@ namespace parser {
         if(!statements.has_value()){
             throw runtime_error("Bad command in if statement");
         }
-        ifS.mStatements.insert(ifS.mStatements.begin(), statements->begin(), statements->end());
+        ifS.mStatements.insert(ifS.mStatements.end(), statements->begin(), statements->end());
 
         return ifS;
     }
-    /*
-    optional<ParameterDefinitionIf> Parser::expectLogicExpressionFunc(){
-        optional<Statement> l = expectOneValueFunc();
-		if(!l.has_value()) { return nullopt; }
+
+    optional<Statement> Parser::expectLogicExpressionFunc() {
+        optional<Statement> lhs = expectOneValueFunc();
+		if(!lhs.has_value()) { return nullopt; }
 
         while (true){
-			optional<Token> op = expectLogic();
-            if(!op.has_value()) { break; }
-			int rhsPrecedence = operatorPrecedence(op->mText);
+			optional<Token> log = expectLogic();
+            if(!log.has_value()) { break; }
+			int rhsPrecedence = logicPrecedence(log->mText);;
 			if(rhsPrecedence == 0) {
                 --mCurrentToken;
                 return lhs;
@@ -485,31 +496,52 @@ namespace parser {
 
 			Statement * rightmostStatement = findRightmostStatement(&lhs.value(), rhsPrecedence);
             if(rightmostStatement) {
-				Statement operationCall;
-				operationCall.mKind = StatementKind::OPERATOR_CALL;
-				operationCall.mName = op->mText;
-				operationCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
-				operationCall.mStatements.push_back(rhs.value());
-				rightmostStatement->mStatements[1] = operationCall;
+				Statement logicCall;
+				logicCall.mKind = StatementKind::LOGIC_CALL;
+				logicCall.mName = log->mText;
+				logicCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
+				logicCall.mStatements.push_back(rhs.value());
+				rightmostStatement->mStatements[1] = logicCall;
             } else {
-				Statement operationCall;
-				operationCall.mKind = StatementKind::OPERATOR_CALL;
-				operationCall.mName = op->mText;
-				operationCall.mStatements.push_back(lhs.value());
-				operationCall.mStatements.push_back(rhs.value());
-				lhs = operationCall;
+				Statement logicCall;
+				logicCall.mKind = StatementKind::LOGIC_CALL;
+				logicCall.mName = log->mText;
+				logicCall.mStatements.push_back(lhs.value());
+				logicCall.mStatements.push_back(rhs.value());
+				lhs = logicCall;
 			}
 		}
 
-        optional<Token> Parser::expectLogic(const string &name) {
-            if(mCurrentToken == mEndToken) { return nullopt; }
-            if(mCurrentToken->mType != LOGIC ){return nullopt;}
-            if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+        return lhs;
+    }
 
-            Token returnToken = *mCurrentToken;
-            ++mCurrentToken;
-            return returnToken;
+    optional<Token> Parser::expectLogic(const string &name) {
+        if(mCurrentToken == mEndToken) { return nullopt; }
+        if(mCurrentToken->mType != LOGIC && mCurrentToken->mText != "or" && mCurrentToken->mText != "and") {return nullopt;}
+        if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+
+        Token returnToken = *mCurrentToken;
+        ++mCurrentToken;
+        return returnToken;
+    }
+
+    Statement * Parser::findRightmostLogicStatement(Statement *lhs, size_t rhsPrecedence) {
+		if(lhs->mKind != StatementKind::LOGIC_CALL) { return nullptr; }
+        if(operatorPrecedence(lhs->mName) >= rhsPrecedence) { return nullptr; }
+        
+        Statement * rhs = &lhs->mStatements.at(1);
+        rhs = findRightmostStatement(rhs, rhsPrecedence);
+        if(rhs == nullptr) {return lhs;}
+        return rhs;
+	}
+
+    size_t Parser::logicPrecedence(const string &operatorName) {
+        map<string, OperatorEntry>::iterator foundLogic = sLogics.find(operatorName);
+        if(foundLogic == sLogics.end()) {
+            return 0;
         }
-    }*/
+	    return foundLogic->second.mPrecedence;
+    }
 }
+
 

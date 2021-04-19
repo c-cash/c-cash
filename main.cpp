@@ -25,19 +25,19 @@ int main (int argc, char **argv) {
 
         Tokenaizer tokenaizer;
         vector<Token> tokens = tokenaizer.parse(allCode);
-    
+    /*
         for(Token currToken : tokens){
             currToken.DebugPrint();
         }
-    
+    */
         Parser parser;
         parser.parse(tokens);
         parser.DebugPrint();
 
-        //map<string, FunctionDefinition> functions = parser.mFunction;
+        map<string, FunctionDefinition> functions = parser.mFunction;
         
-        //Interpreter interpreter;
-        //interpreter.interpreter(functions);
+        Interpreter interpreter;
+        interpreter.interpreter(functions);
     } catch(exception& err) {
         cerr << "Error: " << err.what() << endl;
         return 2;
