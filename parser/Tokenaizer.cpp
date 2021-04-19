@@ -79,7 +79,6 @@ namespace parser {
                 case '(':
                 case ')':
                 case ';':
-                case '=':
                 case '+':
                 case '*':
                 case '-':
@@ -90,6 +89,31 @@ namespace parser {
                         currentToken.mType = OPERATOR;
                         currentToken.mText.append(1, currCh);
                         endToken(currentToken, tokens);
+                    } else {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
+
+                case '=':
+                    if(currentToken.mType == LOGIC || currentToken.mType == OPERATOR){
+                        currentToken.mType = LOGIC;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                    } else if(currentToken.mType != STRING_LITERAL) {
+                        endToken(currentToken, tokens);
+                        currentToken.mType = OPERATOR;
+                        currentToken.mText.append(1, currCh);
+                    } else {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
+                
+                case '>':
+                case '<':
+                case '!':
+                    if(currentToken.mType != STRING_LITERAL){
+                        currentToken.mType = LOGIC;
+                        currentToken.mText.append(1, currCh);
                     } else {
                         currentToken.mText.append(1, currCh);
                     }

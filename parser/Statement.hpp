@@ -14,7 +14,8 @@ namespace parser {
         OPERATOR_CALL,
         VARIABLE,
         VARIABLE_CALL,
-        VARIBLE_CALL_FUNC
+        VARIBLE_CALL_FUNC,
+        LOGIC_CALL
     };
 
     static const char* sStatementKindStrings[] = {
@@ -24,13 +25,16 @@ namespace parser {
         "OPERATOR_CALL",
         "VARIABLE",
         "VARIABLE_CALL",
-        "VARIBLE_CALL_FUNC"
+        "VARIBLE_CALL_FUNC",
+        "LOGIC_CALL"
     };
 
     class ParameterDefinitionIf {
         public:
-            string mName; //Emty -> no name given
-            Type mType;
+            string mName;
+            Type mType{Type("void", VOID)};
+            vector<ParameterDefinitionIf> mParameters;
+            StatementKind mKind{StatementKind::FUNCTION_CALL};
 
             void DebugPrint(size_t indent) const;
     };
