@@ -11,7 +11,7 @@ namespace interpreter {
     void Functions::declareVariableFunc(Statement &variable){
         switch(variable.mType.mType) {
             case DOUBLE:
-                if(variable.mParameters.size() > 0){
+                if(variable.mStatements.size() > 0){
                     doubleVarTab[variable.mName] = startCalculations(variable.mStatements[0]);
                 } else {
                     doubleVarTab[variable.mName] = 0;
@@ -19,7 +19,7 @@ namespace interpreter {
                 //cout<< variable.mName << " " << doubleVarTab[variable.mName] << '\n';
                 break;
             case INT8:
-                if(variable.mParameters.size() > 0){
+                if(variable.mStatements.size() > 0){
                     charVarTab[variable.mName] = startCalculations(variable.mStatements[0]);
                 } else {
                     charVarTab[variable.mName] = 0;
@@ -27,7 +27,7 @@ namespace interpreter {
                 //cout<< variable.mName << " " << charVarTab[variable.mName] << '\n';
                 break;
             case UINT8:
-                if(variable.mParameters.size() > 0){
+                if(variable.mStatements.size() > 0){
                     ucharVarTab[variable.mName] = startCalculations(variable.mStatements[0]);
                 } else {
                     ucharVarTab[variable.mName] = 0;
@@ -35,7 +35,7 @@ namespace interpreter {
                 //cout<< variable.mName << " " << ucharVarTab[variable.mName] << '\n';
                 break;
             case INT32:
-                if(variable.mParameters.size() > 0){
+                if(variable.mStatements.size() > 0){
                     intVarTab[variable.mName] = startCalculations(variable.mStatements[0]);
                 } else {
                     intVarTab[variable.mName] = 0;
@@ -43,7 +43,7 @@ namespace interpreter {
                 //cout<< variable.mName << " " << intVarTab[variable.mName] << '\n';
                 break;
             case UINT32:
-                if(variable.mParameters.size() > 0){
+                if(variable.mStatements.size() > 0){
                     uintVarTab[variable.mName] = startCalculations(variable.mStatements[0]);
                 } else {
                     uintVarTab[variable.mName] = 0;
@@ -110,7 +110,7 @@ namespace interpreter {
 
     void Functions::changeVarValue(Statement &cmd){
         string::size_type st;
-        stod(cmd.mParameters[0].mName, &st);
+        stod(cmd.mStatements[0].mName, &st);
         if(doubleVarTab.find(cmd.mName) != doubleVarTab.end()){
             doubleVarTab[cmd.mName] = st;
         } else if(intVarTab.find(cmd.mName) != intVarTab.end()){
@@ -127,17 +127,17 @@ namespace interpreter {
     }
 
     void Functions::readFunc(Statement &cmd){;
-        for(auto i=0; i<cmd.mParameters.size(); ++i){
-            if(doubleVarTab.find(cmd.mParameters[i].mName) != doubleVarTab.end()){
-                cin >> doubleVarTab[cmd.mParameters[i].mName];
-            } else if(intVarTab.find(cmd.mParameters[i].mName) != intVarTab.end()){
-                cin >> intVarTab[cmd.mParameters[i].mName];
-            } else if(uintVarTab.find(cmd.mParameters[i].mName) != uintVarTab.end()){
-                cin >> uintVarTab[cmd.mParameters[i].mName];
-            } else if(charVarTab.find(cmd.mParameters[i].mName) != charVarTab.end()){
-                cin >> charVarTab[cmd.mParameters[i].mName];
-            } else if(ucharVarTab.find(cmd.mParameters[i].mName) != ucharVarTab.end()){
-                cin >> ucharVarTab[cmd.mParameters[i].mName];
+        for(auto i=0; i<cmd.mStatements.size(); ++i){
+            if(doubleVarTab.find(cmd.mStatements[i].mName) != doubleVarTab.end()){
+                cin >> doubleVarTab[cmd.mStatements[i].mName];
+            } else if(intVarTab.find(cmd.mStatements[i].mName) != intVarTab.end()){
+                cin >> intVarTab[cmd.mStatements[i].mName];
+            } else if(uintVarTab.find(cmd.mStatements[i].mName) != uintVarTab.end()){
+                cin >> uintVarTab[cmd.mStatements[i].mName];
+            } else if(charVarTab.find(cmd.mStatements[i].mName) != charVarTab.end()){
+                cin >> charVarTab[cmd.mStatements[i].mName];
+            } else if(ucharVarTab.find(cmd.mStatements[i].mName) != ucharVarTab.end()){
+                cin >> ucharVarTab[cmd.mStatements[i].mName];
             } else {
                 throw runtime_error("Don't find varible!");
             }

@@ -1,24 +1,22 @@
-void main() {
-    int sum = 3 + 3 * 2;
-    double x = 0;
-    int y;
-    int z;
-    
-    if(z > y) {
-        write("Antis");
-    }
-
-    write("Wszytaj x = ");
-    read(x, z);
-
-    write("x = ", x, " sum = ", sum, " y = ", y, "\n");
-    creators();
-
-    if(a > 0){
-        
-    }
-}
 
 void creators() {
     write("C$ was created by Infus and Antis\n");
+}
+
+void main() {
+    int x;
+    int sum;
+    write("x = ", x, " sum = ", sum , "\n");
+    creators();
+    int a;
+    int b;
+    int c;
+
+    if(a > 0 and b > 0 or c == 0) {
+        write("wieksze\n");
+    } elif(a == 0) {
+            write("równe\n");
+    } else {
+        write("ujemne\n");
+    }
 }

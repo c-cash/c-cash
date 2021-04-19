@@ -24,7 +24,7 @@ namespace parser {
             if(possibleName.has_value()){ //Name
                 optional<Token> possibleOperator = expectOperator("("); 
                 if(possibleOperator.has_value()){ //Function or varible
-					FunctionDefinition func;
+				FunctionDefinition func;
 					func.mName = possibleName->mText;
 
                     while (!expectOperator(")").has_value()) {
@@ -102,6 +102,15 @@ namespace parser {
         return returnToken;
     }
 
+    optional<Token> Parser::expectIdentifierIf(const string &name) {
+        if(mCurrentToken == mEndToken) { return nullopt; }
+        if(mCurrentToken->mType == OPERATOR) {return nullopt;}
+
+        Token returnToken = *mCurrentToken;
+        ++mCurrentToken;
+        return returnToken;
+    }
+
     optional<Token> Parser::expectOperator(const string &name) {
         if(mCurrentToken == mEndToken) { return nullopt; }
         if(mCurrentToken->mType != OPERATOR ) {return nullopt;}
@@ -130,12 +139,15 @@ namespace parser {
 		if(!expectOperator("{").has_value()) return nullopt;
 
         vector<Statement> statements;
+        bool ifStatement;
         
         while (!expectOperator("}").has_value()){
+            ifStatement = false;
+            if(mCurrentToken->mText == "if" || mCurrentToken->mText == "elif" || mCurrentToken->mText == "else") ifStatement = true;
             optional<Statement> statement = expectStatement();
             if(statement.has_value()) { statements.push_back(statement.value()); }
 
-            if(!expectOperator(";").has_value()) { cout << mCurrentToken->mText << " "; throw runtime_error("Expected ';' at end of statement."); }
+            if(ifStatement == false) { if(!expectOperator(";").has_value()) { cout << mCurrentToken->mText << " "; throw runtime_error("Expected ';' at end of statement."); }}
         }
 
         return statements;
@@ -347,7 +359,7 @@ namespace parser {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mParameters.push_back(rightmostStatement->mParameters.at(1));
+				operationCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
 				operationCall.mStatements.push_back(rhs.value());
 				rightmostStatement->mStatements[1] = operationCall;
             } else {
@@ -422,28 +434,82 @@ namespace parser {
 
     optional<Statement> Parser::parseIfStatement() {
         Statement ifS;
-        while (!expectOperator(")").has_value()) {
-            optional<Type> possibleParamType = expectType();
-            if(!possibleParamType.has_value()){
-                throw runtime_error("Expected a type at start of argument list.");
+        cout << "ti\n";
+
+        if(mCurrentToken->mText == "if") ifS.mName = "IF";
+        else if(mCurrentToken->mText == "else") ifS.mName = "ELSE";
+        else if(mCurrentToken->mText == "elif") ifS.mName = "ELIF";
+
+        ++mCurrentToken;
+
+        if(ifS.mName == "IF" || ifS.mName == "ELIF"){
+            ++mCurrentToken;
+
+            while (!expectOperator(")").has_value()) {
+                optional<ParameterDefinitionIf> parameter = expectLogicExpressionFunc();
+                if(!parameter.has_value()) {
+                    throw runtime_error("Expected logic expression as parameter.");
+                }
+                ifS.mParameters.push_back(parameter);
+
+                if(expectOperator(")").has_value()) break;
             }
-
-            optional<Token> possibleVaribleName = expectIdentifier();
-
-            ParameterDefinitionIf param;
-            param.mType = possibleParamType->mName;
-            if(possibleVaribleName.has_value()){
-                param.mName = possibleVaribleName->mText;
-            }
-            ifS.mParameters.push_back(param);
-
-            if(expectOperator(")").has_value()) break;
         }
-        /*for(auto i : ifS.mParameters){
-            cout << i.mName << " ";
-        }*/
-        cout << '\n';
+
+        optional<vector<Statement>> statements = parseFunctionBody();
+        if(!statements.has_value()){
+            throw runtime_error("Bad command in if statement");
+        }
+        ifS.mStatements.insert(ifS.mStatements.begin(), statements->begin(), statements->end());
 
         return ifS;
     }
+    /*
+    optional<ParameterDefinitionIf> Parser::expectLogicExpressionFunc(){
+        optional<Statement> l = expectOneValueFunc();
+		if(!l.has_value()) { return nullopt; }
+
+        while (true){
+			optional<Token> op = expectLogic();
+            if(!op.has_value()) { break; }
+			int rhsPrecedence = operatorPrecedence(op->mText);
+			if(rhsPrecedence == 0) {
+                --mCurrentToken;
+                return lhs;
+            }
+            optional<Statement> rhs = expectOneValueFunc();
+            if(!rhs.has_value()) {
+                --mCurrentToken;
+                return lhs;
+            }
+
+			Statement * rightmostStatement = findRightmostStatement(&lhs.value(), rhsPrecedence);
+            if(rightmostStatement) {
+				Statement operationCall;
+				operationCall.mKind = StatementKind::OPERATOR_CALL;
+				operationCall.mName = op->mText;
+				operationCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
+				operationCall.mStatements.push_back(rhs.value());
+				rightmostStatement->mStatements[1] = operationCall;
+            } else {
+				Statement operationCall;
+				operationCall.mKind = StatementKind::OPERATOR_CALL;
+				operationCall.mName = op->mText;
+				operationCall.mStatements.push_back(lhs.value());
+				operationCall.mStatements.push_back(rhs.value());
+				lhs = operationCall;
+			}
+		}
+
+        optional<Token> Parser::expectLogic(const string &name) {
+            if(mCurrentToken == mEndToken) { return nullopt; }
+            if(mCurrentToken->mType != LOGIC ){return nullopt;}
+            if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+
+            Token returnToken = *mCurrentToken;
+            ++mCurrentToken;
+            return returnToken;
+        }
+    }*/
 }
+

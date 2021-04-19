@@ -16,7 +16,9 @@ namespace parser {
         OPERATOR,
         STRING_ESCAPE_SEQUENCE,
         POTENTIAL_DOUBLE,
-        COMMENT
+        COMMENT,
+        LOGIC,
+        POTENTIAL_LOGIC
     };
 
     static const char *sTokenTypeStrings[] = {
@@ -28,7 +30,9 @@ namespace parser {
         "OPERATOR",
         "STRING_ESCAPE_SEQUENCE",
         "POTENTIAL_DOUBLE",
-        "COMMENT"
+        "COMMENT",
+        "LOGIC",
+        "POTENTIAL_LOGIC"
     };
 
     class Token {

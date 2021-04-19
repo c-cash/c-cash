@@ -36,6 +36,10 @@ namespace parser {
             //! Empty string means match any operator.
             optional<Token> expectOperator(const string& name = string());
 
+            optional<Token> expectLogic(const string &name);
+
+            optional<Token> expectIdentifierIf(const string &name = string());
+
             bool expectFunctionDefinition();
             optional<vector<Statement>> parseFunctionBody();
             optional<Statement> expectOneValue();
