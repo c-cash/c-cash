@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Interpreter.hpp"
-#include "Functions.hpp"
+#include "../parser/Statement.hpp"
 
+#include <iostream>
 #include <map>
  
 namespace interpreter {
@@ -15,9 +15,11 @@ namespace interpreter {
             void writeFunc(Statement &operations);
             void readFunc(Statement &cmd);
             void changeVarValue(Statement &cmd);
+            bool startIf(Statement &cmd);
         private:
             double startCalculations(Statement &operations);
             double calculating(Statement &operations);
+            bool calculateIf(Statement &cmd);
 
             map<string, double> doubleVarTab;
             map<string, int> intVarTab;

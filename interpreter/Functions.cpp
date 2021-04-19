@@ -8,7 +8,7 @@ namespace interpreter {
     using namespace std;
     using namespace parser;
 
-    void Functions::declareVariableFunc(Statement &variable){
+    void Functions::declareVariableFunc(Statement &variable) {
         switch(variable.mType.mType) {
             case DOUBLE:
                 if(variable.mStatements.size() > 0){
@@ -76,7 +76,7 @@ namespace interpreter {
         }     
     }
 
-    double Functions::calculating(Statement &operations){
+    double Functions::calculating(Statement &operations) {
         if(operations.mKind == StatementKind::LITTERAL){
             std::string::size_type st;
             return stod(operations.mName, &st);
@@ -85,7 +85,7 @@ namespace interpreter {
         }
     }
 
-    void Functions::writeFunc(Statement &operations){
+    void Functions::writeFunc(Statement &operations) {
         for(auto i : operations.mStatements){
             if(i.mKind == StatementKind::VARIBLE_CALL_FUNC){
                 //SEARCH VALUE
@@ -108,7 +108,7 @@ namespace interpreter {
         }
     }
 
-    void Functions::changeVarValue(Statement &cmd){
+    void Functions::changeVarValue(Statement &cmd) {
         string::size_type st;
         stod(cmd.mStatements[0].mName, &st);
         if(doubleVarTab.find(cmd.mName) != doubleVarTab.end()){
@@ -126,7 +126,7 @@ namespace interpreter {
         }
     }
 
-    void Functions::readFunc(Statement &cmd){;
+    void Functions::readFunc(Statement &cmd) {
         for(auto i=0; i<cmd.mStatements.size(); ++i){
             if(doubleVarTab.find(cmd.mStatements[i].mName) != doubleVarTab.end()){
                 cin >> doubleVarTab[cmd.mStatements[i].mName];
@@ -142,5 +142,33 @@ namespace interpreter {
                 throw runtime_error("Don't find varible!");
             }
         }
+    }
+
+    bool Functions::startIf(Statement &cmd) {
+        if(">" == cmd.mName){
+            return calculateIf(cmd.mStatements[0]) > calculateIf(cmd.mStatements[1]);
+        } else if("<" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) < calculateIf(cmd.mStatements[1]);
+        } else if("==" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) == calculateIf(cmd.mStatements[1]);
+        } else if ("!=" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) != calculateIf(cmd.mStatements[1]);
+        } else if("<=" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) <= calculateIf(cmd.mStatements[1]);
+        } else if (">=" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) >= calculateIf(cmd.mStatements[1]);
+        } /* HERE WE HAVE A BUG
+        else if ("and" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) && calculateIf(cmd.mStatements[1]);
+        } else if("or" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) || calculateIf(cmd.mStatements[1]);
+        } */else {
+            return false;
+        }
+    }
+
+    bool Functions::calculateIf(Statement &cmd) {
+        //To write
+        return true;
     }
 }

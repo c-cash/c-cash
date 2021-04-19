@@ -10,13 +10,10 @@ void main() {
     creators();
     int a;
     int b;
-    int c;
+    int c = 5 + 2 * 3 - 4 + 1 - 3 + 4;
+    write(c, "\n");
 
-    if(a > 0 and b > 0 or c == 0) {
-        write("wieksze\n");
-    } elif(a == 0) {
-            write("równe\n");
-    } else {
-        write("ujemne\n");
+    if(a < c) {
+        write(b);
     }
 }

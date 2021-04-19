@@ -36,8 +36,6 @@ namespace parser {
             //! Empty string means match any operator.
             optional<Token> expectOperator(const string& name = string());
 
-            optional<Token> expectLogic(const string &name);
-
             optional<Token> expectIdentifierIf(const string &name = string());
 
             bool expectFunctionDefinition();
@@ -51,8 +49,12 @@ namespace parser {
             optional<Statement> expectExpressionFunc();
             optional<Statement> expectOneValueFunc();
             optional<Statement> parseIfStatement();
+            optional<Statement> expectLogicExpressionFunc();
+            optional<Token> expectLogic(const string &name = string());
 
             size_t operatorPrecedence(const string &operatorName);
+            size_t logicPrecedence(const string &operatorName);
             Statement * findRightmostStatement(Statement *lhs, size_t rhsPrecedence);
+            Statement * findRightmostLogicStatement(Statement *lhs, size_t rhsPrecedence);
     };
 }
