@@ -1,19 +1,25 @@
-
-void creators() {
-    write("C$ was created by Infus and Antis\n");
-}
-
 void main() {
-    int x;
-    int sum;
-    write("x = ", x, " sum = ", sum , "\n");
-    creators();
-    int a;
-    int b;
-    int c = 5 + 2 * 3 - 4 + 1 - 3 + 4;
-    write(c, "\n");
-
-    if(a < c) {
+    if(a > b and b > a) {
         write(b);
     }
 }
+
+or
+    or
+        and
+            void >
+                a
+                b
+            void >
+                a
+                c
+        void !=
+            b
+            c
+    and
+        void > 
+            b
+            0
+        void >
+            2
+            b
