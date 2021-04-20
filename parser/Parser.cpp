@@ -466,10 +466,9 @@ namespace parser {
                     ++mCurrentToken;
                     Statement andStatement;
                     andStatement.mStatements.push_back(back_parameter.value());
-                    optional <Statement> test = expectLogicExpressionFunc();
-                    if(!test.has_value())
                     andStatement.mName = "and";
-                    andStatement.mStatements.push_back(test.value());
+                    andStatement.mKind = StatementKind::LOGIC_CALL;
+                    andStatement.mStatements.push_back(expectLogicExpressionFunc().value());
                     
                     back_parameter = andStatement;
                 } else if(mCurrentToken->mText == "or"){

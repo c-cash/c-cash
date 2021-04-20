@@ -1,5 +1,5 @@
 void main() {
-    if(a > b and b > a) {
+    if(2 == 2 or a > b and b > a and c == a or 2 != 3) {
         write(b);
     }
 }
