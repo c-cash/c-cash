@@ -31,8 +31,11 @@ namespace interpreter{
                     if(func.startIf(cmd.mStatements[0])) {
                         for(int i=1; i<cmd.mStatements.size(); ++i) {
                             auto c = cmd.mStatements[i];
+                            cout << cmd.mStatements[i].mName << endl;
                             executeCommand(func, c, mFunctions);
                         }
+                    } else {
+                        cout << "tu\n";
                     }
                     break;
                 } else {
