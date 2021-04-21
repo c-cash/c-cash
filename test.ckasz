@@ -5,25 +5,20 @@ void calculator() {
     if(x >= 1 and x <= 4) {
         int a;
         int b;
-        int result = 0;
         write("Enter the first number: ");
         read(a);
         write("Enter the second number: ");
         read(b);
 
         if(x == 1) {
-            result = a + b;
-            write(a, " + ", b, " = ", result, "\n");
+            write(a, " + ", b, " = ", a + b, "\n");
         } elif(x == 2) {
-            result = a - b;
-            write(a, " - ", b, " = ", result, "\n");
+            write(a, " - ", b, " = ", a - b, "\n");
         } elif(x == 3) {
-            result = a * b;
-            write(a, " * ", b, " = ", result, "\n");
+            write(a, " * ", b, " = ", a * b, "\n");
         } else {
             if(b != 0) {
-                result = a / b;
-                write(a, " / ", b, " = ", result, "\n");
+                write(a, " / ", b, " = ", a / b, "\n");
             } else {
                 write("Cannot be divided by zero...\n");
             }
@@ -38,5 +33,8 @@ void calculator() {
 }
 
 void main() {
+
+    write(2*2);
+
     calculator();
 }
