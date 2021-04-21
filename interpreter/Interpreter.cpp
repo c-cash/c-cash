@@ -8,6 +8,8 @@ namespace interpreter{
     using namespace std;
     using namespace parser;
 
+    bool ifIf;
+
     void Interpreter::executeCommands(FunctionDefinition &commandsFunc, map<string, parser::FunctionDefinition> &mFunctions){
         Functions func;
         for(auto cmd : commandsFunc.mStatements){
@@ -27,15 +29,38 @@ namespace interpreter{
                 } else if(cmd.mName == "read"){
                     func.readFunc(cmd);
                     break;
-                } else if(cmd.mName == "IF") {
+                } else if(cmd.mName == "exit"){
+                    exit(0);
+                    break;
+                }else if(cmd.mName == "IF") {
                     if(func.startIf(cmd.mStatements[0])) {
                         for(int i=1; i<cmd.mStatements.size(); ++i) {
                             auto c = cmd.mStatements[i];
-                            cout << cmd.mStatements[i].mName << endl;
                             executeCommand(func, c, mFunctions);
                         }
+                        ifIf = false;
                     } else {
-                        cout << "tu\n";
+                        ifIf = true;
+                    }
+                    break;
+                } else if(cmd.mName == "ELIF") {
+                    if(ifIf){
+                        if(func.startIf(cmd.mStatements[0])) {
+                            for(int i=1; i<cmd.mStatements.size(); ++i) {
+                                auto c = cmd.mStatements[i];
+                                executeCommand(func, c, mFunctions);
+                            }
+                            ifIf = false;
+                        }
+                    }
+                    break;
+                } else if(cmd.mName == "ELSE") {
+                    if(ifIf){
+                        for(int i=0; i<cmd.mStatements.size(); ++i) {
+                            auto c = cmd.mStatements[i];
+                            executeCommand(func, c, mFunctions);
+                        }
+                        ifIf = false;
                     }
                     break;
                 } else {
@@ -44,6 +69,7 @@ namespace interpreter{
                     } else {
                         throw runtime_error("Don't find function");
                     }
+                    break;
                 }
                 break;
             case StatementKind::VARIABLE_CALL:

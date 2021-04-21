@@ -19,7 +19,8 @@ namespace interpreter {
         private:
             double startCalculations(Statement &operations);
             double calculating(Statement &operations);
-            bool calculateIf(Statement &cmd1, Statement &cmd2, string log);
+            bool calculateIf(Statement &cmd1);
+            double findVar(Statement &operations);
 
             map<string, double> doubleVarTab;
             map<string, int> intVarTab;
