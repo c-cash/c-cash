@@ -129,6 +129,8 @@ namespace interpreter {
                 } else {
                     throw runtime_error("Don't find varible!");
                 }
+            } else if(i.mKind == StatementKind::OPERATOR_CALL) {
+                cout << startCalculations(i);
             } else {
                 cout << i.mName;
             }

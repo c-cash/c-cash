@@ -1,0 +1,21 @@
+-----------------------0.0.1-----------------------
+
+1. Interpretacja if                                    (done)
+2. Łączenie if z elif oraz else                        (done)
+3. operacje takie jak x = x + 1                        (done)
+4. Operacje w if (czyli np dzielenie zmiennych x / 15) (done)
+5. Funkcja exit                                        (done)
+6. Błędy                                               (done)
+7. Wyjątek przy dzieleniu przez zero                   (done)
+
+-----------------------------CLOSED------------------------
+
+___________WYDANIE NOWEJ WERSJI______________
+
+
+-----------------------0.1.0-----------------------
+
+1. Parametry w funkcji
+2. Return w funkcji
+3. Loop
+4. Skłania

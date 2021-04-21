@@ -32,7 +32,7 @@ namespace parser {
     class Statement {
         public:
             string mName;
-            Type mType{Type("void", VOID)};
+            Type mType{Type("func", FUNC)};
             vector<Statement> mStatements;
             StatementKind mKind{StatementKind::FUNCTION_CALL};
 
