@@ -25,11 +25,13 @@ int main (int argc, char **argv) {
 
         Tokenaizer tokenaizer;
         vector<Token> tokens = tokenaizer.parse(allCode);
+    
     /*
         for(Token currToken : tokens){
             currToken.DebugPrint();
         }
     */
+
         Parser parser;
         parser.parse(tokens);
         //parser.DebugPrint();
