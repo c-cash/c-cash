@@ -7,7 +7,7 @@ namespace parser {
     using namespace std;
 
     enum BUILTIN_TYPE {
-        VOID,
+        FUNC,
         INT8,
         UINT8,
         INT32,
@@ -17,7 +17,7 @@ namespace parser {
 
     class Type {
         public:
-            Type(const string &name = "", enum BUILTIN_TYPE type = VOID) : mName(name), mType(type) {}
+            Type(const string &name = "", enum BUILTIN_TYPE type = FUNC) : mName(name), mType(type) {}
 
             string mName;
             enum BUILTIN_TYPE mType;

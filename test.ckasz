@@ -1,40 +1,4 @@
-void calculator() {
-    write("\n", "1. Addition\n", "2. Subtraction\n", "3. Multiplication\n", "4. Division\n", "5. Exit\n");
-    int x;
-    read(x);
-    if(x >= 1 and x <= 4) {
-        int a;
-        int b;
-        write("Enter the first number: ");
-        read(a);
-        write("Enter the second number: ");
-        read(b);
-
-        if(x == 1) {
-            write(a, " + ", b, " = ", a + b, "\n");
-        } elif(x == 2) {
-            write(a, " - ", b, " = ", a - b, "\n");
-        } elif(x == 3) {
-            write(a, " * ", b, " = ", a * b, "\n");
-        } else {
-            if(b != 0) {
-                write(a, " / ", b, " = ", a / b, "\n");
-            } else {
-                write("Cannot be divided by zero...\n");
-            }
-        }
-    } elif(x == 5) {
-        exit();
-    } else {
-        write("Select the correct option\n");
-    }
-
-    calculator();
-}
-
-void main() {
-
-    write(2*2);
-
-    calculator();
+func main() {
+    int a = 1;
+    write(a*2, "\n");
 }

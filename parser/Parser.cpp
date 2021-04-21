@@ -95,7 +95,7 @@ namespace parser {
     }
 
 	Parser::Parser() {
-		mTypes["void"] = Type("void", VOID);
+		mTypes["func"] = Type("func", FUNC);
         mTypes["int"] = Type("signed int", INT32);
         mTypes["uint"] = Type("unsigned int", UINT32);
         mTypes["char"] = Type("signed char", INT8);
