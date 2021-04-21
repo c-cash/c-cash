@@ -67,24 +67,51 @@ namespace interpreter {
                 return calculating(operations.mStatements[0]) * calculating(operations.mStatements[1]);
                 break;
             case '/':
+                if(calculating(operations.mStatements[1]) == 0) {
+                    throw runtime_error("Division by zero is impossible");
+                }
                 return calculating(operations.mStatements[0]) / calculating(operations.mStatements[1]);
                 break;
             default:
-                std::string::size_type st;
-                return stod(operations.mName, &st);
+                if(operations.mKind == StatementKind::LITTERAL){
+                    std::string::size_type st;
+                    return stod(operations.mName, &st);
+                } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
+                    return findVar(operations);
+                }
                 break;
-        }     
+        } 
+        return 0;   
     }
 
     double Functions::calculating(Statement &operations) {
         if(operations.mKind == StatementKind::LITTERAL){
             std::string::size_type st;
             return stod(operations.mName, &st);
+        } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
+            return findVar(operations);
         } else {
             return startCalculations(operations);
         }
+        return 0;
     }
 
+    double Functions::findVar(Statement &operations){
+        if(doubleVarTab.find(operations.mName) != doubleVarTab.end()){
+            return doubleVarTab[operations.mName];
+        } else if(intVarTab.find(operations.mName) != intVarTab.end()){
+            return intVarTab[operations.mName];
+        } else if(uintVarTab.find(operations.mName) != uintVarTab.end()){
+            return uintVarTab[operations.mName];
+        } else if(charVarTab.find(operations.mName) != charVarTab.end()){
+            return charVarTab[operations.mName];
+        } else if(ucharVarTab.find(operations.mName) != ucharVarTab.end()){
+            return ucharVarTab[operations.mName];
+        } else {
+            throw runtime_error("Don't find varible!");
+        }
+    }
+   
     void Functions::writeFunc(Statement &operations) {
         for(auto i : operations.mStatements){
             if(i.mKind == StatementKind::VARIBLE_CALL_FUNC){
@@ -109,18 +136,16 @@ namespace interpreter {
     }
 
     void Functions::changeVarValue(Statement &cmd) {
-        string::size_type st;
-        stod(cmd.mStatements[0].mName, &st);
         if(doubleVarTab.find(cmd.mName) != doubleVarTab.end()){
-            doubleVarTab[cmd.mName] = st;
+            doubleVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
         } else if(intVarTab.find(cmd.mName) != intVarTab.end()){
-            intVarTab[cmd.mName] = st;
+            intVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
         } else if(uintVarTab.find(cmd.mName) != uintVarTab.end()){
-            uintVarTab[cmd.mName] = st;
+            uintVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
         } else if(charVarTab.find(cmd.mName) != charVarTab.end()){
-            charVarTab[cmd.mName] = st;
+            charVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
         } else if(ucharVarTab.find(cmd.mName) != ucharVarTab.end()){
-            ucharVarTab[cmd.mName] = st;
+            ucharVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
         } else {
             throw runtime_error("Don't find varible!");
         }
@@ -145,103 +170,35 @@ namespace interpreter {
     }
 
     bool Functions::startIf(Statement &cmd) {
-        if(">" == cmd.mName){
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], ">");
-        } else if("<" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], "<");
-        } else if("==" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], "==");
-        } else if ("!=" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], "!=");
-        } else if("<=" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], "<=");
-        } else if (">=" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], ">=");
-        } else if ("and" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], "and");
+        if ("and" == cmd.mName) {
+            return calculateIf(cmd.mStatements[0]) && calculateIf(cmd.mStatements[1]);
         } else if("or" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0], cmd.mStatements[1], "or");
+            return calculateIf(cmd.mStatements[0]) || calculateIf(cmd.mStatements[1]);
         } else {
-            return false;
+            return calculateIf(cmd);
         }
     }
 
-    //Nwm czy to powinno być tak ale jak mamy sytuacje
-    /*
-        LOGIC_CALL void and (
-            LOGIC_CALL void > (
-                    VARIBLE_CALL_FUNC string a (
-                    )
-                    VARIBLE_CALL_FUNC string c (
-                    )
-            )
-            VARIBLE_CALL_FUNC string a (
-            )
-        )
-
-_______________________________________________
-
-    FUNCTION_CALL void IF (
-        LOGIC_CALL void and (
-            LOGIC_CALL void > (
-                    VARIBLE_CALL_FUNC string a (
-                    )
-                    VARIBLE_CALL_FUNC string c (
-                    )
-            )
-            LOGIC_CALL void < (
-                VARIBLE_CALL_FUNC string a (
-                )
-                VARIBLE_CALL_FUNC string c (
-                )
-            }
-        )
-    )
-
-    Może masz jakiś lepszy pomysł????
-    */
-    bool Functions::calculateIf(Statement &cmd1, Statement &cmd2, string log) {
-        double var1, var2;
-        if(cmd1.mKind == StatementKind::LITTERAL){
-            std::string::size_type st;
-            var1 = stod(cmd1.mName, &st); 
-        } else if(cmd1.mKind == StatementKind::VARIBLE_CALL_FUNC){
-            if(doubleVarTab.find(cmd1.mName) != doubleVarTab.end()){
-                var1 = doubleVarTab[cmd1.mName];
-            } else if(intVarTab.find(cmd1.mName) != intVarTab.end()){
-                var1 = intVarTab[cmd1.mName];
-            } else if(uintVarTab.find(cmd1.mName) != uintVarTab.end()){
-                var1 = uintVarTab[cmd1.mName];
-            } else if(charVarTab.find(cmd1.mName) != charVarTab.end()){
-                var1 = charVarTab[cmd1.mName];
-            } else if(ucharVarTab.find(cmd1.mName) != ucharVarTab.end()){
-                var1 = ucharVarTab[cmd1.mName];
-            } else {
-                throw runtime_error("Don't find varible!");
-            }
+    bool Functions::calculateIf(Statement &cmd) {
+        if(">" == cmd.mName){
+            return startCalculations(cmd.mStatements[0]) >  startCalculations(cmd.mStatements[1]);
+        } else if("<" == cmd.mName) {
+            return startCalculations(cmd.mStatements[0]) < startCalculations(cmd.mStatements[1]);
+        } else if("==" == cmd.mName) {
+            return startCalculations(cmd.mStatements[0]) == startCalculations(cmd.mStatements[1]);
+        } else if ("!=" == cmd.mName) {
+            return startCalculations(cmd.mStatements[0]) != startCalculations(cmd.mStatements[1]);
+        } else if("<=" == cmd.mName) {
+            return startCalculations(cmd.mStatements[0]) <= startCalculations(cmd.mStatements[1]);
+        } else if (">=" == cmd.mName) {
+            return startCalculations(cmd.mStatements[0]) >= startCalculations(cmd.mStatements[1]);
+        } else if("or" == cmd.mName){
+            startIf(cmd);
+        } else if("and" == cmd.mName){
+            startIf(cmd);
         } else {
-            return startIf(cmd1); 
+            throw runtime_error("Error in if operator");
         }
-
-        if(cmd2.mKind == StatementKind::LITTERAL){
-            std::string::size_type st;
-            var2 = stod(cmd2.mName, &st); 
-        } else if(cmd2.mKind == StatementKind::VARIBLE_CALL_FUNC){
-            if(doubleVarTab.find(cmd2.mName) != doubleVarTab.end()){
-                var2 = doubleVarTab[cmd2.mName];
-            } else if(intVarTab.find(cmd2.mName) != intVarTab.end()){
-                var2 = intVarTab[cmd2.mName];
-            } else if(uintVarTab.find(cmd2.mName) != uintVarTab.end()){
-                var2 = uintVarTab[cmd2.mName];
-            } else if(charVarTab.find(cmd2.mName) != charVarTab.end()){
-                var2 = charVarTab[cmd2.mName];
-            } else if(ucharVarTab.find(cmd2.mName) != ucharVarTab.end()){
-                var2 = ucharVarTab[cmd2.mName];
-            } else {
-                throw runtime_error("Don't find varible!");
-            }
-        } else {
-            return startIf(cmd2); 
-        }
+        return false;
     }
 }

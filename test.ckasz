@@ -1,25 +1,42 @@
-void main() {
-    if(2 == 2 or a > b and b > a and c == a or 2 != 3) {
-        write(b);
+void calculator() {
+    write("\n", "1. Addition\n", "2. Subtraction\n", "3. Multiplication\n", "4. Division\n", "5. Exit\n");
+    int x;
+    read(x);
+    if(x >= 1 and x <= 4) {
+        int a;
+        int b;
+        int result = 0;
+        write("Enter the first number: ");
+        read(a);
+        write("Enter the second number: ");
+        read(b);
+
+        if(x == 1) {
+            result = a + b;
+            write(a, " + ", b, " = ", result, "\n");
+        } elif(x == 2) {
+            result = a - b;
+            write(a, " - ", b, " = ", result, "\n");
+        } elif(x == 3) {
+            result = a * b;
+            write(a, " * ", b, " = ", result, "\n");
+        } else {
+            if(b != 0) {
+                result = a / b;
+                write(a, " / ", b, " = ", result, "\n");
+            } else {
+                write("Cannot be divided by zero...\n");
+            }
+        }
+    } elif(x == 5) {
+        exit();
+    } else {
+        write("Select the correct option\n");
     }
+
+    calculator();
 }
 
-or
-    or
-        and
-            void >
-                a
-                b
-            void >
-                a
-                c
-        void !=
-            b
-            c
-    and
-        void > 
-            b
-            0
-        void >
-            2
-            b
+void main() {
+    calculator();
+}

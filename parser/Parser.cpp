@@ -41,7 +41,7 @@ namespace parser {
                     while (!expectOperator(")").has_value()) {
                         optional<Type> possibleParamType = expectType();
                         if(!possibleParamType.has_value()){
-                            throw runtime_error("Expected a type at start of argument list.");
+                            throw runtime_error(string("Expected a type at start of argument list in line ") + to_string(mCurrentToken->mLine));
                         }
 
                         optional<Token> possibleVaribleName = expectIdentifier();
@@ -55,7 +55,7 @@ namespace parser {
 
                         if(expectOperator(")").has_value()) break;
                         if(!expectOperator(",").has_value()) {
-                            throw runtime_error("Expected ',' to separate parametrs or ')' to indicate end of argument list.");
+                            throw runtime_error(string("Expected ',' to separate parametrs or ')' to indicate end of argument list in line ") + to_string(mCurrentToken->mLine));
                         }
                     }
 
@@ -158,7 +158,7 @@ namespace parser {
             optional<Statement> statement = expectStatement();
             if(statement.has_value()) { statements.push_back(statement.value()); }
 
-            if(ifStatement == false) { if(!expectOperator(";").has_value()) { cout << mCurrentToken->mText << " "; throw runtime_error("Expected ';' at end of statement."); }}
+            if(ifStatement == false) { if(!expectOperator(";").has_value()) { vector<Token>::iterator backToken = mCurrentToken; --backToken; throw runtime_error(string("Expected ';' at end of statement in line ") + to_string(backToken->mLine) ); }}
         }
 
         return statements;
@@ -196,7 +196,7 @@ namespace parser {
         } else if (expectOperator("(").has_value()) {
             result = expectExpression();
             if (!expectOperator(")").has_value()) {
-                throw runtime_error("Unbalanced '(' in parenthesized expression.");
+                throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
             }
         }
 
@@ -240,7 +240,7 @@ namespace parser {
         } else if (expectOperator("(").has_value()) {
             result = expectExpression();
             if (!expectOperator(")").has_value()) {
-                throw runtime_error("Unbalanced '(' in parenthesized expression.");
+                throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
             }
         }
 
@@ -260,9 +260,9 @@ namespace parser {
         statment.mName = possibleVaribleName->mText;
 
         if(expectOperator("=").has_value()) {
-            optional<Statement> initialValue = expectExpression();
+            optional<Statement> initialValue = expectExpressionFunc();
             if(!initialValue.has_value()) {
-                throw runtime_error("Expected initial value to right of '=' in variable declaration");
+                throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
             }
 
             statment.mStatements.push_back(initialValue.value());
@@ -288,9 +288,9 @@ namespace parser {
         statment.mName = possibleVaribleName->mText;
 
         if(expectOperator("=").has_value()) {
-            optional<Statement> initialValue = expectExpression();
+            optional<Statement> initialValue = expectExpressionFunc();
             if(!initialValue.has_value()) {
-                throw runtime_error("Expected initial value to right of '=' in variable declaration");
+                throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
             }
 
             statment.mStatements.push_back(initialValue.value());
@@ -325,7 +325,7 @@ namespace parser {
             functionCall.mStatements.push_back(parameter.value());
 
             if(expectOperator(")").has_value()) break;
-            if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate parameter, found '") + mCurrentToken->mText + ".");
+            if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate parameter in line ") + to_string(mCurrentToken->mLine));
         }
 
         return functionCall;
@@ -458,7 +458,7 @@ namespace parser {
 
             back_parameter = expectLogicExpressionFunc();
             if(!back_parameter.has_value()) {
-                throw runtime_error("Expected logic expression as parameter.");
+                throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine));
             }
 
             while (!expectOperator(")").has_value()) {
@@ -484,22 +484,21 @@ namespace parser {
             }
             ifS.mStatements.push_back(back_parameter.value());
         }
-        cout << "tu\n";
 
         optional<vector<Statement>> statements = parseFunctionBody();
         if(!statements.has_value()){
-            throw runtime_error("Bad command in if statement");
+            throw runtime_error(string("Bad expression in if statement in line ") + to_string(mCurrentToken->mLine));
         }
         ifS.mStatements.insert(ifS.mStatements.end(), statements->begin(), statements->end());
         return ifS;
     }
 
     optional<Statement> Parser::expectLogicExpressionFunc() {
-        optional<Statement> lhs = expectOneValueFunc();
+        optional<Statement> lhs = expectExpressionFunc();
         if(!lhs.has_value()) return nullopt;
         optional<Token> log = expectLogic();
         if(!log.has_value()) return nullopt;
-        optional<Statement> rhs = expectOneValueFunc();
+        optional<Statement> rhs = expectExpressionFunc();
         if(!rhs.has_value()) {mCurrentToken--; return nullopt;}
 
         Statement result;
@@ -507,8 +506,6 @@ namespace parser {
         result.mName = log->mText;
         result.mStatements.push_back(lhs.value());
         result.mStatements.push_back(rhs.value());
-
-        cout << lhs.value().mName << " " << rhs.value().mName << '\n';
 
         return result;
     }
