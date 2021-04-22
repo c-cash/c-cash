@@ -62,18 +62,19 @@ namespace interpreter {
     }
 
     void Functions::declareParameter(ParameterDefinition &var, Statement &value) {
-        if(var.mType.mName == "double")
+        if(var.mType.mName == "double") {
             doubleVarTab[var.mName] = startCalculations(value);
-        else if(var.mType.mName == "signed char")  
+        } else if(var.mType.mName == "signed char") {  
             charVarTab[var.mName] = startCalculations(value);
-        else if(var.mType.mName == "unsigned char")  
+        } else if(var.mType.mName == "unsigned char")  {
             ucharVarTab[var.mName] = startCalculations(value);
-        else if(var.mType.mName == "signed int")  
+        } else if(var.mType.mName == "signed int")  {
             intVarTab[var.mName] = startCalculations(value);
-        else if(var.mType.mName == "unsigned int")  
+        } else if(var.mType.mName == "unsigned int") {
             uintVarTab[var.mName] = startCalculations(value);
-        else
+        } else {
             return;
+        }
     }
 
     double Functions::startCalculations(Statement &operations) {
@@ -100,9 +101,11 @@ namespace interpreter {
                 } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
                     return findVar(operations);
                 } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-                    if(mFunctions.find(operations.mName) != mFunctions.end()){
-                        inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
-                    }
+                    if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
+                        inter.executeCommands(mFunctions[operations.mStatements[0].mName], operations.mStatements);
+                    } else {
+                        throw runtime_error("No function find!");
+                    }   
                     return ret;
                 }
                 break;
@@ -117,8 +120,10 @@ namespace interpreter {
         } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
             return findVar(operations);
         } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-            if(mFunctions.find(operations.mName) != mFunctions.end()){
-                inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
+            if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
+                inter.executeCommands(mFunctions[operations.mStatements[0].mName], operations.mStatements);
+            } else {
+                    throw runtime_error("No function find!");
             }
             return ret;
         } else {
@@ -153,13 +158,19 @@ namespace interpreter {
                 std::string::size_type st;
                 ret = stod(o.mName, &st);
             } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-                if(mFunctions.find(operations.mName) != mFunctions.end()){
+                if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
+                    if(operations.mStatements[0].mStatements.size() > 0){
+                        cout << operations.mStatements[0].mStatements[0].mType.mName << endl;
+                    } else {
+                        cout << "empty" << endl;
+                    }
                     ret = 0;
-                    inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
+                    inter.executeCommands(mFunctions[operations.mStatements[0].mName], operations.mStatements);
+                } else {
+                    throw runtime_error("No function find!");
                 }
             } else {
-                std::string::size_type st;
-                ret = stod(o.mName, &st);
+                ret = 0;
             }
     }
 
@@ -185,10 +196,11 @@ namespace interpreter {
             } else if(i.mKind == StatementKind::LITTERAL) {
                 cout << i.mName;
             } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-                if(mFunctions.find(operations.mName) != mFunctions.end()){
-                    inter.executeCommands(mFunctions[operations.mName],  operations.mStatements);
-                    cout << ret;
-                }
+                if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
+                    inter.executeCommands(mFunctions[operations.mStatements[0].mName], operations.mStatements);
+                } else {
+                    throw runtime_error("No function find!");
+                }  
             } else {
                 cout << i.mName;
             }

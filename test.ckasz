@@ -1,15 +1,11 @@
 func main() {
-    int a = abc();
-    write(a);
-
-    if(a > 2){
-        write(
-            "tu\n",
-        );
-    }
+    hi();
 }
 
+func hi(){
+    return(Antis());
+}
 
-
-
-
+func Antis() {
+    write("Antis");
+}
