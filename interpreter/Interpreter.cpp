@@ -9,15 +9,25 @@ namespace interpreter{
     using namespace parser;
 
     bool ifIf;
+    map<string, parser::FunctionDefinition> mFunctions;
 
-    void Interpreter::executeCommands(FunctionDefinition &commandsFunc, map<string, parser::FunctionDefinition> &mFunctions){
+    void Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> args) {
         Functions func;
-        for(auto cmd : commandsFunc.mStatements){
-            executeCommand(func, cmd, mFunctions);
+        size_t i=0;
+        if(commandsFunc.mParameters.size() == args.size()) {
+            for(auto var : commandsFunc.mParameters) {
+                func.declareParameter(var, args[i]);
+                ++i;
+            }
+            for(auto cmd : commandsFunc.mStatements){
+                executeCommand(func, cmd);
+            }
+        } else {
+            throw runtime_error(": Invalid number of arguments was supplied!");
         }
     }
 
-    void Interpreter::executeCommand(Functions &func, Statement cmd, map<string, parser::FunctionDefinition> &mFunctions) {
+    void Interpreter::executeCommand(Functions &func, Statement cmd) {
         switch (cmd.mKind) {
             case StatementKind::VARIABLE_DECLARATION:
                 func.declareVariableFunc(cmd);
@@ -36,7 +46,7 @@ namespace interpreter{
                     if(func.startIf(cmd.mStatements[0])) {
                         for(int i=1; i<cmd.mStatements.size(); ++i) {
                             auto c = cmd.mStatements[i];
-                            executeCommand(func, c, mFunctions);
+                            executeCommand(func, c);
                         }
                         ifIf = false;
                     } else {
@@ -48,7 +58,7 @@ namespace interpreter{
                         if(func.startIf(cmd.mStatements[0])) {
                             for(int i=1; i<cmd.mStatements.size(); ++i) {
                                 auto c = cmd.mStatements[i];
-                                executeCommand(func, c, mFunctions);
+                                executeCommand(func, c);
                             }
                             ifIf = false;
                         }
@@ -58,14 +68,17 @@ namespace interpreter{
                     if(ifIf){
                         for(int i=0; i<cmd.mStatements.size(); ++i) {
                             auto c = cmd.mStatements[i];
-                            executeCommand(func, c, mFunctions);
+                            executeCommand(func, c);
                         }
                         ifIf = false;
                     }
                     break;
+                } else if(cmd.mName == "return") {
+                    func.returnFunc(cmd);
+                    break;
                 } else {
                     if(mFunctions.find(cmd.mName) != mFunctions.end()){
-                        executeCommands(mFunctions[cmd.mName], mFunctions);
+                        executeCommands(mFunctions[cmd.mName], cmd.mStatements);
                     } else {
                         throw runtime_error("Don't find function");
                     }
@@ -80,10 +93,12 @@ namespace interpreter{
         }
     }
 
-    void Interpreter::interpreter(map<string, parser::FunctionDefinition> &mFunctions){
+    void Interpreter::interpreter(map<string, parser::FunctionDefinition> &mFunctionss){
+        mFunctions = mFunctionss;
         if(mFunctions.find("main") == mFunctions.end()){
             throw runtime_error("Main function not found.");
         }
-        executeCommands(mFunctions["main"], mFunctions);
+        vector<Statement> args;
+        executeCommands(mFunctions["main"], args);
     }
 }

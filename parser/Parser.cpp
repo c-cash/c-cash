@@ -131,6 +131,17 @@ namespace parser {
         ++mCurrentToken;
         return returnToken;
     }
+
+    optional<Token> Parser::expectFuncOperator(const string &name) {
+        vector<Token>::iterator nextToken = mCurrentToken;
+        ++nextToken;
+        if(nextToken == mEndToken) { return nullopt; }
+        if(nextToken->mType != OPERATOR ) {return nullopt;}
+        if(!name.empty() && nextToken->mText != name) { return nullopt; }
+
+        Token returnToken = *nextToken;
+        return returnToken;
+    }
     
     optional<Type> Parser::expectType() {
 		optional<Token> possibleType = expectIdentifier();
@@ -230,6 +241,10 @@ namespace parser {
             stringLiteralStatement.mType =  Type("string", UINT8);
             result = stringLiteralStatement;
             ++mCurrentToken; 
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && expectFuncOperator("(").has_value()){
+            optional<Statement> functionCallStatement;
+            functionCallStatement = expectFunctionCall();
+            result = functionCallStatement;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER){
             Statement variableCallStatement;
             variableCallStatement.mKind = StatementKind::VARIBLE_CALL_FUNC;
@@ -274,7 +289,7 @@ namespace parser {
     optional<Statement> Parser::expectVariableDeclaration() {
         vector<Token>::iterator startToken = mCurrentToken;
         optional<Type> possibleType = expectType();
-
+ 
         Statement statment;
 
         if(!possibleType.has_value()) {

@@ -1,4 +1,5 @@
 #include "Functions.hpp"
+#include "Interpreter.hpp"
 
 #include <stdexcept>
 #include <algorithm>
@@ -7,6 +8,11 @@
 namespace interpreter {
     using namespace std;
     using namespace parser;
+
+    double ret=0;
+    extern map<string, parser::FunctionDefinition> mFunctions;
+
+    Interpreter inter;
 
     void Functions::declareVariableFunc(Statement &variable) {
         switch(variable.mType.mType) {
@@ -55,6 +61,21 @@ namespace interpreter {
         }
     }
 
+    void Functions::declareParameter(ParameterDefinition &var, Statement &value) {
+        if(var.mType.mName == "double")
+            doubleVarTab[var.mName] = startCalculations(value);
+        else if(var.mType.mName == "signed char")  
+            charVarTab[var.mName] = startCalculations(value);
+        else if(var.mType.mName == "unsigned char")  
+            ucharVarTab[var.mName] = startCalculations(value);
+        else if(var.mType.mName == "signed int")  
+            intVarTab[var.mName] = startCalculations(value);
+        else if(var.mType.mName == "unsigned int")  
+            uintVarTab[var.mName] = startCalculations(value);
+        else
+            return;
+    }
+
     double Functions::startCalculations(Statement &operations) {
         switch (operations.mName[0]) {
             case '+':
@@ -78,6 +99,11 @@ namespace interpreter {
                     return stod(operations.mName, &st);
                 } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
                     return findVar(operations);
+                } else if(operations.mKind == StatementKind::FUNCTION_CALL){
+                    if(mFunctions.find(operations.mName) != mFunctions.end()){
+                        inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
+                    }
+                    return ret;
                 }
                 break;
         } 
@@ -90,6 +116,11 @@ namespace interpreter {
             return stod(operations.mName, &st);
         } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
             return findVar(operations);
+        } else if(operations.mKind == StatementKind::FUNCTION_CALL){
+            if(mFunctions.find(operations.mName) != mFunctions.end()){
+                inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
+            }
+            return ret;
         } else {
             return startCalculations(operations);
         }
@@ -112,6 +143,26 @@ namespace interpreter {
         }
     }
    
+    void Functions::returnFunc(Statement &operations) {
+            Statement o = operations.mStatements[0];
+            if(o.mKind == StatementKind::VARIBLE_CALL_FUNC){
+                ret = findVar(o);
+            } else if(o.mKind == StatementKind::OPERATOR_CALL) {
+                ret = startCalculations(o);
+            } else if(o.mKind == StatementKind::LITTERAL) {
+                std::string::size_type st;
+                ret = stod(o.mName, &st);
+            } else if(operations.mKind == StatementKind::FUNCTION_CALL){
+                if(mFunctions.find(operations.mName) != mFunctions.end()){
+                    ret = 0;
+                    inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
+                }
+            } else {
+                std::string::size_type st;
+                ret = stod(o.mName, &st);
+            }
+    }
+
     void Functions::writeFunc(Statement &operations) {
         for(auto i : operations.mStatements){
             if(i.mKind == StatementKind::VARIBLE_CALL_FUNC){
@@ -131,73 +182,80 @@ namespace interpreter {
                 }
             } else if(i.mKind == StatementKind::OPERATOR_CALL) {
                 cout << startCalculations(i);
+            } else if(i.mKind == StatementKind::LITTERAL) {
+                cout << i.mName;
+            } else if(operations.mKind == StatementKind::FUNCTION_CALL){
+                if(mFunctions.find(operations.mName) != mFunctions.end()){
+                    inter.executeCommands(mFunctions[operations.mName],  operations.mStatements);
+                    cout << ret;
+                }
             } else {
                 cout << i.mName;
             }
         }
     }
 
-    void Functions::changeVarValue(Statement &cmd) {
-        if(doubleVarTab.find(cmd.mName) != doubleVarTab.end()){
-            doubleVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
-        } else if(intVarTab.find(cmd.mName) != intVarTab.end()){
-            intVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
-        } else if(uintVarTab.find(cmd.mName) != uintVarTab.end()){
-            uintVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
-        } else if(charVarTab.find(cmd.mName) != charVarTab.end()){
-            charVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
-        } else if(ucharVarTab.find(cmd.mName) != ucharVarTab.end()){
-            ucharVarTab[cmd.mName] = startCalculations(cmd.mStatements[0]);
+    void Functions::changeVarValue(Statement &operations) {
+        if(doubleVarTab.find(operations.mName) != doubleVarTab.end()){
+            doubleVarTab[operations.mName] = startCalculations(operations.mStatements[0]);
+        } else if(intVarTab.find(operations.mName) != intVarTab.end()){
+            intVarTab[operations.mName] = startCalculations(operations.mStatements[0]);
+        } else if(uintVarTab.find(operations.mName) != uintVarTab.end()){
+            uintVarTab[operations.mName] = startCalculations(operations.mStatements[0]);
+        } else if(charVarTab.find(operations.mName) != charVarTab.end()){
+            charVarTab[operations.mName] = startCalculations(operations.mStatements[0]);
+        } else if(ucharVarTab.find(operations.mName) != ucharVarTab.end()){
+            ucharVarTab[operations.mName] = startCalculations(operations.mStatements[0]);
         } else {
             throw runtime_error("Don't find varible!");
         }
     }
 
-    void Functions::readFunc(Statement &cmd) {
-        for(auto i=0; i<cmd.mStatements.size(); ++i){
-            if(doubleVarTab.find(cmd.mStatements[i].mName) != doubleVarTab.end()){
-                cin >> doubleVarTab[cmd.mStatements[i].mName];
-            } else if(intVarTab.find(cmd.mStatements[i].mName) != intVarTab.end()){
-                cin >> intVarTab[cmd.mStatements[i].mName];
-            } else if(uintVarTab.find(cmd.mStatements[i].mName) != uintVarTab.end()){
-                cin >> uintVarTab[cmd.mStatements[i].mName];
-            } else if(charVarTab.find(cmd.mStatements[i].mName) != charVarTab.end()){
-                cin >> charVarTab[cmd.mStatements[i].mName];
-            } else if(ucharVarTab.find(cmd.mStatements[i].mName) != ucharVarTab.end()){
-                cin >> ucharVarTab[cmd.mStatements[i].mName];
+    void Functions::readFunc(Statement &operations) {
+        for(auto i=0; i<operations.mStatements.size(); ++i){
+            if(doubleVarTab.find(operations.mStatements[i].mName) != doubleVarTab.end()){
+                cin >> doubleVarTab[operations.mStatements[i].mName];
+            } else if(intVarTab.find(operations.mStatements[i].mName) != intVarTab.end()){
+                cin >> intVarTab[operations.mStatements[i].mName];
+            } else if(uintVarTab.find(operations.mStatements[i].mName) != uintVarTab.end()){
+                cin >> uintVarTab[operations.mStatements[i].mName];
+            } else if(charVarTab.find(operations.mStatements[i].mName) != charVarTab.end()){
+                cin >> charVarTab[operations.mStatements[i].mName];
+            } else if(ucharVarTab.find(operations.mStatements[i].mName) != ucharVarTab.end()){
+                cin >> ucharVarTab[operations.mStatements[i].mName];
             } else {
                 throw runtime_error("Don't find varible!");
             }
         }
     }
 
-    bool Functions::startIf(Statement &cmd) {
-        if ("and" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0]) && calculateIf(cmd.mStatements[1]);
-        } else if("or" == cmd.mName) {
-            return calculateIf(cmd.mStatements[0]) || calculateIf(cmd.mStatements[1]);
+    bool Functions::startIf(Statement &operations) {
+        if ("and" == operations.mName) {
+            return calculateIf(operations.mStatements[0]) && calculateIf(operations.mStatements[1]);
+        } else if("or" == operations.mName) {
+            return calculateIf(operations.mStatements[0]) || calculateIf(operations.mStatements[1]);
         } else {
-            return calculateIf(cmd);
+            return calculateIf(operations);
         }
     }
 
-    bool Functions::calculateIf(Statement &cmd) {
-        if(">" == cmd.mName){
-            return startCalculations(cmd.mStatements[0]) >  startCalculations(cmd.mStatements[1]);
-        } else if("<" == cmd.mName) {
-            return startCalculations(cmd.mStatements[0]) < startCalculations(cmd.mStatements[1]);
-        } else if("==" == cmd.mName) {
-            return startCalculations(cmd.mStatements[0]) == startCalculations(cmd.mStatements[1]);
-        } else if ("!=" == cmd.mName) {
-            return startCalculations(cmd.mStatements[0]) != startCalculations(cmd.mStatements[1]);
-        } else if("<=" == cmd.mName) {
-            return startCalculations(cmd.mStatements[0]) <= startCalculations(cmd.mStatements[1]);
-        } else if (">=" == cmd.mName) {
-            return startCalculations(cmd.mStatements[0]) >= startCalculations(cmd.mStatements[1]);
-        } else if("or" == cmd.mName){
-            startIf(cmd);
-        } else if("and" == cmd.mName){
-            startIf(cmd);
+    bool Functions::calculateIf(Statement &operations) {
+        if(">" == operations.mName){
+            return startCalculations(operations.mStatements[0]) >  startCalculations(operations.mStatements[1]);
+        } else if("<" == operations.mName) {
+            return startCalculations(operations.mStatements[0]) < startCalculations(operations.mStatements[1]);
+        } else if("==" == operations.mName) {
+            return startCalculations(operations.mStatements[0]) == startCalculations(operations.mStatements[1]);
+        } else if ("!=" == operations.mName) {
+            return startCalculations(operations.mStatements[0]) != startCalculations(operations.mStatements[1]);
+        } else if("<=" == operations.mName) {
+            return startCalculations(operations.mStatements[0]) <= startCalculations(operations.mStatements[1]);
+        } else if (">=" == operations.mName) {
+            return startCalculations(operations.mStatements[0]) >= startCalculations(operations.mStatements[1]);
+        } else if("or" == operations.mName){
+            startIf(operations);
+        } else if("and" == operations.mName){
+            startIf(operations);
         } else {
             throw runtime_error("Error in if operator");
         }
