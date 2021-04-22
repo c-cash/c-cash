@@ -14,6 +14,9 @@ namespace interpreter{
     void Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> args) {
         Functions func;
         size_t i=0;
+
+        cout <<  commandsFunc.mName << " " << commandsFunc.mParameters.size() << " " << args.size() << endl;
+
         if(commandsFunc.mParameters.size() == args.size()) {
             for(auto var : commandsFunc.mParameters) {
                 func.declareParameter(var, args[i]);
@@ -42,7 +45,7 @@ namespace interpreter{
                 } else if(cmd.mName == "exit"){
                     exit(0);
                     break;
-                }else if(cmd.mName == "IF") {
+                } else if(cmd.mName == "IF") {
                     if(func.startIf(cmd.mStatements[0])) {
                         for(int i=1; i<cmd.mStatements.size(); ++i) {
                             auto c = cmd.mStatements[i];
