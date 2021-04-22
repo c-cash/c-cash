@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../parser/FunctionDefinition.hpp"
 #include "../parser/Statement.hpp"
 #include "../parser/Type.hpp"
 #include "Functions.hpp"
@@ -14,9 +13,10 @@ namespace interpreter {
 
     class Interpreter {
         public:       
-            void interpreter(map<string, FunctionDefinition> &mFunctions);
+            void interpreter(map<string, FunctionDefinition> &mFunctionss);
+            void executeCommands(FunctionDefinition &commandsFunc, vector<Statement> args);
         private:
-            void executeCommands(FunctionDefinition &commandsFunc, map<string, parser::FunctionDefinition> &mFunctions);
-            void executeCommand(Functions &func, Statement cmd, map<string, parser::FunctionDefinition> &mFunctions);
+            void executeCommand(Functions &func, Statement cmd);
+
     };
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../parser/Statement.hpp"
-
+#include "../parser/FunctionDefinition.hpp"
 #include <iostream>
 #include <map>
  
@@ -12,14 +12,16 @@ namespace interpreter {
     class Functions {
         public:
             void declareVariableFunc(Statement &variable);
+            void declareParameter(ParameterDefinition &var, Statement &value);
+            void returnFunc(Statement &operations);
             void writeFunc(Statement &operations);
-            void readFunc(Statement &cmd);
-            void changeVarValue(Statement &cmd);
-            bool startIf(Statement &cmd);
+            void readFunc(Statement &operations);
+            void changeVarValue(Statement &operations);
+            bool startIf(Statement &operations);
         private:
             double startCalculations(Statement &operations);
             double calculating(Statement &operations);
-            bool calculateIf(Statement &cmd1);
+            bool calculateIf(Statement &operations);
             double findVar(Statement &operations);
 
             map<string, double> doubleVarTab;

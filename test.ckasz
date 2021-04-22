@@ -1,4 +1,15 @@
 func main() {
-    int a = 1;
-    write(a*2, "\n");
+    int a = abc();
+    write(a);
+
+    if(a > 2){
+        write(
+            "tu\n",
+        );
+    }
 }
+
+
+
+
+
