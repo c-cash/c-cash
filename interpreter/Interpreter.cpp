@@ -10,47 +10,55 @@ namespace interpreter{
 
     bool ifIf;
     map<string, parser::FunctionDefinition> mFunctions;
+    Functions func;
 
-    void Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> args) {
-        Functions func;
+    bool Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> &args) {
+        if(commandsFunc.mName != "IF" && commandsFunc.mName != "ELIF" && commandsFunc.mName != "ELSE") func = Functions();
         size_t i=0;
 
-        cout <<  commandsFunc.mName << " " << commandsFunc.mParameters.size() << " " << args.size() << endl;
+        //cout <<  commandsFunc.mName << " " << commandsFunc.mParameters.size() << " " << args.size() << endl;
 
         if(commandsFunc.mParameters.size() == args.size()) {
             for(auto var : commandsFunc.mParameters) {
-                func.declareParameter(var, args[i]);
+                func.declareParameter(var, args[i], func);
                 ++i;
             }
             for(auto cmd : commandsFunc.mStatements){
-                executeCommand(func, cmd);
+                //cout << cmd.mName << endl;
+                bool ex = executeCommand(func, cmd);
+                //cout << ex << " ";
+                if(ex == false){cout << "return "; return false;}
             }
         } else {
             throw runtime_error(": Invalid number of arguments was supplied!");
         }
+
+        return true;
     }
 
-    void Interpreter::executeCommand(Functions &func, Statement cmd) {
+    bool Interpreter::executeCommand(Functions &func, Statement &cmd) {
         switch (cmd.mKind) {
             case StatementKind::VARIABLE_DECLARATION:
-                func.declareVariableFunc(cmd);
+                func.declareVariableFunc(cmd, func);
                 break;
             case StatementKind::FUNCTION_CALL:
                 if(cmd.mName == "write"){
-                    func.writeFunc(cmd);
+                    func.writeFunc(cmd, func);
                     break;
                 } else if(cmd.mName == "read"){
-                    func.readFunc(cmd);
+                    func.readFunc(cmd, func);
                     break;
                 } else if(cmd.mName == "exit"){
                     exit(0);
                     break;
                 } else if(cmd.mName == "IF") {
-                    if(func.startIf(cmd.mStatements[0])) {
-                        for(int i=1; i<cmd.mStatements.size(); ++i) {
-                            auto c = cmd.mStatements[i];
-                            executeCommand(func, c);
-                        }
+                    if(func.startIf(cmd.mStatements[0], func)) {
+                        cmd.mStatements.erase(cmd.mStatements.begin());
+                        FunctionDefinition ifDef;
+                        ifDef.mName = cmd.mName;
+                        ifDef.mStatements = cmd.mStatements;
+                        vector<Statement> args;
+                        executeCommands(ifDef, args);
                         ifIf = false;
                     } else {
                         ifIf = true;
@@ -58,26 +66,31 @@ namespace interpreter{
                     break;
                 } else if(cmd.mName == "ELIF") {
                     if(ifIf){
-                        if(func.startIf(cmd.mStatements[0])) {
-                            for(int i=1; i<cmd.mStatements.size(); ++i) {
-                                auto c = cmd.mStatements[i];
-                                executeCommand(func, c);
-                            }
+                        if(func.startIf(cmd.mStatements[0], func)) {
+                            cmd.mStatements.erase(cmd.mStatements.begin());
+                            FunctionDefinition ifDef;
+                            ifDef.mName = cmd.mName;
+                            ifDef.mStatements = cmd.mStatements;
+                            vector<Statement> args;
+                            executeCommands(ifDef, args);
                             ifIf = false;
                         }
                     }
                     break;
                 } else if(cmd.mName == "ELSE") {
                     if(ifIf){
-                        for(int i=0; i<cmd.mStatements.size(); ++i) {
-                            auto c = cmd.mStatements[i];
-                            executeCommand(func, c);
-                        }
+                        FunctionDefinition ifDef;
+                        ifDef.mName = cmd.mName;
+                        ifDef.mStatements = cmd.mStatements;
+                        vector<Statement> args;
+                        executeCommands(ifDef, args);
                         ifIf = false;
                     }
                     break;
                 } else if(cmd.mName == "return") {
-                    func.returnFunc(cmd);
+                    cout << "w return\n";
+                    func.returnFunc(cmd, func);
+                    return false;
                     break;
                 } else {
                     if(mFunctions.find(cmd.mName) != mFunctions.end()){
@@ -89,11 +102,13 @@ namespace interpreter{
                 }
                 break;
             case StatementKind::VARIABLE_CALL:
-                func.changeVarValue(cmd);
+                func.changeVarValue(cmd, func);
                 break;
             default:
                 throw runtime_error("Don't find function!");
         }
+        //cout << "po switch\n";
+        return true;
     }
 
     void Interpreter::interpreter(map<string, parser::FunctionDefinition> &mFunctionss){
