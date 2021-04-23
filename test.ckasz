@@ -1,11 +1,16 @@
+func silnia(int n) {
+    write("tu");
+    if(n < 2) {
+        return(1);
+    }
+    
+    return(n*silnia(n-1));
+}
+
 func main() {
-    hi();
-}
-
-func hi(){
-    return(Antis());
-}
-
-func Antis() {
-    write("Antis");
+    int n;
+    write("Podaj n: ");
+    read(n);
+    int w = silnia(n+1);
+    write(n, "! = ", w);
 }

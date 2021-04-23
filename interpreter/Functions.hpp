@@ -11,18 +11,18 @@ namespace interpreter {
 
     class Functions {
         public:
-            void declareVariableFunc(Statement &variable);
-            void declareParameter(ParameterDefinition &var, Statement &value);
-            void returnFunc(Statement &operations);
-            void writeFunc(Statement &operations);
-            void readFunc(Statement &operations);
-            void changeVarValue(Statement &operations);
-            bool startIf(Statement &operations);
+            void declareVariableFunc(Statement &variable, Functions &func);
+            void declareParameter(ParameterDefinition &var, Statement &value, Functions &func);
+            void returnFunc(Statement &operations, Functions &func);
+            void writeFunc(Statement &operations, Functions &func);
+            void readFunc(Statement &operations, Functions &func);
+            void changeVarValue(Statement &operations, Functions &func);
+            bool startIf(Statement &operations, Functions &func);
         private:
-            double startCalculations(Statement &operations);
-            double calculating(Statement &operations);
-            bool calculateIf(Statement &operations);
-            double findVar(Statement &operations);
+            double startCalculations(Statement &operations, Functions &func);
+            double calculating(Statement &operations, Functions &func);
+            bool calculateIf(Statement &operations, Functions &func);
+            double findVar(Statement &operations, Functions &func);
 
             map<string, double> doubleVarTab;
             map<string, int> intVarTab;
