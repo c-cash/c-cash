@@ -7,6 +7,7 @@ func silnia(int n) {
 
 func main() {
     int n;
+    string x = "elo elo";
     write("Podaj n: ");
     read(n);
     write(n, "! = ", silnia(n), "\n");

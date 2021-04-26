@@ -91,7 +91,6 @@ namespace parser {
                 ++mCurrentToken;
             }
         }
-		
     }
 
 	Parser::Parser() {
@@ -101,6 +100,7 @@ namespace parser {
         mTypes["char"] = Type("signed char", INT8);
         mTypes["uchar"] = Type("unsigned char", UINT8);
         mTypes["double"] = Type("double", DOUBLE);
+        mTypes["string"] = Type("string", STRING);
     }
 
     optional<Token> Parser::expectIdentifier(const string &name) {
