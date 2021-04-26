@@ -14,9 +14,9 @@ namespace interpreter {
     class Interpreter {
         public:       
             void interpreter(map<string, FunctionDefinition> &mFunctionss);
-            bool executeCommands(FunctionDefinition &commandsFunc, vector<Statement> &args, Functions &func);
+            bool executeCommands(FunctionDefinition &commandsFunc, vector<Statement> &args, Scope &scope);
         private:
-            bool executeCommand(Functions &func, Statement &cmd);
+            bool executeCommand(Scope &scope, Statement &cmd);
 
     };
 }

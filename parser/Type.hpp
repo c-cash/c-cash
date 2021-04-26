@@ -12,7 +12,8 @@ namespace parser {
         UINT8,
         INT32,
         UINT32,
-        DOUBLE
+        DOUBLE,
+        STRING
     };
 
     class Type {

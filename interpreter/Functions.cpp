@@ -14,105 +14,110 @@ namespace interpreter {
 
     Interpreter inter;
 
-    void Functions::declareVariableFunc(Statement &variable, Functions &func) {
+    void Functions::declareVariableFunc(Statement &variable, Scope &scope) {
         switch(variable.mType.mType) {
             case DOUBLE:
                 if(variable.mStatements.size() > 0){
-                    func.doubleVarTab[variable.mName] = startCalculations(variable.mStatements[0], func);
+                    scope.doubleVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
                 } else {
-                    func.doubleVarTab[variable.mName] = 0;
+                    scope.doubleVarTab[variable.mName] = 0;
                 }
                 //cout<< variable.mName << " " << doubleVarTab[variable.mName] << '\n';
                 break;
             case INT8:
                 if(variable.mStatements.size() > 0){
-                    func.charVarTab[variable.mName] = startCalculations(variable.mStatements[0], func);
+                    scope.charVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
                 } else {
-                    func.charVarTab[variable.mName] = 0;
+                    scope.charVarTab[variable.mName] = 0;
                 }
                 //cout<< variable.mName << " " << charVarTab[variable.mName] << '\n';
                 break;
             case UINT8:
                 if(variable.mStatements.size() > 0){
-                    func.ucharVarTab[variable.mName] = startCalculations(variable.mStatements[0], func);
+                    scope.ucharVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
                 } else {
-                    func.ucharVarTab[variable.mName] = 0;
+                    scope.ucharVarTab[variable.mName] = 0;
                 }
                 //cout<< variable.mName << " " << ucharVarTab[variable.mName] << '\n';
                 break;
             case INT32:
                 if(variable.mStatements.size() > 0){
-                    func.intVarTab[variable.mName] = startCalculations(variable.mStatements[0], func);
+                    scope.intVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
                 } else {
-                    func.intVarTab[variable.mName] = 0;
+                    scope.intVarTab[variable.mName] = 0;
                 }
                 //cout<< variable.mName << " " << intVarTab[variable.mName] << '\n';
                 break;
             case UINT32:
                 if(variable.mStatements.size() > 0){
-                    func.uintVarTab[variable.mName] = startCalculations(variable.mStatements[0], func);
+                    scope.uintVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
                 } else {
-                   func. uintVarTab[variable.mName] = 0;
+                   scope. uintVarTab[variable.mName] = 0;
                 }
                 //cout<< variable.mName << " " << uintVarTab[variable.mName] << '\n';
                 break;
+            case STRING:
+                if(variable.mStatements.size() > 0){
+                    scope.stringVarTab[variable.mName] = variable.mStatements[0].mName;
+                } else {
+                   scope. stringVarTab[variable.mName] = "";
+                }
+            
             default:
                 return;
         }
     }
 
-    void Functions::declareParameter(ParameterDefinition &var, Statement &value,  Functions &func) {
+    void Functions::declareParameter(ParameterDefinition &var, Statement &value, Scope &scope) {
         if(var.mType.mName == "double") {
-            func.doubleVarTab[var.mName] = startCalculations(value, func);
+            scope.doubleVarTab[var.mName] = startCalculations(value, scope);
         } else if(var.mType.mName == "signed char") {  
-            func.charVarTab[var.mName] = startCalculations(value, func);
+            scope.charVarTab[var.mName] = startCalculations(value, scope);
         } else if(var.mType.mName == "unsigned char")  {
-            func.ucharVarTab[var.mName] = startCalculations(value, func);
+            scope.ucharVarTab[var.mName] = startCalculations(value, scope);
         } else if(var.mType.mName == "signed int")  {
-            func.intVarTab[var.mName] = startCalculations(value, func);
+            scope.intVarTab[var.mName] = startCalculations(value, scope);
         } else if(var.mType.mName == "unsigned int") {
-            func.uintVarTab[var.mName] = startCalculations(value, func);
+            scope.uintVarTab[var.mName] = startCalculations(value, scope);
         } else {
             return;
         }
     }
 
-    double Functions::startCalculations(Statement &operations, Functions &func) {
+    double Functions::startCalculations(Statement &operations, Scope &scope) {
         switch (operations.mName[0]) {
             case '+':
-                return calculating(operations.mStatements[0], func) + calculating(operations.mStatements[1], func);
+                return calculating(operations.mStatements[0], scope) + calculating(operations.mStatements[1], scope);
                 break;
             case '-':
-                return calculating(operations.mStatements[0], func) - calculating(operations.mStatements[1], func);
+                return calculating(operations.mStatements[0], scope) - calculating(operations.mStatements[1], scope);
                 break;
             case '*':
-                return calculating(operations.mStatements[0], func) * calculating(operations.mStatements[1], func);
+                return calculating(operations.mStatements[0], scope) * calculating(operations.mStatements[1], scope);
                 break;
             case '/':
-                if(calculating(operations.mStatements[1], func) == 0) {
+                if(calculating(operations.mStatements[1], scope) == 0) {
                     throw runtime_error("Division by zero is impossible");
                 }
-                return calculating(operations.mStatements[0], func) / calculating(operations.mStatements[1], func);
+                return calculating(operations.mStatements[0], scope) / calculating(operations.mStatements[1], scope);
                 break;
             default:
                 if(operations.mKind == StatementKind::LITTERAL){
                     std::string::size_type st;
                     return stod(operations.mName, &st);
                 } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
-                    return findVar(operations, func);
+                    return findVar(operations, scope);
                 } else if(operations.mKind == StatementKind::FUNCTION_CALL){
                     if(mFunctions.find(operations.mName) != mFunctions.end()){
                         vector<Statement> args;
                         for(auto i : operations.mStatements){
                             Statement arg;
-                            arg.mName = to_string(startCalculations(i, func));
+                            arg.mName = to_string(startCalculations(i, scope));
                             arg.mKind = StatementKind::LITTERAL;
-                            arg.mType.mType = BUILTIN_TYPE::INT32;
-                            arg.mType.mName = "double";
                             args.push_back(arg);
                         }
 
-                        inter.executeCommands(mFunctions[operations.mName], args, func);
+                        inter.executeCommands(mFunctions[operations.mName], args, scope);
                         return ret;
                     } else {
                         throw runtime_error("No function find!");
@@ -124,75 +129,70 @@ namespace interpreter {
         return 0;   
     }
 
-    double Functions::calculating(Statement &operations,  Functions &func) {
+    double Functions::calculating(Statement &operations, Scope &scope) {
         if(operations.mKind == StatementKind::LITTERAL){
             std::string::size_type st;
             return stod(operations.mName, &st);
         } else if(operations.mKind == StatementKind::VARIBLE_CALL_FUNC){
-            return findVar(operations, func);
+            return findVar(operations, scope);
         } else if(operations.mKind == StatementKind::FUNCTION_CALL){
             if(mFunctions.find(operations.mName) != mFunctions.end()){
                 vector<Statement> args;
                 for(auto i : operations.mStatements){
                     Statement arg;
-                    arg.mName = to_string(startCalculations(i, func));
+                    arg.mName = to_string(startCalculations(i, scope));
                     arg.mKind = StatementKind::LITTERAL;
-                    arg.mType.mType = BUILTIN_TYPE::INT32;
-                    arg.mType.mName = "double";
                     args.push_back(arg);
                 }
 
-                inter.executeCommands(mFunctions[operations.mName], args, func);
+                inter.executeCommands(mFunctions[operations.mName], args, scope);
             } else {
                 throw runtime_error("No function find!");
             }
             return ret;
         } else {
-            return startCalculations(operations, func);
+            return startCalculations(operations, scope);
         }
         return 0;
     }
 
-    double Functions::findVar(Statement &operations, Functions &func){
+    double Functions::findVar(Statement &operations, Scope &scope){
         //cout << operations.mName << '\n';
-        if(func.doubleVarTab.find(operations.mName) != func.doubleVarTab.end()){
-            return func.doubleVarTab[operations.mName];
-        } else if(func.intVarTab.find(operations.mName) != func.intVarTab.end()){
-            return func.intVarTab[operations.mName];
-        } else if(func.uintVarTab.find(operations.mName) != func.uintVarTab.end()){
-            return func.uintVarTab[operations.mName];
-        } else if(func.charVarTab.find(operations.mName) != func.charVarTab.end()){
-            return func.charVarTab[operations.mName];
-        } else if(func.ucharVarTab.find(operations.mName) != func.ucharVarTab.end()){
-            return func.ucharVarTab[operations.mName];
+        if(scope.doubleVarTab.find(operations.mName) != scope.doubleVarTab.end()){
+            return scope.doubleVarTab[operations.mName];
+        } else if(scope.intVarTab.find(operations.mName) != scope.intVarTab.end()){
+            return scope.intVarTab[operations.mName];
+        } else if(scope.uintVarTab.find(operations.mName) != scope.uintVarTab.end()){
+            return scope.uintVarTab[operations.mName];
+        } else if(scope.charVarTab.find(operations.mName) != scope.charVarTab.end()){
+            return scope.charVarTab[operations.mName];
+        } else if(scope.ucharVarTab.find(operations.mName) != scope.ucharVarTab.end()){
+            return scope.ucharVarTab[operations.mName];
         } else {
             throw runtime_error("Don't find varible!");
         }
     }
    
-    void Functions::returnFunc(Statement &operations, Functions &func) {
+    void Functions::returnFunc(Statement &operations, Scope &scope) {
         Statement o = operations.mStatements[0];
         if(o.mKind == StatementKind::VARIBLE_CALL_FUNC){
-            ret = findVar(o, func);
+            ret = findVar(o, scope);
         } else if(o.mKind == StatementKind::OPERATOR_CALL) {
-            ret = startCalculations(o, func);
+            ret = startCalculations(o, scope);
         } else if(o.mKind == StatementKind::LITTERAL) {
             std::string::size_type st;
             ret = stod(o.mName, &st);
         } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-            //cout << "=>> " << operations.mStatements[0].mName << '\n';
             if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
                 vector<Statement> args;
                 for(auto i : operations.mStatements[0].mStatements){
                     Statement arg;
-                    arg.mName = to_string(startCalculations(i, func));
+                    arg.mName = to_string(startCalculations(i, scope));
                     arg.mKind = StatementKind::LITTERAL;
-                    arg.mType.mType = BUILTIN_TYPE::INT32;
-                    arg.mType.mName = "double";
                     args.push_back(arg);
                 }
 
-                inter.executeCommands(mFunctions[operations.mStatements[0].mName], args, func);
+                inter.executeCommands(mFunctions[operations.mStatements[0].mName], args, scope);
             } else {
                 throw runtime_error("No function find!");
             }
@@ -201,101 +201,88 @@ namespace interpreter {
         } 
     }
 
-    void Functions::writeFunc(Statement &operations, Functions &func) {
+    void Functions::writeFunc(Statement &operations, Scope &scope) {
         for(auto i : operations.mStatements){
             if(i.mKind == StatementKind::VARIBLE_CALL_FUNC){
-                //SEARCH VALUE
-                if(doubleVarTab.find(i.mName) != doubleVarTab.end()){
-                    cout << doubleVarTab[i.mName];
-                } else if(intVarTab.find(i.mName) != intVarTab.end()){
-                    cout << intVarTab[i.mName];
-                } else if(uintVarTab.find(i.mName) != uintVarTab.end()){
-                    cout << uintVarTab[i.mName];
-                } else if(charVarTab.find(i.mName) != charVarTab.end()){
-                    cout << charVarTab[i.mName];
-                } else if(ucharVarTab.find(i.mName) != ucharVarTab.end()){
-                    cout << ucharVarTab[i.mName];
-                } else {
-                    throw runtime_error("Don't find varible!");
-                }
+                cout << findVar(i, scope);
             } else if(i.mKind == StatementKind::OPERATOR_CALL) {
-                cout << startCalculations(i, func);
+                cout << startCalculations(i, scope);
             } else if(i.mKind == StatementKind::LITTERAL) {
                 cout << i.mName;
             } else if(i.mKind == StatementKind::FUNCTION_CALL){
                 if(mFunctions.find(i.mName) != mFunctions.end()){
-                    startCalculations(i, func);
+                    startCalculations(i, scope);
                     cout << ret;
                 } else {
                     throw runtime_error("No function find!");
                 }  
             } else {
-                cout << i.mName;
+                throw runtime_error("Don't find cmd in write!");
             }
         }
     }
 
-    void Functions::changeVarValue(Statement &operations, Functions &func) {
-        if(func.doubleVarTab.find(operations.mName) != func.doubleVarTab.end()){
-            func.doubleVarTab[operations.mName] = startCalculations(operations.mStatements[0], func);
-        } else if(func.intVarTab.find(operations.mName) != func.intVarTab.end()){
-            func.intVarTab[operations.mName] = startCalculations(operations.mStatements[0], func);
-        } else if(func.uintVarTab.find(operations.mName) != func.uintVarTab.end()){
-            func.uintVarTab[operations.mName] = startCalculations(operations.mStatements[0], func);
-        } else if(func.charVarTab.find(operations.mName) != func.charVarTab.end()){
-            func.charVarTab[operations.mName] = startCalculations(operations.mStatements[0], func);
-        } else if(func.ucharVarTab.find(operations.mName) != func.ucharVarTab.end()){
-            func.ucharVarTab[operations.mName] = startCalculations(operations.mStatements[0], func);
+    void Functions::changeVarValue(Statement &operations, Scope &scope) {
+        if(scope.doubleVarTab.find(operations.mName) != scope.doubleVarTab.end()){
+            scope.doubleVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
+        } else if(scope.intVarTab.find(operations.mName) != scope.intVarTab.end()){
+            scope.intVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
+        } else if(scope.uintVarTab.find(operations.mName) != scope.uintVarTab.end()){
+            scope.uintVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
+        } else if(scope.charVarTab.find(operations.mName) != scope.charVarTab.end()){
+            scope.charVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
+        } else if(scope.ucharVarTab.find(operations.mName) != scope.ucharVarTab.end()){
+            scope.ucharVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
         } else {
             throw runtime_error("Don't find varible!");
         }
     }
 
-    void Functions::readFunc(Statement &operations, Functions &func) {
+    void Functions::readFunc(Statement &operations, Scope &scope) {
         for(auto i=0; i<operations.mStatements.size(); ++i){
-            if(func.doubleVarTab.find(operations.mStatements[i].mName) != func.doubleVarTab.end()){
-                cin >> func.doubleVarTab[operations.mStatements[i].mName];
-            } else if(func.intVarTab.find(operations.mStatements[i].mName) != func.intVarTab.end()){
-                cin >> func.intVarTab[operations.mStatements[i].mName];
-            } else if(func.uintVarTab.find(operations.mStatements[i].mName) != func.uintVarTab.end()){
-                cin >> func.uintVarTab[operations.mStatements[i].mName];
-            } else if(func.charVarTab.find(operations.mStatements[i].mName) != func.charVarTab.end()){
-                cin >> func.charVarTab[operations.mStatements[i].mName];
-            } else if(func.ucharVarTab.find(operations.mStatements[i].mName) != func.ucharVarTab.end()){
-                cin >> func.ucharVarTab[operations.mStatements[i].mName];
+            if(scope.doubleVarTab.find(operations.mStatements[i].mName) != scope.doubleVarTab.end()){
+                cin >> scope.doubleVarTab[operations.mStatements[i].mName];
+            } else if(scope.intVarTab.find(operations.mStatements[i].mName) != scope.intVarTab.end()){
+                cin >> scope.intVarTab[operations.mStatements[i].mName];
+            } else if(scope.uintVarTab.find(operations.mStatements[i].mName) != scope.uintVarTab.end()){
+                cin >> scope.uintVarTab[operations.mStatements[i].mName];
+            } else if(scope.charVarTab.find(operations.mStatements[i].mName) != scope.charVarTab.end()){
+                cin >> scope.charVarTab[operations.mStatements[i].mName];
+            } else if(scope.ucharVarTab.find(operations.mStatements[i].mName) != scope.ucharVarTab.end()){
+                cin >> scope.ucharVarTab[operations.mStatements[i].mName];
             } else {
                 throw runtime_error("Don't find varible!");
             }
         }
     }
 
-    bool Functions::startIf(Statement &operations, Functions &func) {
+    bool Functions::startIf(Statement &operations, Scope &scope) {
         if ("and" == operations.mName) {
-            return calculateIf(operations.mStatements[0], func) && calculateIf(operations.mStatements[1], func);
+            return calculateIf(operations.mStatements[0], scope) && calculateIf(operations.mStatements[1], scope);
         } else if("or" == operations.mName) {
-            return calculateIf(operations.mStatements[0], func) || calculateIf(operations.mStatements[1], func);
+            return calculateIf(operations.mStatements[0], scope) || calculateIf(operations.mStatements[1], scope);
         } else {
-            return calculateIf(operations, func);
+            return calculateIf(operations, scope);
         }
     }
 
-    bool Functions::calculateIf(Statement &operations, Functions &func) {
+    bool Functions::calculateIf(Statement &operations, Scope &scope) {
         if(">" == operations.mName){
-            return startCalculations(operations.mStatements[0], func) >  startCalculations(operations.mStatements[1], func);
+            return startCalculations(operations.mStatements[0], scope) >  startCalculations(operations.mStatements[1], scope);
         } else if("<" == operations.mName) {
-            return startCalculations(operations.mStatements[0], func) < startCalculations(operations.mStatements[1], func);
+            return startCalculations(operations.mStatements[0], scope) < startCalculations(operations.mStatements[1], scope);
         } else if("==" == operations.mName) {
-            return startCalculations(operations.mStatements[0], func) == startCalculations(operations.mStatements[1], func);
+            return startCalculations(operations.mStatements[0], scope) == startCalculations(operations.mStatements[1], scope);
         } else if ("!=" == operations.mName) {
-            return startCalculations(operations.mStatements[0], func) != startCalculations(operations.mStatements[1], func);
+            return startCalculations(operations.mStatements[0], scope) != startCalculations(operations.mStatements[1], scope);
         } else if("<=" == operations.mName) {
-            return startCalculations(operations.mStatements[0], func) <= startCalculations(operations.mStatements[1], func);
+            return startCalculations(operations.mStatements[0], scope) <= startCalculations(operations.mStatements[1], scope);
         } else if (">=" == operations.mName) {
-            return startCalculations(operations.mStatements[0], func) >= startCalculations(operations.mStatements[1], func);
+            return startCalculations(operations.mStatements[0], scope) >= startCalculations(operations.mStatements[1], scope);
         } else if("or" == operations.mName){
-            startIf(operations, func);
+            startIf(operations, scope);
         } else if("and" == operations.mName){
-            startIf(operations, func);
+            startIf(operations, scope);
         } else {
             throw runtime_error("Error in if operator");
         }
