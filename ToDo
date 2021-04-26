@@ -16,6 +16,8 @@ ___________WYDANIE NOWEJ WERSJI______________
 -----------------------0.1.0-----------------------
 
 1. Parametry w funkcji                                 (done)
-2. Return w funkcji
+2. Return w funkcji                                    (done)
 3. Loop
-4. Składnia
+4. Składnia                                            (done)
+5. refaktoryzacja kodu
+6. Logika w write()

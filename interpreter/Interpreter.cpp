@@ -10,13 +10,26 @@ namespace interpreter{
 
     bool ifIf;
     map<string, parser::FunctionDefinition> mFunctions;
-    Functions func;
 
-    bool Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> &args) {
-        if(commandsFunc.mName != "IF" && commandsFunc.mName != "ELIF" && commandsFunc.mName != "ELSE") func = Functions();
+    bool Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> &args, Functions &func) {
         size_t i=0;
+        if(commandsFunc.mName != "IF" && commandsFunc.mName != "ELIF" && commandsFunc.mName != "ELSE") {
+            Functions secFunc = Functions();
+            if(commandsFunc.mParameters.size() == args.size()) {
+                for(auto var : commandsFunc.mParameters) {
+                    secFunc.declareParameter(var, args[i], secFunc);
+                    ++i;
+                }
+                for(auto cmd : commandsFunc.mStatements){
+                    bool ex = executeCommand(secFunc, cmd);
+                    if(ex == false){ return false;}
+                }
+            } else {
+                throw runtime_error(": Invalid number of arguments was supplied!");
+            }
 
-        //cout <<  commandsFunc.mName << " " << commandsFunc.mParameters.size() << " " << args.size() << endl;
+            return true;
+        }
 
         if(commandsFunc.mParameters.size() == args.size()) {
             for(auto var : commandsFunc.mParameters) {
@@ -24,10 +37,8 @@ namespace interpreter{
                 ++i;
             }
             for(auto cmd : commandsFunc.mStatements){
-                //cout << cmd.mName << endl;
                 bool ex = executeCommand(func, cmd);
-                //cout << ex << " ";
-                if(ex == false){cout << "return "; return false;}
+                if(ex == false){ return false;}
             }
         } else {
             throw runtime_error(": Invalid number of arguments was supplied!");
@@ -58,8 +69,9 @@ namespace interpreter{
                         ifDef.mName = cmd.mName;
                         ifDef.mStatements = cmd.mStatements;
                         vector<Statement> args;
-                        executeCommands(ifDef, args);
+                        bool checkReturn = executeCommands(ifDef, args,func);
                         ifIf = false;
+                        if(checkReturn == false) return  false;
                     } else {
                         ifIf = true;
                     }
@@ -72,8 +84,9 @@ namespace interpreter{
                             ifDef.mName = cmd.mName;
                             ifDef.mStatements = cmd.mStatements;
                             vector<Statement> args;
-                            executeCommands(ifDef, args);
+                            bool checkReturn = executeCommands(ifDef, args, func);
                             ifIf = false;
+                            if(checkReturn == false) return  false;
                         }
                     }
                     break;
@@ -83,18 +96,19 @@ namespace interpreter{
                         ifDef.mName = cmd.mName;
                         ifDef.mStatements = cmd.mStatements;
                         vector<Statement> args;
-                        executeCommands(ifDef, args);
+                        bool checkReturn = executeCommands(ifDef, args, func);
                         ifIf = false;
+                        if(checkReturn == false) return  false;
                     }
                     break;
                 } else if(cmd.mName == "return") {
-                    cout << "w return\n";
                     func.returnFunc(cmd, func);
                     return false;
                     break;
                 } else {
                     if(mFunctions.find(cmd.mName) != mFunctions.end()){
-                        executeCommands(mFunctions[cmd.mName], cmd.mStatements);
+                        bool checkReturn = executeCommands(mFunctions[cmd.mName], cmd.mStatements, func);
+                        if(checkReturn == false) return  false;
                     } else {
                         throw runtime_error("Don't find function");
                     }
@@ -117,6 +131,7 @@ namespace interpreter{
             throw runtime_error("Main function not found.");
         }
         vector<Statement> args;
-        executeCommands(mFunctions["main"], args);
+        Functions func;
+        executeCommands(mFunctions["main"], args, func);
     }
 }
