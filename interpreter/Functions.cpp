@@ -111,13 +111,8 @@ namespace interpreter {
                             arg.mType.mName = "double";
                             args.push_back(arg);
                         }
-                        cout << "==========\n";
-                        for(auto i : args){
-                            cout << i.mName  << " ";
-                        }
-                        cout << "\n==========\n";
 
-                        inter.executeCommands(mFunctions[operations.mName], args);
+                        inter.executeCommands(mFunctions[operations.mName], args, func);
                         return ret;
                     } else {
                         throw runtime_error("No function find!");
@@ -137,7 +132,17 @@ namespace interpreter {
             return findVar(operations, func);
         } else if(operations.mKind == StatementKind::FUNCTION_CALL){
             if(mFunctions.find(operations.mName) != mFunctions.end()){
-                inter.executeCommands(mFunctions[operations.mName], operations.mStatements);
+                vector<Statement> args;
+                for(auto i : operations.mStatements){
+                    Statement arg;
+                    arg.mName = to_string(startCalculations(i, func));
+                    arg.mKind = StatementKind::LITTERAL;
+                    arg.mType.mType = BUILTIN_TYPE::INT32;
+                    arg.mType.mName = "double";
+                    args.push_back(arg);
+                }
+
+                inter.executeCommands(mFunctions[operations.mName], args, func);
             } else {
                 throw runtime_error("No function find!");
             }
@@ -174,12 +179,11 @@ namespace interpreter {
         } else if(o.mKind == StatementKind::LITTERAL) {
             std::string::size_type st;
             ret = stod(o.mName, &st);
-            return;
         } else if(operations.mKind == StatementKind::FUNCTION_CALL){
             //cout << "=>> " << operations.mStatements[0].mName << '\n';
             if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
                 vector<Statement> args;
-                for(auto i : operations.mStatements){
+                for(auto i : operations.mStatements[0].mStatements){
                     Statement arg;
                     arg.mName = to_string(startCalculations(i, func));
                     arg.mKind = StatementKind::LITTERAL;
@@ -188,14 +192,13 @@ namespace interpreter {
                     args.push_back(arg);
                 }
 
-                inter.executeCommands(mFunctions[operations.mStatements[0].mName], args);
+                inter.executeCommands(mFunctions[operations.mStatements[0].mName], args, func);
             } else {
                 throw runtime_error("No function find!");
             }
         } else {
             ret = 0;
-        }
-        //cout << "I'm going out this function" << endl;
+        } 
     }
 
     void Functions::writeFunc(Statement &operations, Functions &func) {
@@ -221,7 +224,7 @@ namespace interpreter {
                 cout << i.mName;
             } else if(i.mKind == StatementKind::FUNCTION_CALL){
                 if(mFunctions.find(i.mName) != mFunctions.end()){
-                    inter.executeCommands(mFunctions[i.mName], i.mStatements);
+                    startCalculations(i, func);
                     cout << ret;
                 } else {
                     throw runtime_error("No function find!");

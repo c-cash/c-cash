@@ -1,9 +1,7 @@
 func silnia(int n) {
-    write("tu");
     if(n < 2) {
         return(1);
     }
-    
     return(n*silnia(n-1));
 }
 
@@ -11,6 +9,5 @@ func main() {
     int n;
     write("Podaj n: ");
     read(n);
-    int w = silnia(n+1);
-    write(n, "! = ", w);
-}
+    write(n, "! = ", silnia(n), "\n");
+} 
