@@ -22,7 +22,6 @@ namespace interpreter {
                 } else {
                     scope.doubleVarTab[variable.mName] = 0;
                 }
-                //cout<< variable.mName << " " << doubleVarTab[variable.mName] << '\n';
                 break;
             case INT8:
                 if(variable.mStatements.size() > 0){
@@ -30,7 +29,6 @@ namespace interpreter {
                 } else {
                     scope.charVarTab[variable.mName] = 0;
                 }
-                //cout<< variable.mName << " " << charVarTab[variable.mName] << '\n';
                 break;
             case UINT8:
                 if(variable.mStatements.size() > 0){
@@ -38,7 +36,6 @@ namespace interpreter {
                 } else {
                     scope.ucharVarTab[variable.mName] = 0;
                 }
-                //cout<< variable.mName << " " << ucharVarTab[variable.mName] << '\n';
                 break;
             case INT32:
                 if(variable.mStatements.size() > 0){
@@ -46,7 +43,6 @@ namespace interpreter {
                 } else {
                     scope.intVarTab[variable.mName] = 0;
                 }
-                //cout<< variable.mName << " " << intVarTab[variable.mName] << '\n';
                 break;
             case UINT32:
                 if(variable.mStatements.size() > 0){
@@ -54,7 +50,6 @@ namespace interpreter {
                 } else {
                    scope. uintVarTab[variable.mName] = 0;
                 }
-                //cout<< variable.mName << " " << uintVarTab[variable.mName] << '\n';
                 break;
             case STRING:
                 if(variable.mStatements.size() > 0){
@@ -119,7 +114,7 @@ namespace interpreter {
                             args.push_back(arg);
                         }
 
-                        inter.executeCommands(mFunctions[operations.mName], args, scope);
+                        inter.executeFunction(mFunctions[operations.mName], args, scope);
                         return ret;
                     } else {
                         throw runtime_error("No function find!");
@@ -147,7 +142,7 @@ namespace interpreter {
                     args.push_back(arg);
                 }
 
-                inter.executeCommands(mFunctions[operations.mName], args, scope);
+                inter.executeFunction(mFunctions[operations.mName], args, scope);
             } else {
                 throw runtime_error("No function find!");
             }
@@ -176,13 +171,12 @@ namespace interpreter {
         } else if(scope.ucharVarTab.find(operations.mName) != scope.ucharVarTab.end()){
             variant<double, string, int, unsigned int, char, unsigned char> sRetFunc {std::in_place_index<0>, scope.ucharVarTab[operations.mName]};
             retFunc = sRetFunc;
-        }/* else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
-            variant<double, string, int, unsigned int, char, unsigned char> sRetFunc {std::in_place_index<0>, scope.stringVarTab[operations.mName]};
+        } else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
+            variant<double, string, int, unsigned int, char, unsigned char> sRetFunc {scope.stringVarTab[operations.mName]};
             retFunc = sRetFunc;
-        } */ else {
+        }  else {
             throw runtime_error("Don't find varible!");
         }
-        //cout << get<0>(retFunc);
         return retFunc;
     }
    
@@ -205,7 +199,7 @@ namespace interpreter {
                     args.push_back(arg);
                 }
 
-                inter.executeCommands(mFunctions[operations.mStatements[0].mName], args, scope);
+                inter.executeFunction(mFunctions[operations.mStatements[0].mName], args, scope);
             } else {
                 throw runtime_error("No function find!");
             }
@@ -217,7 +211,11 @@ namespace interpreter {
     void Functions::writeFunc(Statement &operations, Scope &scope) {
         for(auto i : operations.mStatements){
             if(i.mKind == StatementKind::VARIBLE_CALL_FUNC){
-                cout << std::get<0>(findVar(i, scope));
+                try {
+                    cout << std::get<0>(findVar(i, scope));
+                } catch(exception& err) {
+                    cout << std::get<string>(findVar(i, scope));
+                }
             } else if(i.mKind == StatementKind::OPERATOR_CALL) {
                 cout << std::get<0>(startCalculations(i, scope));
             } else if(i.mKind == StatementKind::LITTERAL) {
@@ -246,6 +244,8 @@ namespace interpreter {
             scope.charVarTab[operations.mName] = std::get<0>(startCalculations(operations.mStatements[0], scope));
         } else if(scope.ucharVarTab.find(operations.mName) != scope.ucharVarTab.end()){
             scope.ucharVarTab[operations.mName] = std::get<0>(startCalculations(operations.mStatements[0], scope));
+        } else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
+            scope.stringVarTab[operations.mName] = std::get<0>(startCalculations(operations.mStatements[0], scope));
         } else {
             throw runtime_error("Don't find varible!");
         }
@@ -263,7 +263,9 @@ namespace interpreter {
                 cin >> scope.charVarTab[operations.mStatements[i].mName];
             } else if(scope.ucharVarTab.find(operations.mStatements[i].mName) != scope.ucharVarTab.end()){
                 cin >> scope.ucharVarTab[operations.mStatements[i].mName];
-            } else {
+            } else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
+                scope.stringVarTab[operations.mName] = std::get<0>(startCalculations(operations.mStatements[0], scope));
+            }  else {
                 throw runtime_error("Don't find varible!");
             }
         }

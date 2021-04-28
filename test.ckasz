@@ -1,14 +1,10 @@
-func silnia(int n) {
-    if(n < 2) {
-        return(1);
-    }
-    return(n*silnia(n-1));
-}
-
 func main() {
-    int n;
-    string x = "elo elo";
-    write("Podaj n: ");
-    read(n);
-    write(n, "! = ", silnia(n), "\n");
-} 
+    int a = 0;
+    int b = 5;
+
+    loop(a < b) {
+        a = a + 1;
+    }
+
+    write("Sukces!");
+}

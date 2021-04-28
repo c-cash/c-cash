@@ -161,15 +161,16 @@ namespace parser {
 		if(!expectOperator("{").has_value()) return nullopt;
 
         vector<Statement> statements;
-        bool ifStatement;
+        bool ifStatement, loopStatement;
         
         while (!expectOperator("}").has_value()){
-            ifStatement = false;
+            ifStatement = false; loopStatement = false;
             if(mCurrentToken->mText == "if" || mCurrentToken->mText == "elif" || mCurrentToken->mText == "else") ifStatement = true;
+            if(mCurrentToken->mText == "loop") loopStatement = true;
             optional<Statement> statement = expectStatement();
             if(statement.has_value()) { statements.push_back(statement.value()); }
 
-            if(ifStatement == false) { if(!expectOperator(";").has_value()) { vector<Token>::iterator backToken = mCurrentToken; --backToken; throw runtime_error(string("Expected ';' at end of statement in line ") + to_string(backToken->mLine) ); }}
+            if(ifStatement == false && loopStatement == false) { if(!expectOperator(";").has_value()) { vector<Token>::iterator backToken = mCurrentToken; --backToken; throw runtime_error(string("Expected ';' at end of statement in line ") + to_string(backToken->mLine) ); }}
         }
 
         return statements;
@@ -351,6 +352,8 @@ namespace parser {
         //IF it's if, elif or else
         if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "if" || mCurrentToken->mText == "elif" || mCurrentToken->mText == "else")) {
             result = parseIfStatement();
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "loop")) {
+            result = parseLoopStatement();
         } else {
             result = expectExpression();
 
@@ -533,5 +536,46 @@ namespace parser {
         Token returnToken = *mCurrentToken;
         ++mCurrentToken;
         return returnToken;
+    }
+
+    optional<Statement> Parser::parseLoopStatement() {
+        Statement loopS;
+        optional<Statement> back_parameter; 
+
+        loopS.mName = "LOOP";
+
+        ++mCurrentToken; ++mCurrentToken;
+        back_parameter = expectLogicExpressionFunc();
+        if(!back_parameter.has_value()) {
+            throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine));
+        }
+        while (!expectOperator(")").has_value()) {
+            if(mCurrentToken->mText == "and"){
+                ++mCurrentToken;
+                Statement andStatement;
+                andStatement.mStatements.push_back(back_parameter.value());
+                andStatement.mName = "and";
+                andStatement.mKind = StatementKind::LOGIC_CALL;
+                andStatement.mStatements.push_back(expectLogicExpressionFunc().value());
+                
+                back_parameter = andStatement;
+            } else if(mCurrentToken->mText == "or"){
+                ++mCurrentToken;
+                Statement orStatement;
+                orStatement.mStatements.push_back(back_parameter.value());
+                orStatement.mStatements.push_back(expectLogicExpressionFunc().value());
+                orStatement.mName = "or";
+                back_parameter = orStatement;
+            }
+            if(expectOperator(")").has_value()) break;
+        }
+        loopS.mStatements.push_back(back_parameter.value());
+        
+        optional<vector<Statement>> statements = parseFunctionBody();
+        if(!statements.has_value()){
+            throw runtime_error(string("Bad expression in if statement in line ") + to_string(mCurrentToken->mLine));
+        }
+        loopS.mStatements.insert(loopS.mStatements.end(), statements->begin(), statements->end());
+        return loopS;
     }
 }

@@ -52,6 +52,7 @@ namespace parser {
             optional<Statement> expectOneValueFunc();
             optional<Statement> parseIfStatement();
             optional<Statement> expectLogicExpressionFunc();
+            optional<Statement> parseLoopStatement();
             optional<Token> expectLogic(const string &name = string());
 
             size_t operatorPrecedence(const string &operatorName);
