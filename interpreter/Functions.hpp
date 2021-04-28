@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <variant>
+#include <string>
  
 namespace interpreter {
     using namespace std;

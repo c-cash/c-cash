@@ -12,7 +12,7 @@ namespace interpreter{
     map<string, parser::FunctionDefinition> mFunctions;
     Functions func;
 
-    bool Interpreter::executeCommands(FunctionDefinition &commandsFunc, vector<Statement> &args, Scope &scope) {
+    bool Interpreter::executeFunction(FunctionDefinition &commandsFunc, vector<Statement> &args, Scope &scope) {
         size_t i=0;
         if(commandsFunc.mName != "IF" && commandsFunc.mName != "ELIF" && commandsFunc.mName != "ELSE") {
             Scope secondScope = Scope();
@@ -70,7 +70,7 @@ namespace interpreter{
                         ifDef.mName = cmd.mName;
                         ifDef.mStatements = cmd.mStatements;
                         vector<Statement> args;
-                        bool checkReturn = executeCommands(ifDef, args, scope);
+                        bool checkReturn = executeFunction(ifDef, args, scope);
                         ifIf = false;
                         if(checkReturn == false) return  false;
                     } else {
@@ -85,7 +85,7 @@ namespace interpreter{
                             ifDef.mName = cmd.mName;
                             ifDef.mStatements = cmd.mStatements;
                             vector<Statement> args;
-                            bool checkReturn = executeCommands(ifDef, args, scope);
+                            bool checkReturn = executeFunction(ifDef, args, scope);
                             ifIf = false;
                             if(checkReturn == false) return  false;
                         }
@@ -97,7 +97,7 @@ namespace interpreter{
                         ifDef.mName = cmd.mName;
                         ifDef.mStatements = cmd.mStatements;
                         vector<Statement> args;
-                        bool checkReturn = executeCommands(ifDef, args, scope);
+                        bool checkReturn = executeFunction(ifDef, args, scope);
                         ifIf = false;
                         if(checkReturn == false) return  false;
                     }
@@ -108,7 +108,7 @@ namespace interpreter{
                     break;
                 } else {
                     if(mFunctions.find(cmd.mName) != mFunctions.end()){
-                        bool checkReturn = executeCommands(mFunctions[cmd.mName], cmd.mStatements, scope);
+                        bool checkReturn = executeFunction(mFunctions[cmd.mName], cmd.mStatements, scope);
                         if(checkReturn == false) return  false;
                     } else {
                         throw runtime_error("Don't find function");
@@ -133,6 +133,6 @@ namespace interpreter{
         }
         vector<Statement> args;
         Scope scope;
-        executeCommands(mFunctions["main"], args, scope);
+        executeFunction(mFunctions["main"], args, scope);
     }
 }
