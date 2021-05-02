@@ -28,7 +28,7 @@ namespace parser {
                         break;
                     
                     default:
-                        throw runtime_error(string("uknow sewuence") + string(1, currCh) + " in string on line " + to_string(currentToken.mLine));
+                        throw runtime_error(string("unknow sentence") + string(1, currCh) + " in string on line " + to_string(currentToken.mLine));
                         break;
                 }
                 currentToken.mType = STRING_LITERAL;
@@ -198,6 +198,6 @@ namespace parser {
     }
 
     void Token::DebugPrint() const{
-        cout << "Token " << sTokenTypeStrings[mType] << ", \"" << mText << "\", " << mLine << ")" << endl;
+        cout << "\u001B[33mToken \u001B[0m(\u001B[36m" << sTokenTypeStrings[mType] << "\u001B[0m,\u001B[36m \"" << mText << "\"\u001B[0m,\u001B[36m " << mLine << "\u001B[0m)" << endl;
     }
 }

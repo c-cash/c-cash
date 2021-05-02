@@ -4,7 +4,6 @@
 #include "../parser/FunctionDefinition.hpp"
 #include <iostream>
 #include <map>
-#include <variant>
 #include <string>
  
 namespace interpreter {
@@ -35,10 +34,10 @@ namespace interpreter {
             void readFunc(Statement &operations, Scope &scope);
             void changeVarValue(Statement &operations, Scope &scope);
             bool startIf(Statement &operations, Scope &scope);
-        private:
-            variant<double, string, int, unsigned int, char, unsigned char> startCalculations(Statement &operations, Scope &scope);
-            variant<double, string, int, unsigned int, char, unsigned char> calculating(Statement &operations, Scope &scope);
+            double startCalculations(Statement &operations, Scope &scope);
             bool calculateIf(Statement &operations, Scope &scope);
-            variant<double, string, int, unsigned int, char, unsigned char> findVar(Statement &operations, Scope &scope);
+        private:
+            double calculating(Statement &operations, Scope &scope);
+            double findVar(Statement &operations, Scope &scope);
     };
 }

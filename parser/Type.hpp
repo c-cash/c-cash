@@ -8,6 +8,7 @@ namespace parser {
 
     enum BUILTIN_TYPE {
         FUNC,
+        FUNC_PARAM,
         INT8,
         UINT8,
         INT32,

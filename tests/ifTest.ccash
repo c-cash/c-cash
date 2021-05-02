@@ -1,0 +1,50 @@
+func main(){
+    int a = 2;
+
+    if(a > 1){
+        write("a");
+    }
+    if(a == 2) {
+        write("b");
+    }
+    if(a > 1) {
+        write("c");
+    } 
+    if(a > 2) {
+        write("!d");
+    }
+    if(a >= 2) {
+        write("e");
+    }
+
+
+    if (a != 2) {
+        write("f!");
+    } else {
+        write("f");
+    }
+
+    if (a != 2) {
+        write("!g");
+    } elif (a == 2) {
+        write("g");
+    } else {
+        write("!!g");
+    }
+
+    if (a > 2) {
+        write("!h");
+    } elif (a < 2) {
+        write("!!h");
+    } else {
+        write("h");
+    }
+
+    if (a == 2) {
+        if (a == 3) {
+            write("!i");
+        } else {
+            write("i");
+        }
+    }
+}

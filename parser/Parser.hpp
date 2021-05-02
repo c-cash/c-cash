@@ -53,6 +53,7 @@ namespace parser {
             optional<Statement> parseIfStatement();
             optional<Statement> expectLogicExpressionFunc();
             optional<Statement> parseLoopStatement();
+            bool isDeclaration();
             optional<Token> expectLogic(const string &name = string());
 
             size_t operatorPrecedence(const string &operatorName);

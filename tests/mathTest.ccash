@@ -1,0 +1,11 @@
+func main() {
+    write(2 + 2);
+    write(2 - 2);
+    write(2 * 2);
+    write(2 / 2);
+
+    write(2 + 2 * 2);
+    write(2 * 2 + 2);
+
+    write(4 / 2 * 2);
+}

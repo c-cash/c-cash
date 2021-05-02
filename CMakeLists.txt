@@ -39,3 +39,21 @@ set_target_properties(${PROJECT_NAME}-parser PROPERTIES
                         CXX_STANDARD 17
                         CXX_STANDARD_REQUIRED ON 
 )
+
+#tests
+enable_testing()
+
+add_executable(testIf tests/ifTest.cpp)
+add_test(TestIf testIf)
+
+add_executable(testReturn tests/returnTest.cpp)
+add_test(TestReturn testReturn)
+
+add_executable(mathTest tests/mathTest.cpp)
+add_test(MathTest mathTest)
+
+add_executable(varTest tests/variableTest.cpp)
+add_test(VarTest varTest)
+
+add_executable(loopTest tests/loopTest.cpp)
+add_test(LoopTest loopTest)

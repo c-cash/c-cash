@@ -23,8 +23,8 @@ namespace parser {
 		{"!=", OperatorEntry{"!=", 10}},
         {"<=", OperatorEntry{"<=", 10}}, 
 		{">=", OperatorEntry{">=", 10}}, 
-		{"and", OperatorEntry{"and", 100}}, 
-		{"or", OperatorEntry{"or", 100}} 
+		{"and", OperatorEntry{"and", 10}}, 
+		{"or", OperatorEntry{"or", 10}} 
 	};
 
 	bool Parser::expectFunctionDefinition() {
@@ -186,21 +186,21 @@ namespace parser {
         optional<Statement> result;
         if(mCurrentToken != mEndToken && mCurrentToken->mType == DOUBLE_LITERAL){
             Statement doubleLiteralStatement;
-            doubleLiteralStatement.mKind = StatementKind::LITTERAL;
+            doubleLiteralStatement.mKind = StatementKind::LITERAL;
             doubleLiteralStatement.mName = mCurrentToken->mText;
             doubleLiteralStatement.mType =  Type("double", DOUBLE);
             result = doubleLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == INTEGER_LITERAL){
             Statement integerLiteralStatement;
-            integerLiteralStatement.mKind = StatementKind::LITTERAL;
+            integerLiteralStatement.mKind = StatementKind::LITERAL;
             integerLiteralStatement.mName = mCurrentToken->mText;
             integerLiteralStatement.mType =  Type("signed integer", INT32);
             result = integerLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == STRING_LITERAL){
             Statement stringLiteralStatement;
-            stringLiteralStatement.mKind = StatementKind::LITTERAL;
+            stringLiteralStatement.mKind = StatementKind::LITERAL;
             stringLiteralStatement.mName = mCurrentToken->mText;
             stringLiteralStatement.mType =  Type("string", UINT8);
             result = stringLiteralStatement;
@@ -223,21 +223,21 @@ namespace parser {
         optional<Statement> result;
         if(mCurrentToken != mEndToken && mCurrentToken->mType == DOUBLE_LITERAL){
             Statement doubleLiteralStatement;
-            doubleLiteralStatement.mKind = StatementKind::LITTERAL;
+            doubleLiteralStatement.mKind = StatementKind::LITERAL;
             doubleLiteralStatement.mName = mCurrentToken->mText;
             doubleLiteralStatement.mType =  Type("double", DOUBLE);
             result = doubleLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == INTEGER_LITERAL){
             Statement integerLiteralStatement;
-            integerLiteralStatement.mKind = StatementKind::LITTERAL;
+            integerLiteralStatement.mKind = StatementKind::LITERAL;
             integerLiteralStatement.mName = mCurrentToken->mText;
             integerLiteralStatement.mType =  Type("signed integer", INT32);
             result = integerLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == STRING_LITERAL){
             Statement stringLiteralStatement;
-            stringLiteralStatement.mKind = StatementKind::LITTERAL;
+            stringLiteralStatement.mKind = StatementKind::LITERAL;
             stringLiteralStatement.mName = mCurrentToken->mText;
             stringLiteralStatement.mType =  Type("string", UINT8);
             result = stringLiteralStatement;
@@ -248,7 +248,7 @@ namespace parser {
             result = functionCallStatement;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER){
             Statement variableCallStatement;
-            variableCallStatement.mKind = StatementKind::VARIBLE_CALL_FUNC;
+            variableCallStatement.mKind = StatementKind::VARIABLE_CALL;
             variableCallStatement.mName = mCurrentToken->mText;
             variableCallStatement.mType =  Type("string", UINT8);
             result = variableCallStatement;
@@ -408,7 +408,7 @@ namespace parser {
         optional<Statement> lhs = expectOneValueFunc();
 		if(!lhs.has_value()) { return nullopt; }
 
-        while (true){
+        while (true) {
 			optional<Token> op = expectOperator();
             if(!op.has_value()) { break; }
 			int rhsPrecedence = operatorPrecedence(op->mText);
@@ -417,12 +417,14 @@ namespace parser {
                 return lhs;
             }
             optional<Statement> rhs = expectOneValueFunc();
+
             if(!rhs.has_value()) {
                 --mCurrentToken;
                 return lhs;
             }
 
 			Statement * rightmostStatement = findRightmostStatement(&lhs.value(), rhsPrecedence);
+            
             if(rightmostStatement) {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
@@ -439,7 +441,6 @@ namespace parser {
 				lhs = operationCall;
 			}
 		}
-
         return lhs;
     }
 
@@ -540,42 +541,105 @@ namespace parser {
 
     optional<Statement> Parser::parseLoopStatement() {
         Statement loopS;
-        optional<Statement> back_parameter; 
+        optional<Statement> parameter;
+        Statement addParametr;
 
         loopS.mName = "LOOP";
 
         ++mCurrentToken; ++mCurrentToken;
-        back_parameter = expectLogicExpressionFunc();
-        if(!back_parameter.has_value()) {
-            throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine));
+        vector<Token>::iterator startToken  = mCurrentToken;
+
+        parameter = expectLogicExpressionFunc();
+        if(!parameter.has_value()) {
+            mCurrentToken = startToken;
+            if(!isDeclaration()) {
+                parameter = expectExpressionFunc();
+            }
+            if(!parameter.has_value()) {
+                mCurrentToken = startToken;
+                parameter = expectVariableDeclaration();
+                if(!parameter.has_value()) {
+                    throw runtime_error(string("Bad argument in loop in line ") + to_string(mCurrentToken->mLine));
+                }
+            }
         }
+
+
+        if(!parameter.has_value()) { throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine)); }
+        addParametr.mType.mType = FUNC_PARAM;
+        addParametr.mType.mName = "func_param";
+        addParametr.mStatements.clear();
+        addParametr.mStatements.push_back(parameter.value());
+
+
+        if(mCurrentToken->mText == ",") ++mCurrentToken;
+
+        cout << mCurrentToken->mText << '\n';
+
         while (!expectOperator(")").has_value()) {
             if(mCurrentToken->mText == "and"){
                 ++mCurrentToken;
                 Statement andStatement;
-                andStatement.mStatements.push_back(back_parameter.value());
+                andStatement.mStatements.push_back(parameter.value());
                 andStatement.mName = "and";
                 andStatement.mKind = StatementKind::LOGIC_CALL;
                 andStatement.mStatements.push_back(expectLogicExpressionFunc().value());
+                andStatement.mType.mType = FUNC_PARAM;
                 
-                back_parameter = andStatement;
+                addParametr.mStatements.push_back(andStatement);
             } else if(mCurrentToken->mText == "or"){
                 ++mCurrentToken;
                 Statement orStatement;
-                orStatement.mStatements.push_back(back_parameter.value());
+                orStatement.mStatements.push_back(parameter.value());
                 orStatement.mStatements.push_back(expectLogicExpressionFunc().value());
                 orStatement.mName = "or";
-                back_parameter = orStatement;
+                orStatement.mType.mType = FUNC_PARAM;
+
+                addParametr.mStatements.push_back(orStatement);
+            } else {
+                optional<Statement> temParam;
+                startToken = mCurrentToken;
+                temParam = expectLogicExpressionFunc();
+                if(!temParam.has_value()) {
+                    mCurrentToken = startToken;
+                    temParam = expectExpressionFunc();
+                    if(!temParam.has_value()){
+                        mCurrentToken = startToken;
+                        temParam = expectVariableDeclaration();
+                        if(!temParam.has_value()){
+                            throw runtime_error(string("Bad argument in loop in line ") + to_string(mCurrentToken->mLine));
+                        }
+                    }
+                }
+                if(!temParam.has_value()) {
+                    throw runtime_error("Expected expression as parameter.");
+                }
+
+                addParametr.mStatements.push_back(temParam.value());
+                if(expectOperator(")").has_value()) break;
+                if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate parameter in line ") + to_string(mCurrentToken->mLine));
+                
             }
-            if(expectOperator(")").has_value()) break;
         }
-        loopS.mStatements.push_back(back_parameter.value());
-        
+
+        loopS.mStatements.push_back(addParametr);
         optional<vector<Statement>> statements = parseFunctionBody();
         if(!statements.has_value()){
             throw runtime_error(string("Bad expression in if statement in line ") + to_string(mCurrentToken->mLine));
         }
         loopS.mStatements.insert(loopS.mStatements.end(), statements->begin(), statements->end());
         return loopS;
+    }
+
+    bool Parser::isDeclaration() {
+        vector<Token>::iterator startToken = mCurrentToken;
+        while (!expectOperator(",").has_value()) {
+            cout << mCurrentToken->mText << endl;
+            if(expectOperator(")").has_value()) {mCurrentToken = startToken; return false;}
+            ++mCurrentToken;
+        }
+        mCurrentToken = startToken;
+        cout << "---------\n";
+        return true;
     }
 }
