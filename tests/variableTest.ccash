@@ -1,0 +1,10 @@
+func main() {
+    int a = 2;
+    int b = 5;
+    double c = 1.2;
+    int d = 1.5;
+    int e = 2 + 2;
+    double f = c + e;
+
+    write(a, b, c, d, e, f);
+}

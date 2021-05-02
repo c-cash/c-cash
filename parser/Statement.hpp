@@ -10,11 +10,10 @@ namespace parser {
     enum class StatementKind {
         VARIABLE_DECLARATION,
         FUNCTION_CALL,
-        LITTERAL,
+        LITERAL,
         OPERATOR_CALL,
         VARIABLE,
         VARIABLE_CALL,
-        VARIBLE_CALL_FUNC,
         LOGIC_CALL
     };
 
@@ -25,7 +24,6 @@ namespace parser {
         "OPERATOR_CALL",
         "VARIABLE",
         "VARIABLE_CALL",
-        "VARIBLE_CALL_FUNC",
         "LOGIC_CALL"
     };
 

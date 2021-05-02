@@ -11,14 +11,13 @@ namespace parser {
         }
 
         cout << ") {\n";
-
         for(Statement statement : mStatements) {
             statement.DebugPrint(0);
         }
-        cout << "}" << endl;
+        cout << "}" << '\n';
     }
 
     void ParameterDefinition::DebugPrint(size_t indent) const{
-        cout << string(indent, '\t') << mType.mName << " " << mName << endl;
+        cout << string(indent, '\t') << mType.mName << " " << mName << '\n';
     }
 }

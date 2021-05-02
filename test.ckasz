@@ -1,10 +1,6 @@
 func main() {
-    int a = 0;
-    int b = 5;
-
-    loop(a < b) {
-        a = a + 1;
+    int b = 1;
+    loop(int i = 0, i < 2, i = i + 1){
+        write(i, "\n");
     }
-
-    write("Sukces!");
 }

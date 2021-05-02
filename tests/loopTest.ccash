@@ -1,0 +1,25 @@
+func main() {
+    loop (5) {
+        write("a");
+    }
+
+    loop (2 + 2) {
+        write("b");
+    }
+
+    int a = 0;
+    loop (a == 0) {
+        write("c");
+        a = 1;
+    }
+
+    int b = 0;
+    loop (b < 3) {
+        write(b);
+        b = b + 1;
+    }
+
+    loop(2 + 2 * 2) {
+        write("d");
+    }
+}

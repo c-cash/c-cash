@@ -1,0 +1,7 @@
+func abc(){
+    return(1);
+}
+
+func main(){
+    write(abc());
+}
