@@ -23,5 +23,6 @@ ___________WYDANIE NOWEJ WERSJI______________
 6. Logika w write()
 7. Naprawa tokenizer                                   (done)
 8. break w loopie
-9. VARIABLE_CALL jako pierwszy argument w loop(for)
+9. VARIABLE_CALL jako pierwszy argument w loop(for)    (done) 
 10. Komentarze blokowe                                 (done)
+11. Rekurencja                                         (done)

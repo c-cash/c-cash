@@ -31,10 +31,11 @@ int main (int argc, char **argv) {
             currToken.DebugPrint();
         }
     */
+    
 
         Parser parser;
         parser.parse(tokens);
-        //parser.DebugPrint();
+        parser.DebugPrint();
 
         map<string, FunctionDefinition> functions = parser.mFunction;
         

@@ -627,15 +627,15 @@ namespace parser {
 
                 addParametr.mStatements.push_back(logicParam.value()); addParametr.mStatements.push_back(mathParam.value());
 
-                if(expectOperator(")").has_value()) break;
                 break;
             }
         }
+        ++mCurrentToken;
 
         loopS.mStatements.push_back(addParametr);
         optional<vector<Statement>> statements = parseFunctionBody();
         if(!statements.has_value()){
-            throw runtime_error(string("Bad expression in loop statement in line ") + to_string(mCurrentToken->mLine));
+            throw runtime_error(string("Bad expression in loop statement body in line ") + to_string(mCurrentToken->mLine));
         }
         loopS.mStatements.insert(loopS.mStatements.end(), statements->begin(), statements->end());
         return loopS;

@@ -56,6 +56,10 @@ namespace parser {
                         endToken(currentToken, tokens);
                         currentToken.mType = INTEGER_LITERAL;
                         currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == LOGIC){
+                        endToken(currentToken, tokens);
+                        currentToken.mType = INTEGER_LITERAL;
+                        currentToken.mText.append(1, currCh);
                     } else {
                         currentToken.mText.append(1, currCh);
                     }
@@ -116,6 +120,7 @@ namespace parser {
                 case '<':
                 case '!':
                     if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
+                        endToken(currentToken, tokens);
                         currentToken.mType = LOGIC;
                         currentToken.mText.append(1, currCh);
                     } else {
@@ -184,7 +189,7 @@ namespace parser {
                     break;
 
                 default:
-                    if(currentToken.mType == WHITESPACE || currentToken.mType == INTEGER_LITERAL || currentToken.mType == DOUBLE_LITERAL || currentToken.mType == OPERATOR) {
+                    if(currentToken.mType == WHITESPACE || currentToken.mType == INTEGER_LITERAL || currentToken.mType == DOUBLE_LITERAL || currentToken.mType == OPERATOR || currentToken.mType == LOGIC) {
                         endToken(currentToken, tokens);
                         currentToken.mType = IDENTIFIER;
                         currentToken.mText.append(1, currCh);
