@@ -211,6 +211,9 @@ namespace interpreter {
                 cout << startCalculations(i, scope);
             } else if(i.mKind == StatementKind::LITERAL) {
                 cout << i.mName;
+            } else if(i.mKind == StatementKind::LOGIC_CALL) {
+                if(startIf(i, scope)) { cout << true; }
+                else { cout << false; }
             } else if(i.mKind == StatementKind::FUNCTION_CALL){
                 if(mFunctions.find(i.mName) != mFunctions.end()){
                     startCalculations(i, scope);

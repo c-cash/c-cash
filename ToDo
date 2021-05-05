@@ -20,9 +20,10 @@ ___________WYDANIE NOWEJ WERSJI______________
 3. Loop                                                (done)
 4. Składnia                                            (done)
 5. refaktoryzacja kodu                                 (done)
-6. Logika w write()
+6. Logika w write()                                    (done)
 7. Naprawa tokenizer                                   (done)
 8. break w loopie
 9. VARIABLE_CALL jako pierwszy argument w loop(for)    (done) 
 10. Komentarze blokowe                                 (done)
 11. Rekurencja                                         (done)
+12. Naprawa błędu z wieloma or/and
