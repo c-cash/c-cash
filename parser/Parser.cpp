@@ -334,7 +334,50 @@ namespace parser {
         functionCall.mName = possibleFunctionName->mText;
 
         while (!expectOperator(")").has_value()){
-            optional<Statement> parameter = expectExpressionFunc();
+            vector<Token>::iterator startToken  = mCurrentToken;
+            optional<Statement> parameter = expectLogicExpressionFunc();
+            if(parameter.has_value()) {
+                startToken = mCurrentToken;
+                if(expectOperator(")").has_value() || expectOperator(",").has_value()) {
+                    mCurrentToken = startToken; 
+                } else {
+                    mCurrentToken = startToken; 
+                    while (!expectOperator(")").has_value() && !expectOperator(",").has_value()) {
+                        if(mCurrentToken->mText == "and"){
+                            ++mCurrentToken;
+                            Statement andStatement;
+                            andStatement.mStatements.push_back(parameter.value());
+                            andStatement.mName = "and";
+                            andStatement.mKind = StatementKind::LOGIC_CALL;
+                            andStatement.mStatements.push_back(expectLogicExpressionFunc().value());
+
+                            parameter = andStatement;
+                        } else if(mCurrentToken->mText == "or"){
+                            ++mCurrentToken;
+                            Statement orStatement;
+                            orStatement.mStatements.push_back(parameter.value());
+                            orStatement.mStatements.push_back(expectLogicExpressionFunc().value());
+                            orStatement.mName = "or";
+                            parameter = orStatement;
+                        }
+
+                        if(expectOperator(")").has_value()) {
+                            functionCall.mStatements.push_back(parameter.value());
+                            return functionCall;
+                        }
+                        if(expectOperator(",").has_value()) {
+                            startToken = mCurrentToken;
+                            --startToken;
+                            break; 
+                        }
+                    }    
+                    mCurrentToken = startToken;  
+                }
+            } else {
+                mCurrentToken = startToken;
+                parameter = expectExpressionFunc();
+            }
+
             if(!parameter.has_value()) {
                 throw runtime_error("Expected expression as parameter.");
             }
@@ -644,7 +687,6 @@ namespace parser {
     bool Parser::isDeclaration() {
         vector<Token>::iterator startToken = mCurrentToken;
         while (!expectOperator(",").has_value()) {
-            //cout << mCurrentToken->mText << endl;
             if(expectOperator(")").has_value()) {mCurrentToken = startToken; return false;}
             ++mCurrentToken;
         }
