@@ -18,7 +18,8 @@ namespace parser {
         POTENTIAL_DOUBLE,
         COMMENT,
         LOGIC,
-        POTENTIAL_LOGIC
+        POTENTIAL_LOGIC,
+        BLOCK_COMMENT
     };
 
     static const char *sTokenTypeStrings[] = {
@@ -33,6 +34,7 @@ namespace parser {
         "COMMENT",
         "LOGIC",
         "POTENTIAL_LOGIC"
+        "BLOCK_COMMENT"
     };
 
     class Token {

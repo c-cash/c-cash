@@ -22,4 +22,12 @@ func main() {
     loop(2 + 2 * 2) {
         write("d");
     }
+
+    loop(int i = 10, i > 0, i = i - 1) {
+        write(i);
+    }
+
+    loop(int i = 0, i < 10, i = i + 2) {
+        write(i);
+    }
 }

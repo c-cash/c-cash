@@ -52,6 +52,10 @@ namespace parser {
                     } else if(currentToken.mType == POTENTIAL_DOUBLE){
                         currentToken.mType = DOUBLE_LITERAL;
                         currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == OPERATOR){
+                        endToken(currentToken, tokens);
+                        currentToken.mType = INTEGER_LITERAL;
+                        currentToken.mText.append(1, currCh);
                     } else {
                         currentToken.mText.append(1, currCh);
                     }
@@ -64,7 +68,7 @@ namespace parser {
                     } else if(currentToken.mType == INTEGER_LITERAL){
                         currentToken.mType = DOUBLE_LITERAL;
                         currentToken.mText.append(1, currCh);
-                    } else if(currentToken.mType == STRING_LITERAL){
+                    } else if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){
                         currentToken.mText.append(1, currCh);
                     } else {
                         endToken(currentToken, tokens);
@@ -84,7 +88,7 @@ namespace parser {
                 case '-':
                 case '/': 
                 case ',':
-                    if(currentToken.mType != STRING_LITERAL){
+                    if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
                         currentToken.mText.append(1, currCh);
@@ -99,7 +103,7 @@ namespace parser {
                         currentToken.mType = LOGIC;
                         currentToken.mText.append(1, currCh);
                         endToken(currentToken, tokens);
-                    } else if(currentToken.mType != STRING_LITERAL) {
+                    } else if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT) {
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
                         currentToken.mText.append(1, currCh);
@@ -111,7 +115,7 @@ namespace parser {
                 case '>':
                 case '<':
                 case '!':
-                    if(currentToken.mType != STRING_LITERAL){
+                    if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
                         currentToken.mType = LOGIC;
                         currentToken.mText.append(1, currCh);
                     } else {
@@ -121,7 +125,7 @@ namespace parser {
                 
                 case ' ':
                 case '\t':
-                    if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT){
+                    if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){
                         currentToken.mText.append(1, currCh);
                     } else {
                         endToken(currentToken, tokens);
@@ -129,12 +133,14 @@ namespace parser {
                     break;
                 case '\r':
                 case '\n':
-                    endToken(currentToken, tokens);
+                    if(currentToken.mType != BLOCK_COMMENT) {
+                        endToken(currentToken, tokens);
+                    }
                     ++currentToken.mLine;
                     break;
                 
                 case '"':
-                    if(currentToken.mType != STRING_LITERAL){
+                    if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
                         endToken(currentToken, tokens);
                         currentToken.mType = STRING_LITERAL;
                     } else if(currentToken.mType == STRING_LITERAL){
@@ -163,8 +169,22 @@ namespace parser {
                     }
                     break;
 
+                case '|':
+                    if(currentToken.mType == STRING_LITERAL) {
+                        currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == BLOCK_COMMENT) {
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                        currentToken.mType = WHITESPACE;
+                    } else  {
+                        endToken(currentToken, tokens);
+                        currentToken.mType = BLOCK_COMMENT;
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
+
                 default:
-                    if(currentToken.mType == WHITESPACE || currentToken.mType == INTEGER_LITERAL || currentToken.mType == DOUBLE_LITERAL){
+                    if(currentToken.mType == WHITESPACE || currentToken.mType == INTEGER_LITERAL || currentToken.mType == DOUBLE_LITERAL || currentToken.mType == OPERATOR) {
                         endToken(currentToken, tokens);
                         currentToken.mType = IDENTIFIER;
                         currentToken.mText.append(1, currCh);
@@ -180,12 +200,10 @@ namespace parser {
     }
 
     void Tokenaizer::endToken(Token &token, vector<Token> &tokens){
-        if (token.mType == COMMENT){
-            std::cout<<"Ignoring comment " << token.mText << '\n';
-        } else if (token.mType != WHITESPACE){
+        if (token.mType != WHITESPACE && (token.mType != COMMENT && token.mType != BLOCK_COMMENT)){
             tokens.push_back(token);
         }
-        if(token.mType == POTENTIAL_DOUBLE){
+        if(token.mType == POTENTIAL_DOUBLE) {
             if(token.mText.compare(".") == 0) {
                 token.mType = OPERATOR; 
             }

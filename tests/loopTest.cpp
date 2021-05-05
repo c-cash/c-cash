@@ -14,6 +14,6 @@ int main(){
         allCode += line;
     }
 
-    if(allCode == "aaaaabbbbc012dddddd") return 0; 
+    if(allCode == "aaaaabbbbc012dddddd1098765432102468") return 0; 
     return 1;
 }
