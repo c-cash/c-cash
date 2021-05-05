@@ -110,7 +110,21 @@ namespace interpreter{
 
                     if(cmd.mStatements[0].mStatements.size() == 3) {
                         if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::VARIABLE_DECLARATION){
+                            func.declareVariableFunc(cmd.mStatements[0].mStatements[0], scope);
+                        }
+                        if(cmd.mStatements[0].mStatements[1].mKind == StatementKind::LOGIC_CALL){
+                            Statement condition = cmd.mStatements[0].mStatements[1];
+                            Statement varCall = cmd.mStatements[0].mStatements[2];
+                            cmd.mStatements.erase(cmd.mStatements.begin());
 
+                            FunctionDefinition loopDef;
+                            loopDef.mName = cmd.mName;
+                            loopDef.mStatements = cmd.mStatements;
+                            vector<Statement> args;
+                            while(func.startIf(condition, scope)) {
+                                bool chceckReturn = executeFunction(loopDef, args, scope);
+                                func.changeVarValue(varCall, scope);
+                            }
                         }
                     } else if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::LOGIC_CALL) {
 
