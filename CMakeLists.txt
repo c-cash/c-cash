@@ -15,16 +15,22 @@ set(PARSER
     parser/Tokenaizer.cpp
 )
 
+set(OTHER
+    other/ParseSaver.cpp
+)
+
 #add execute file
 add_executable(${PROJECT_NAME} main.cpp)
 
 #add lib
 add_library(${PROJECT_NAME}-inter STATIC ${INTERPRETER})
 add_library(${PROJECT_NAME}-parser STATIC ${PARSER})
+add_library(${PROJECT_NAME}-other STATIC ${OTHER})
 
 #link lib
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-inter)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-parser)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-other)
 
 #Set C++ version
 set_target_properties(${PROJECT_NAME} PROPERTIES
