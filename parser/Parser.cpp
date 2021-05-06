@@ -131,6 +131,23 @@ namespace parser {
         ++mCurrentToken;
         return returnToken;
     }
+    optional<Token> Parser::expectAssignmentOperator(const string &name) {
+        if(mCurrentToken == mEndToken) { return nullopt; }
+        if(mCurrentToken->mType != COMPOUND_ASSIGNMENT_OPERATOR ) {return nullopt;}
+        if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+
+        Token returnToken = *mCurrentToken;
+        return returnToken;
+    }
+
+    optional<Token> Parser::expectIncDecOperator(const string &name) {
+        if(mCurrentToken == mEndToken) { return nullopt; }
+        if(mCurrentToken->mType !=  INC_DEC_OPERATOR) {return nullopt;}
+        if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+
+        Token returnToken = *mCurrentToken;
+        return returnToken;
+    }
 
     optional<Token> Parser::expectFuncOperator(const string &name) {
         vector<Token>::iterator nextToken = mCurrentToken;
@@ -268,23 +285,54 @@ namespace parser {
     }
 
     optional<Statement> Parser::expectVariableCall(){
-        Statement statment;
+        Statement statementVar;
 
-        statment.mKind = StatementKind::VARIABLE_CALL;
+        statementVar.mKind = StatementKind::VARIABLE_CALL;
 
         optional<Token> possibleVaribleName = expectIdentifier();
-        statment.mName = possibleVaribleName->mText;
+        statementVar.mName = possibleVaribleName->mText;
 
         if(expectOperator("=").has_value()) {
             optional<Statement> initialValue = expectExpressionFunc();
             if(!initialValue.has_value()) {
-                throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
+                throw runtime_error(string("Expected value to right of '=' in variable call in line ") + to_string(mCurrentToken->mLine));
             }
 
-            statment.mStatements.push_back(initialValue.value());
+            statementVar.mStatements.push_back(initialValue.value());
+        } else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value()) {
+            Statement operatorStatement;
+            char opt = mCurrentToken->mText[0];
+            operatorStatement.mName =  opt;
+            operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+            ++mCurrentToken;
+            optional<Statement> initialValue = expectExpressionFunc();
+            if(!initialValue.has_value()) {
+                throw runtime_error(string("Expected value to right of '=' in variable call in line ") + to_string(mCurrentToken->mLine));
+            }
+            operatorStatement.mStatements.push_back(statementVar);
+            operatorStatement.mStatements.push_back(initialValue.value());
+
+            statementVar.mStatements.push_back(operatorStatement);
+        } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
+            Statement operatorStatement;
+            char opt = mCurrentToken->mText[0];
+            operatorStatement.mName =  opt;
+            operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+            ++mCurrentToken;
+            optional<Statement> initialValue = expectExpressionFunc();
+            Statement one;
+            one.mName = "1";
+            one.mKind = StatementKind::LITERAL;
+            if(!initialValue.has_value()) {
+                operatorStatement.mStatements.push_back(statementVar);
+                operatorStatement.mStatements.push_back(one);
+                statementVar.mStatements.push_back(operatorStatement);
+            } else {
+                throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
+            }
         }
 
-        return statment;
+        return statementVar;
     }
 
     optional<Statement> Parser::expectVariableDeclaration() {
@@ -310,7 +358,7 @@ namespace parser {
             }
 
             statment.mStatements.push_back(initialValue.value());
-        }
+        } 
 
         return statment;
     }

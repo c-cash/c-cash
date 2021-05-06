@@ -46,7 +46,12 @@ namespace parser {
                 case '7':
                 case '8':
                 case '9':
-                    if(currentToken.mType == WHITESPACE){
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
+                        endToken(currentToken, tokens);
+                        currentToken.mType = INTEGER_LITERAL;
+                        currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == WHITESPACE){
                         currentToken.mType = INTEGER_LITERAL;
                         currentToken.mText.append(1, currCh);
                     } else if(currentToken.mType == POTENTIAL_DOUBLE){
@@ -87,16 +92,44 @@ namespace parser {
                 case '(':
                 case ')':
                 case ';':
-                case '+':
-                case '*':
-                case '-':
-                case '/': 
                 case ',':
-                    if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
                         currentToken.mText.append(1, currCh);
                         endToken(currentToken, tokens);
+                    } else if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
+                        endToken(currentToken, tokens);
+                        currentToken.mType = OPERATOR;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                    } else {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
+
+                case '+':
+                case '-':
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = INC_DEC_OPERATOR;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                    } else if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
+                        endToken(currentToken, tokens);
+                        currentToken.mType = POTENTIAL_SPECIFIC_OPERATOR;
+                        currentToken.mText.append(1, currCh);
+                    } else {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
+
+                case '*':
+                case '/': 
+                    if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
+                        endToken(currentToken, tokens);
+                        currentToken.mType = POTENTIAL_SPECIFIC_OPERATOR;
+                        currentToken.mText.append(1, currCh);
                     } else {
                         currentToken.mText.append(1, currCh);
                     }
@@ -107,11 +140,15 @@ namespace parser {
                         currentToken.mType = LOGIC;
                         currentToken.mText.append(1, currCh);
                         endToken(currentToken, tokens);
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = COMPOUND_ASSIGNMENT_OPERATOR;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
                     } else if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT) {
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
                         currentToken.mText.append(1, currCh);
-                    } else {
+                    }  else {
                         currentToken.mText.append(1, currCh);
                     }
                     break;
@@ -132,15 +169,23 @@ namespace parser {
                 case '\t':
                     if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){
                         currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
+                        endToken(currentToken, tokens);
                     } else {
                         endToken(currentToken, tokens);
                     }
                     break;
                 case '\r':
                 case '\n':
-                    if(currentToken.mType != BLOCK_COMMENT) {
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
-                    }
+                    } else if(currentToken.mType != BLOCK_COMMENT) {
+                        endToken(currentToken, tokens);
+                    } else {
+                        currentToken.mText.append(1, currCh);
+                    }         
                     ++currentToken.mLine;
                     break;
                 
@@ -156,6 +201,14 @@ namespace parser {
                 case '\\':
                     if(currentToken.mType == STRING_LITERAL){
                         currentToken.mType = STRING_ESCAPE_SEQUENCE;
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
+                        endToken(currentToken, tokens);
+                        currentToken.mType = OPERATOR;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                    } else if(currentToken.mType == BLOCK_COMMENT || currentToken.mType == COMMENT) {
+                        currentToken.mText.append(1, currCh);
                     } else {
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
@@ -165,7 +218,12 @@ namespace parser {
                     break;
                 
                 case '#':
-                    if(currentToken.mType == STRING_LITERAL){
+                    if(currentToken.mType == STRING_LITERAL || currentToken.mType == BLOCK_COMMENT){
+                        currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
+                        endToken(currentToken, tokens);
+                        currentToken.mType = COMMENT;;
                         currentToken.mText.append(1, currCh);
                     } else {
                         endToken(currentToken, tokens);
@@ -181,6 +239,11 @@ namespace parser {
                         currentToken.mText.append(1, currCh);
                         endToken(currentToken, tokens);
                         currentToken.mType = WHITESPACE;
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
+                        endToken(currentToken, tokens);
+                        currentToken.mType = BLOCK_COMMENT;
+                        currentToken.mText.append(1, currCh);
                     } else  {
                         endToken(currentToken, tokens);
                         currentToken.mType = BLOCK_COMMENT;
@@ -190,6 +253,11 @@ namespace parser {
 
                 default:
                     if(currentToken.mType == WHITESPACE || currentToken.mType == INTEGER_LITERAL || currentToken.mType == DOUBLE_LITERAL || currentToken.mType == OPERATOR || currentToken.mType == LOGIC) {
+                        endToken(currentToken, tokens);
+                        currentToken.mType = IDENTIFIER;
+                        currentToken.mText.append(1, currCh);
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                        currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = IDENTIFIER;
                         currentToken.mText.append(1, currCh);
