@@ -18,26 +18,30 @@ int main (int argc, char **argv) {
     try{
         vector<string> args(argv, argv + argc);
 
-
+        // run from code
         ifstream file(args[1]);
         string line, allCode="";
+        bool isParsed = false;
+        bool isFirst = true;
         while (getline(file, line)){
+            if (isFirst && line == "#!/parsed") {
+                isParsed = true;
+                break;
+            }
             allCode += line + '\n';
+            isFirst = false;
         }
-
-    // cout << allCode << '\n';
-
-        Tokenaizer tokenaizer;
-        vector<Token> tokens = tokenaizer.parse(allCode);
-    
-    /*
-        for(Token currToken : tokens){
-            currToken.DebugPrint();
-        }
-    */
 
         Parser parser;
-        parser.parse(tokens);
+        if (isParsed) {
+            ParseSaver saver;
+            parser.mFunction = saver.load(args[1]);
+        } else {
+            Tokenaizer tokenaizer;
+            vector<Token> tokens = tokenaizer.parse(allCode);
+
+            parser.parse(tokens);
+        }
         // debug print
         vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
         if (debugIterator != end(args)) {
@@ -53,7 +57,6 @@ int main (int argc, char **argv) {
             // there is -E in argv
             int index = distance(begin(args), argIterator);
             if (args.size() < index+2) throw "You need to provide a path for -E";
-            cout << "Saving to " << args[index+1] << '\n';
 
             ParseSaver saver;
             saver.save(args[index+1], functions);
