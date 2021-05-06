@@ -1,7 +1,5 @@
-func abc(char x, char y){
-    write("\n", x, " ", y,  "\n");
-}
 
 func main() {
-    abc(2==2, 3<2);
+    int a = 1;
+    write(a);
 } 

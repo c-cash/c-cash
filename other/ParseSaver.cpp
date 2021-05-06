@@ -26,47 +26,45 @@ namespace parsesaver {
         {parser::StatementKind::LITERAL, 0b111},
         {parser::StatementKind::LOGIC_CALL, 0b1000},
         {parser::StatementKind::OPERATOR_CALL, 0b1001},
-        {parser::StatementKind::VARIABLE, 0b1010},
-        {parser::StatementKind::VARIABLE_CALL, 0b1011},
-        {parser::StatementKind::VARIABLE_DECLARATION, 0b1100}
+        {parser::StatementKind::VARIABLE, 0b1011}, // skip new line (0x1010)
+        {parser::StatementKind::VARIABLE_CALL, 0b1100},
+        {parser::StatementKind::VARIABLE_DECLARATION, 0b1101}
     };
     map<char, parser::StatementKind> inverseStatementMap {
         {0b110, parser::StatementKind::FUNCTION_CALL},
         {0b111, parser::StatementKind::LITERAL},
         {0b1000, parser::StatementKind::LOGIC_CALL},
         {0b1001, parser::StatementKind::OPERATOR_CALL},
-        {0b1010, parser::StatementKind::VARIABLE},
-        {0b1011, parser::StatementKind::VARIABLE_CALL},
-        {0b1100, parser::StatementKind::VARIABLE_DECLARATION}
+        {0b1011, parser::StatementKind::VARIABLE}, // skip new line (0x1010)
+        {0b1100, parser::StatementKind::VARIABLE_CALL},
+        {0b1101, parser::StatementKind::VARIABLE_DECLARATION}
     };
 
-    map<string, char> typeMap {
-        {"func", 0b110},
-        {"signed int", 0b111},
-        {"signed integer", 0b111}, // unnecessary
-        {"unsigned int", 0b1000},
-        {"unsigned integer", 0b1000}, // unnecessary
-        {"signed char", 0b1001},
-        {"unsigned char", 0b1010},
-        {"double", 0b1011},
-        {"string", 0b1100},
-        {"func_param", 0b1101}
+    map<parser::BUILTIN_TYPE, char> typeMap {
+        {parser::BUILTIN_TYPE::FUNC, 0b110},
+        {parser::BUILTIN_TYPE::INT32, 0b111},
+        {parser::BUILTIN_TYPE::UINT32, 0b1000},
+        {parser::BUILTIN_TYPE::INT8, 0b1001},
+        {parser::BUILTIN_TYPE::UINT8, 0b1011}, // skip new line (0x1010)
+        {parser::BUILTIN_TYPE::DOUBLE, 0b1100},
+        {parser::BUILTIN_TYPE::STRING, 0b1101},
+        {parser::BUILTIN_TYPE::FUNC_PARAM, 0b1110}
     };
     map<char, pair<string, parser::BUILTIN_TYPE>> inverseTypes {
         {0b110, {"func", parser::BUILTIN_TYPE::FUNC}},
         {0b111, {"signed integer", parser::BUILTIN_TYPE::INT32}},
         {0b1000, {"unsigned integer", parser::BUILTIN_TYPE::UINT32}},
         {0b1001, {"signed char", parser::BUILTIN_TYPE::INT8}},
-        {0b1010, {"unsigned char", parser::BUILTIN_TYPE::UINT8}},
-        {0b1011, {"double", parser::BUILTIN_TYPE::DOUBLE}},
-        {0b1100, {"string", parser::BUILTIN_TYPE::STRING}},
-        {0b1101, {"func_param", parser::BUILTIN_TYPE::FUNC_PARAM}}
+        {0b1011, {"unsigned char", parser::BUILTIN_TYPE::UINT8}}, // skip new line (0x1010)
+        {0b1100, {"double", parser::BUILTIN_TYPE::DOUBLE}},
+        {0b1101, {"string", parser::BUILTIN_TYPE::STRING}},
+        {0b1110, {"func_param", parser::BUILTIN_TYPE::FUNC_PARAM}}
     };
 
     string varnamechars = "abcdefghijklmoprstuvwxyzABCDEFGHIJKLMNOPRSTUVWXYZ";
 
     vector<string> staticnames = {
-        "main", "write", "read"
+        "main", "write", "read", "IF", "ELSE", "LOOP", "ELIF"
     };
 
     // SAVE
@@ -90,7 +88,7 @@ namespace parsesaver {
             fout << getNextName(f.first); // function name
             fout << (char) Special::PARAMETERS_START;
             for(parser::ParameterDefinition &p : f.second.mParameters) {
-                fout << toBinaryType(p.mType.mName) << getVariableName(p.mName, true) << (char) Special::PARAMETERS_NEXT;
+                fout << toBinaryType(p.mType.mType) << getVariableName(p.mName, true) << (char) Special::PARAMETERS_NEXT;
             }
             fout << (char) Special::PARAMETERS_END;
             for(parser::Statement &s : f.second.mStatements) {
@@ -115,13 +113,13 @@ namespace parsesaver {
     char ParseSaver::toBinaryType(parser::Statement &stmt) {
         return (char) statementMap[stmt.mKind];
     }
-    char ParseSaver::toBinaryType(string type) {
+    char ParseSaver::toBinaryType(parser::BUILTIN_TYPE type) {
         if (typeMap.count(type) == 0) throw "No Statement Type Error: " + type;
         return typeMap[type];
     }
     char ParseSaver::toBinarySubtype(parser::Statement &stmt) {
-        if (typeMap.count(stmt.mType.mName) == 0) throw "No Statement Type Error: " + stmt.mType.mName;
-        return typeMap[stmt.mType.mName];
+        if (typeMap.count(stmt.mType.mType) == 0) throw "No Statement Type Error: " + stmt.mType.mName;
+        return typeMap[stmt.mType.mType];
     }
     string ParseSaver::getStatementName(parser::Statement &stmt) {
         if (stmt.mName == "") return "-";
@@ -139,6 +137,7 @@ namespace parsesaver {
     }
 
     string ParseSaver::getNextName(string current) {
+        return current;
         map<string, string>::iterator index = varmap.find(current);
         if (index == varmap.end()) {
             // generate new name
@@ -164,8 +163,10 @@ namespace parsesaver {
         vector<char> bytes((istreambuf_iterator<char>(file)), (istreambuf_iterator<char>()));
         map<string, parser::FunctionDefinition> functions;
         vector<char> line;
+        bool isFirst = true;
         for(char c : bytes) {
             if (c == '\n') {
+                if (isFirst) {isFirst = false; line.clear(); continue;}
                 functions.insert(loadFunction(line));
                 line.clear();
             } else {
@@ -191,7 +192,7 @@ namespace parsesaver {
             if (line[i] == (char) Special::PARAMETERS_END) break;
             parser::ParameterDefinition param;
             pair<string, parser::BUILTIN_TYPE> temp = inverseTypes[line[i]];
-            param.mType = (new parser::Type(temp.first, temp.second))->mName;
+            param.mType = parser::Type(temp.first, temp.second);
             i++;
             while(line[i] != (char) Special::PARAMETERS_NEXT) {
                 param.mName += line[i];
@@ -215,7 +216,7 @@ namespace parsesaver {
             current = stmt;
             stmt->mKind = inverseStatementMap[line[i+1]];
             pair<string, parser::BUILTIN_TYPE> temp = inverseTypes[line[i+2]];
-            stmt->mType = (new parser::Type(temp.first, temp.second))->mName;
+            stmt->mType = parser::Type(temp.first, temp.second);
             string name;
             i += 3;
             while(line[i] != (char) Special::CONTENT_BEGIN) {
@@ -225,9 +226,9 @@ namespace parsesaver {
             i++;
             while(line[i] != (char) Special::CONTENT_END) {
                 loadStatement(line, i, current, stmt->mStatements);
+                i++;
                 current = stmt;
             }
-            i++;
             statements.push_back(*stmt);
         }
     }
