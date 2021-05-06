@@ -1,8 +1,7 @@
-func main() {
-    int i = 0;
+func abc(char x, char y){
+    write("\n", x, " ", y,  "\n");
+}
 
-    loop(i=2, i<=10, i=i+1){
-        write(i, " ");
-    }
-    write("\n");
+func main() {
+    abc(2==2, 3<2);
 } 

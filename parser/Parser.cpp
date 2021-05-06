@@ -667,15 +667,15 @@ namespace parser {
                     if(expectOperator(")").has_value()) break;
                 }
                 optional<Statement> mathParam = expectVariableCall();
-
                 addParametr.mStatements.push_back(logicParam.value()); addParametr.mStatements.push_back(mathParam.value());
 
+                ++mCurrentToken;
                 break;
             }
         }
-        ++mCurrentToken;
 
         loopS.mStatements.push_back(addParametr);
+
         optional<vector<Statement>> statements = parseFunctionBody();
         if(!statements.has_value()){
             throw runtime_error(string("Bad expression in loop statement body in line ") + to_string(mCurrentToken->mLine));
