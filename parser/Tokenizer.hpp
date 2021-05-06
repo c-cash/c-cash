@@ -19,7 +19,10 @@ namespace parser {
         COMMENT,
         LOGIC,
         POTENTIAL_LOGIC,
-        BLOCK_COMMENT
+        BLOCK_COMMENT,
+        COMPOUND_ASSIGNMENT_OPERATOR,
+        INC_DEC_OPERATOR,
+        POTENTIAL_SPECIFIC_OPERATOR
     };
 
     static const char *sTokenTypeStrings[] = {
@@ -33,8 +36,11 @@ namespace parser {
         "POTENTIAL_DOUBLE",
         "COMMENT",
         "LOGIC",
-        "POTENTIAL_LOGIC"
-        "BLOCK_COMMENT"
+        "POTENTIAL_LOGIC",
+        "BLOCK_COMMENT",
+        "COMPOUND_ASSIGNMENT_OPERATOR",
+        "INC_DEC_OPERATOR",
+        "POTENTIAL_SPECIFIC_OPERATOR"
     };
 
     class Token {
