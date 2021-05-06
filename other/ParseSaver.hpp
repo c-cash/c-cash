@@ -13,6 +13,7 @@ namespace parsesaver {
             ParseSaver() {};
 
             void save(string path, map<string, parser::FunctionDefinition> &functions);
+            void writeHelp();
             map<string, parser::FunctionDefinition> load(string path);
 
         private:
@@ -35,6 +36,5 @@ namespace parsesaver {
 
             string escape(string v);
             string unescape(string v);
-
     };
 }

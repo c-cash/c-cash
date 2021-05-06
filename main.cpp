@@ -49,6 +49,12 @@ int main (int argc, char **argv) {
             parser.DebugPrint();
         }
 
+        vector<string>::iterator helpIterator = find(begin(args), end(args), "-H");
+        if (helpIterator != end(args)) {
+            ParseSaver saver;
+            saver.writeHelp();
+        }
+
         map<string, FunctionDefinition> functions = parser.mFunction;
 
         // saving

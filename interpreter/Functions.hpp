@@ -10,7 +10,7 @@ namespace interpreter {
     using namespace std;
     using namespace parser;
 /*
-    template <typename T, std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, std::string>, bool> = true>
+    template <typename T, std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, std::string> || std::is_same_v<T, bool>, bool> = true>
     struct findVarStruct {
         T data;
     };
