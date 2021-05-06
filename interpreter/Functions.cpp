@@ -82,49 +82,54 @@ namespace interpreter {
     }
 
     double Functions::startCalculations(Statement &operations, Scope &scope) {
-        switch (operations.mName[0]) {
-            case '+':
-                return calculating(operations.mStatements[0], scope) + calculating(operations.mStatements[1], scope);
-                break;
-            case '-':
-                return calculating(operations.mStatements[0], scope) - calculating(operations.mStatements[1], scope);
-                break;
-            case '*':
-                return calculating(operations.mStatements[0], scope) * calculating(operations.mStatements[1], scope);
-                break;
-            case '/':
-                if(calculating(operations.mStatements[1], scope) == 0) {
-                    throw runtime_error("Division by zero is impossible");
-                }
-                return calculating(operations.mStatements[0], scope) / calculating(operations.mStatements[1], scope);
-                break;
-            default:
-                if(operations.mKind == StatementKind::LITERAL){
-                    std::string::size_type st;
-                    return stod(operations.mName, &st);
-                }/* else if(operations.mKind == StatementKind::VARIBLE_CALL){
-                    return findVar(operations, scope);
-                } */ else if(operations.mKind == StatementKind::VARIABLE_CALL){
-                    return findVar(operations, scope);
-                } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-                    if(mFunctions.find(operations.mName) != mFunctions.end()){
-                        vector<Statement> args;
-                        for(auto i : operations.mStatements){
-                            Statement arg;
-                            arg.mName = to_string(startCalculations(i, scope));
-                            arg.mKind = StatementKind::LITERAL;
-                            args.push_back(arg);
-                        }
+        if(operations.mKind == StatementKind::LOGIC_CALL) {
+                if(startIf(operations, scope)) { return true; }
+                else { return false; }
+        } else {
+            switch (operations.mName[0]) {
+                case '+':
+                    return calculating(operations.mStatements[0], scope) + calculating(operations.mStatements[1], scope);
+                    break;
+                case '-':
+                    return calculating(operations.mStatements[0], scope) - calculating(operations.mStatements[1], scope);
+                    break;
+                case '*':
+                    return calculating(operations.mStatements[0], scope) * calculating(operations.mStatements[1], scope);
+                    break;
+                case '/':
+                    if(calculating(operations.mStatements[1], scope) == 0) {
+                        throw runtime_error("Division by zero is impossible");
+                    }
+                    return calculating(operations.mStatements[0], scope) / calculating(operations.mStatements[1], scope);
+                    break;
+                default:
+                    if(operations.mKind == StatementKind::LITERAL){
+                        std::string::size_type st;
+                        return stod(operations.mName, &st);
+                    }/* else if(operations.mKind == StatementKind::VARIBLE_CALL){
+                        return findVar(operations, scope);
+                    } */ else if(operations.mKind == StatementKind::VARIABLE_CALL){
+                        return findVar(operations, scope);
+                    } else if(operations.mKind == StatementKind::FUNCTION_CALL){
+                        if(mFunctions.find(operations.mName) != mFunctions.end()){
+                            vector<Statement> args;
+                            for(auto i : operations.mStatements){
+                                Statement arg;
+                                arg.mName = to_string(startCalculations(i, scope));
+                                arg.mKind = StatementKind::LITERAL;
+                                args.push_back(arg);
+                            }
 
-                        inter.executeFunction(mFunctions[operations.mName], args, scope);
+                            inter.executeFunction(mFunctions[operations.mName], args, scope);
+                            return ret;
+                        } else {
+                            throw runtime_error("No function find!");
+                        }   
                         return ret;
-                    } else {
-                        throw runtime_error("No function find!");
-                    }   
-                    return ret;
-                }
-                break;
-        } 
+                    }
+                    break;
+            } 
+        }
         return 0;   
     }
 
@@ -156,7 +161,6 @@ namespace interpreter {
     }
 
     double Functions::findVar(Statement &operations, Scope &scope){
-        //cout << operations.mName << '\n';
         if(scope.doubleVarTab.find(operations.mName) != scope.doubleVarTab.end()){
            return scope.doubleVarTab[operations.mName];
         } else if(scope.intVarTab.find(operations.mName) != scope.intVarTab.end()){
@@ -211,6 +215,9 @@ namespace interpreter {
                 cout << startCalculations(i, scope);
             } else if(i.mKind == StatementKind::LITERAL) {
                 cout << i.mName;
+            } else if(i.mKind == StatementKind::LOGIC_CALL) {
+                if(startIf(i, scope)) { cout << true; }
+                else { cout << false; }
             } else if(i.mKind == StatementKind::FUNCTION_CALL){
                 if(mFunctions.find(i.mName) != mFunctions.end()){
                     startCalculations(i, scope);
@@ -286,9 +293,9 @@ namespace interpreter {
         } else if (">=" == operations.mName) {
             return startCalculations(operations.mStatements[0], scope) >= startCalculations(operations.mStatements[1], scope);
         } else if("or" == operations.mName){
-            startIf(operations, scope);
+            return startIf(operations, scope);
         } else if("and" == operations.mName){
-            startIf(operations, scope);
+            return startIf(operations, scope);
         } else {
             throw runtime_error("Error in if operator");
         }
