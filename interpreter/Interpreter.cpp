@@ -28,21 +28,19 @@ namespace interpreter{
             } else {
                 throw runtime_error(": Invalid number of arguments was supplied!");
             }
-
-            return true;
-        }
-
-        if(commandsFunc.mParameters.size() == args.size()) {
-            for(auto var : commandsFunc.mParameters) {
-                func.declareParameter(var, args[i], scope);
-                ++i;
-            }
-            for(auto cmd : commandsFunc.mStatements){
-                bool ex = executeCommand(scope, cmd);
-                if(ex == false){ return false;}
-            }
         } else {
-            throw runtime_error(": Invalid number of arguments was supplied!");
+            if(commandsFunc.mParameters.size() == args.size()) {
+                for(auto var : commandsFunc.mParameters) {
+                    func.declareParameter(var, args[i], scope);
+                    ++i;
+                }
+                for(auto cmd : commandsFunc.mStatements){
+                    bool ex = executeCommand(scope, cmd);
+                    if(ex == false){ return false;}
+                }
+            } else {
+                throw runtime_error(": Invalid number of arguments was supplied!");
+            }
         }
 
         return true;
@@ -125,6 +123,7 @@ namespace interpreter{
                             vector<Statement> args;
                             while(func.startIf(condition, scope)) {
                                 bool chceckReturn = executeFunction(loopDef, args, scope);
+                                if(chceckReturn == false) return  false;
                                 func.changeVarValue(varCall, scope);
                             }
                         }
@@ -141,6 +140,7 @@ namespace interpreter{
 
                         while(func.startIf(condition, scope)) {
                             bool chceckReturn = executeFunction(loopDef, args, scope);
+                            if(chceckReturn == false) return  false;
                         }
                     } else if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::LITERAL || cmd.mStatements[0].mStatements[0].mKind == StatementKind::OPERATOR_CALL || cmd.mStatements[0].mStatements[0].mKind == StatementKind::VARIABLE_CALL || cmd.mStatements[0].mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
                         long long forCounting = func.startCalculations(cmd.mStatements[0].mStatements[0], scope);
@@ -151,12 +151,16 @@ namespace interpreter{
                         loopDef.mStatements = cmd.mStatements;
                         vector<Statement> args;
                         while(forCounting > 0) {
-                            bool chceckReturn = executeFunction(loopDef, args, scope);                
+                            bool chceckReturn = executeFunction(loopDef, args, scope); 
+                            if(chceckReturn == false) return  false;             
                             --forCounting;
                         }                        
                     } else {
                         throw runtime_error("Wrong arguments in loop statement.");
                     }
+                } else if(cmd.mName == "break"){
+                    return false;
+                    break;
                 } else {
                     if(mFunctions.find(cmd.mName) != mFunctions.end()){
                         bool checkReturn = executeFunction(mFunctions[cmd.mName], cmd.mStatements, scope);
@@ -173,7 +177,6 @@ namespace interpreter{
             default:
                 throw runtime_error("Don't find function!");
         }
-        //cout << "po switch\n";
         return true;
     }
 

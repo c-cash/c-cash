@@ -35,7 +35,7 @@ int main (int argc, char **argv) {
 
         Parser parser;
         parser.parse(tokens);
-        parser.DebugPrint();
+        //parser.DebugPrint();
 
         map<string, FunctionDefinition> functions = parser.mFunction;
         
