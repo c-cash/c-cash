@@ -137,7 +137,6 @@ namespace parsesaver {
     }
 
     string ParseSaver::getNextName(string current) {
-        return current;
         map<string, string>::iterator index = varmap.find(current);
         if (index == varmap.end()) {
             // generate new name
