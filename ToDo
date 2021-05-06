@@ -26,3 +26,45 @@ ___________WYDANIE NOWEJ WERSJI______________
 9. Komentarze blokowe                                  (done)
 10. Rekurencja                                         (done)
 11. Naprawa błędu z wieloma or/and                     (done)
+
+-----------------------------CLOSED------------------------
+
+___________WYDANIE NOWEJ WERSJI______________
+
+
+-----------------------0.2.0-----------------------
+
+1. tablice
+2. break w loop
+3. skrócone operatory przypisania: +=, -=, *=, /=      (done)
+4. inkrementacja oraz dekrementacja(i++, i--)          (done)
+5. Operator %
+6. String
+7. Bool
+8. Naprawa kometarzy blokowych                         (done)
+
+
+
+-------odległe wersje byle żeby nie zapomnieć(to wszystko na wercję 1.0.0)----------
+1. do loop
+2. includowanie plików
+3. switch
+4. funkcja system()
+5. obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...)
+6. kolejność działań z ) i (
+7. typ var
+8. obsługa licz ujemnych, operator -
+9. negacja
+10. liczby losowe
+11. typ data i metody obsługujące go
+12. referencje
+13. konwersja zmiennych
+14. continue w loop
+15. deklaracja wielu zmiennych w jednej linii
+16. error do 
+17. asynchroniczność
+18. stałe
+19. zmienne globalne
+20. long long
+21. try i catch i throw
+22. char jako znak

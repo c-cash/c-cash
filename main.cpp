@@ -56,10 +56,16 @@ int main (int argc, char **argv) {
         if (argIterator != end(args)) {
             // there is -E in argv
             int index = distance(begin(args), argIterator);
-            if (args.size() < index+2) throw "You need to provide a path for -E";
-
             ParseSaver saver;
-            saver.save(args[index+1], functions);
+            if (args.size() < index+2) {
+                saver.save("c.ccc", functions);
+            } else {
+                if(args[index+1][0] != '-') {
+                    saver.save(args[index+1]+".ccc", functions);
+                } else {
+                    saver.save("c.ccc", functions);
+                }
+            }   
 
         } else { // interpret
             Interpreter interpreter;

@@ -69,9 +69,8 @@ namespace parsesaver {
 
     // SAVE
     void ParseSaver::save(string path, map<string, parser::FunctionDefinition> &functions) {
-        if (ifstream(path).good()) {
-            cout << "File already exists" << '\n';
-            throw "File already exists";
+        if (!(ifstream(path).good())) {
+            throw runtime_error (string("File cannot be open"));
         }
 
         clen = 1;
