@@ -20,8 +20,11 @@ namespace transpiler {
             string transpileStatement(Statement &stmt);
             string transpileFunctionCall(Statement &stmt);
             string transpileLitteral(Statement &stmt);
+            string transpileOperator(Statement &stmt);
+            string transpileVariableDeclaration(Statement &stmt);
+            string transpileLoop(Statement &stmt);
 
-            void replace(string &s, string from, string to);
+            int replace(string &s, string from, string to);
             template<typename T>
             string connect(vector<T> &v, string c);
     };

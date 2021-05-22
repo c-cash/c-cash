@@ -9,13 +9,16 @@ namespace transpiler {
 
     map<string, string> specialCases {
         {"return", "return {0}"},
-        {"write", "cout << {.<<.}"}
+        {"write", "cout << {.<<.}"},
+        {"read", "cin >> {.>>.}"},
+        {"IF", "if ({0}) {\n{.;.};\n}"}
     };
 
     map<string, string> connectorMap {
         {"{.<<.}", " << "},
         {"{.>>.}", " >> "},
-        {"{.+.}", " + "}
+        {"{.+.}", " + "},
+        {"{.;.}", ";"}
     };
 
     void Transpiler::transpile(string path, map<string, FunctionDefinition> &mFunctions) {
@@ -37,11 +40,11 @@ namespace transpiler {
 
             // statements
             for (Statement stmt : func.second.mStatements) {
-                fout << transpileStatement(stmt);
+                fout << transpileStatement(stmt) + ";\n";
             }
 
             // close function
-            fout << "}";
+            fout << "}\n";
         }
         fout.close();
     }
@@ -51,11 +54,44 @@ namespace transpiler {
         if (stmt.mKind == StatementKind::LITERAL) {
             return transpileLitteral(stmt);
         }
+        // VARIABLE DECLARATION
+        if (stmt.mKind == StatementKind::VARIABLE_DECLARATION) {
+            return transpileVariableDeclaration(stmt);
+        }
+        // LOGIC CALL
+        if (stmt.mKind == StatementKind::LOGIC_CALL) {
+            return "(" + transpileOperator(stmt) + ")";
+        }
+        // OPERATOR CALL
+        if (stmt.mKind == StatementKind::OPERATOR_CALL) {
+            return transpileOperator(stmt);
+        }
+        // VARIABLE CALL
+        if (stmt.mKind == StatementKind::VARIABLE_CALL) {
+            return stmt.mName;
+        }
         // FUNCTION CALL
         if (stmt.mKind == StatementKind::FUNCTION_CALL) {
             return transpileFunctionCall(stmt);
         }
         return "";
+    }
+
+    string Transpiler::transpileLoop(Statement &stmt) {
+        return "TODO: implement loops";
+    }
+
+
+    string Transpiler::transpileVariableDeclaration(Statement &stmt) {
+        return stmt.mType.mName + " " + stmt.mName + " = " + transpileStatement(stmt.mStatements[0]) + "";
+    }
+
+    string Transpiler::transpileOperator(Statement &stmt) {
+        vector<string> temp;
+        for (Statement s : stmt.mStatements) {
+            temp.emplace_back(transpileStatement(s));
+        }
+        return Transpiler::connect<string>(temp, stmt.mName);
     }
 
     string Transpiler::transpileLitteral(Statement &stmt) {
@@ -69,22 +105,25 @@ namespace transpiler {
     }
 
     string Transpiler::transpileFunctionCall(Statement &stmt) {
-        if (specialCases.find(stmt.mName) != end(specialCases)) { // special case
+        if (stmt.mName == "LOOP") { // this function is a loop :D
+            return transpileLoop(stmt);
+        } else if (specialCases.find(stmt.mName) != end(specialCases)) { // special case
             string special = specialCases[stmt.mName];
             int i=0;
             // normal values
             vector<string> args;
             for (Statement arg : stmt.mStatements) {
                 string t = transpileStatement(arg);
-                args.emplace_back(t);
-                Transpiler::replace(special, "{" + to_string(i) + "}", t);
+                if (Transpiler::replace(special, "{" + to_string(i) + "}", t) == 0) {
+                    args.emplace_back(t);
+                }
                 i++;
             }
             // connected values
             for (pair<string, string> c : connectorMap) {
-                Transpiler::replace(special, c.first, Transpiler::connect(args, c.second));
+                Transpiler::replace(special, c.first, Transpiler::connect<string>(args, c.second));
             }
-            return special + ";\n";
+            return special;
         } else { // normal case
             string result = stmt.mName + "(";
             int i=0;
@@ -93,7 +132,7 @@ namespace transpiler {
                 result += transpileStatement(arg) + (i == size-1 ? "" : ", ");
                 i++;
             }
-            return result + ");\n";
+            return result + ")";
         }
     }
 
@@ -102,13 +141,16 @@ namespace transpiler {
         return "???";
     }
 
-    void Transpiler::replace(string &s, string from, string to) {
+    int Transpiler::replace(string &s, string from, string to) {
         size_t position = s.find(from);
+        int changed = 0;
 
         while(position != string::npos) {
             s.replace(position, from.size(), to);
+            changed++;
             position = s.find(from, position + to.size());
         }
+        return changed;
     }
 
     template<typename T>
