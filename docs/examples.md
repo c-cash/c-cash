@@ -10,7 +10,7 @@ func main() {
         int operation;
         write("\n", "1. Addition\n", "2. Subtraction\n", "3. Multiplication\n", "4. Division\n", "5.Exit\n");
         read(operation);
-        if (x >= 1 and a <= 4) {
+        if (operation >= 1 and operation <= 4) {
             int a;
             int b;
             write("Enter first numer: ");
@@ -39,8 +39,8 @@ func main() {
 ## Factorial
 ```clike
 func factorial(int n) {
-    if (n <= 1) return n;
-    return n*factorial(n-1);
+    if (n <= 1) return(n);
+    return(n*factorial(n-1));
 }
 
 func main() {

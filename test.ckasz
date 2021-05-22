@@ -1,5 +1,14 @@
-func main() {
-    loop(5) {
-        write("Hello");
+func factorial(int n) {
+    if (n <= 1) {
+        return(n);
     }
-} 
+    return(n*factorial(n-1));
+}
+
+func main() {
+    int n;
+    write("a number to calculate factorial of: ");
+    read(n);
+
+    write("the result is: ", factorial(n));
+}
