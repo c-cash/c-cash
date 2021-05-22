@@ -1,10 +1,4 @@
 func main() {
-
-    bool tof = false;
-    tof = true;
-    tof = 5; #true
-    tof = 0; #false
-    tof = 2 > 3 and 3 == 2;
-
-    write(tof);
+    write(1, "Hello World");
+    return(1);
 } 

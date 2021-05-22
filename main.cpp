@@ -8,11 +8,13 @@
 #include "parser/Parser.hpp"
 #include "interpreter/Interpreter.hpp"
 #include "other/ParseSaver.hpp"
+#include "transpiler/Transpiler.hpp"
 
 using namespace std;
 using namespace parser;
 using namespace interpreter;
 using namespace parsesaver;
+using namespace transpiler;
 
 int main (int argc, char **argv) {
     try{
@@ -59,6 +61,7 @@ int main (int argc, char **argv) {
 
         // saving
         vector<string>::iterator argIterator = find(begin(args), end(args), "-E");
+        vector<string>::iterator transpileIterator = find(begin(args), end(args), "-T");
         if (argIterator != end(args)) {
             // there is -E in argv
             int index = distance(begin(args), argIterator);
@@ -74,8 +77,15 @@ int main (int argc, char **argv) {
             }   
 
         } else { // interpret
-            Interpreter interpreter;
-            interpreter.interpreter(functions);
+            if (transpileIterator != end(args)) {
+                // transpile
+                int index = distance(begin(args), transpileIterator);
+                Transpiler t;
+                t.transpile(args[index+1]+".cpp", functions);
+            } else {
+                Interpreter interpreter;
+                interpreter.interpreter(functions);
+            }
         }
     } catch(exception& err) {
         cerr << "Error " << err.what() << endl; 

@@ -19,6 +19,10 @@ set(OTHER
     other/ParseSaver.cpp
 )
 
+set(TRANSPILER
+    transpiler/Transpiler.cpp
+)
+
 #add execute file
 add_executable(${PROJECT_NAME} main.cpp)
 
@@ -26,11 +30,13 @@ add_executable(${PROJECT_NAME} main.cpp)
 add_library(${PROJECT_NAME}-inter STATIC ${INTERPRETER})
 add_library(${PROJECT_NAME}-parser STATIC ${PARSER})
 add_library(${PROJECT_NAME}-other STATIC ${OTHER})
+add_library(${PROJECT_NAME}-transpiler STATIC ${TRANSPILER})
 
 #link lib
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-inter)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-parser)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-other)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-transpiler)
 
 #Set C++ version
 set_target_properties(${PROJECT_NAME} PROPERTIES
