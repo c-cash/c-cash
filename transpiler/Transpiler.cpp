@@ -38,24 +38,33 @@ namespace transpiler {
         fout << "// this code is generated from CCash\n// this code is auto generated, so it may be hard to read\n#include <iostream>\nusing namespace std;\n\n";
 
         for (pair<string, FunctionDefinition> func : mFunctions) {
+            cout << "\u001b[32;1mTranspiling function \u001b[33m" << func.second.mName << "\u001b[0m\n";
             vardefmap.clear();
+            cout << "\t\u001b[36mLooking for variables to discover type\u001b[0m\n";
             researchVariables(func.second.mStatements);
             string params;
 
             // function declaration
             int size = func.second.mParameters.size();
+            cout << "\t\u001b[36mTranspiling function parameters\u001b[0m\n";
             for (int i=0; i<size; i++) {
                 ParameterDefinition param = func.second.mParameters[i];
                 vardefmap[param.mName] = param.mType.mName;
                 params += param.mType.mName + " " + getNextName(param.mName) + (i == size-1 ? "" : ", ");
             }
 
+            cout << "\t\u001b[36mDiscovering return type\u001b[0m\n";
             string returnType = discoverType(func.second);
+            cout << "\t\u001b[36mReturn type found: \u001b[33m" << returnType << "\u001b[0m\n";
             fout << returnType << " " << func.second.mName << "(" << params << ") {\n";
 
             // statements
+            cout << "\t\u001b[36mTranspiling statements\u001b[0m\n";
+            int i=0;
+            size = func.second.mStatements.size();
             for (Statement stmt : func.second.mStatements) {
                 fout << transpileStatement(stmt) + getEnd(stmt);
+                i++;
             }
 
             // close function
@@ -67,6 +76,7 @@ namespace transpiler {
     string Transpiler::transpileStatement(Statement &stmt) {
         // LITTERAL
         if (stmt.mKind == StatementKind::LITERAL) {
+            fixName(stmt);
             return transpileLitteral(stmt);
         }
         // VARIABLE DECLARATION
@@ -185,10 +195,10 @@ namespace transpiler {
     string Transpiler::discoverType(FunctionDefinition &func) {
         if (func.mName == "main") return "int";
         Statement* firstReturn = findFirstReturn(func.mStatements);
-        if (firstReturn->mStatements.size() <= 0) return "void";
+        if (firstReturn == nullptr || firstReturn->mStatements.size() <= 0) return "void";
         Statement* firstLitteral = findFirstTyped(*firstReturn);
         if (firstLitteral == nullptr) return "void";
-        else return firstLitteral->mType.mName;
+        else {fixName(*firstLitteral); return firstLitteral->mType.mName;};
     }
 
     void Transpiler::researchVariables(vector<Statement> &stmt) {
@@ -300,5 +310,9 @@ namespace transpiler {
     void Transpiler::unescape(string &s) {
         replace(s, "\n", "\\n");
         replace(s, "\t", "\\t");
+    }
+
+    void Transpiler::fixName(Statement &stmt) {
+        if (stmt.mType.mName == "signed integer") stmt.mType.mName = "signed int";
     }
 }
