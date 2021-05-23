@@ -109,6 +109,9 @@ namespace transpiler {
             string temp = getAutoName();
             result = "for (int " + temp + "; " + temp + "<" + stmt.mStatements[0].mStatements[0].mName + ";" + temp + "++) {\n";
 
+        } else if (stmt.mStatements[0].mStatements[0].mKind == StatementKind::VARIABLE_CALL) {
+            string temp = getAutoName();
+            result = "for (int " + temp + "; " + temp + "<" + getNextName(stmt.mStatements[0].mStatements[0].mName) + ";" + temp + "++) {\n";
         } else if (stmt.mStatements[0].mStatements[0].mKind == StatementKind::LOGIC_CALL) { // expression inside
             result = "while (" + transpileStatement(stmt.mStatements[0].mStatements[0]) + ") {\n";
         } else if (stmt.mStatements[0].mStatements.size() == 3) { // normal for loop

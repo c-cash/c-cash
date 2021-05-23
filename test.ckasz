@@ -1,10 +1,7 @@
-func hello(double d) {
-    write("Double is: ", d);
-}
-
 func main() {
     int a;
     read(a);
-    write(a+a*a);
-    hello(500);
+    loop(a) {
+        write("Number: ", a);
+    }
 }
