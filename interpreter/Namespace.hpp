@@ -1,0 +1,18 @@
+#pragma once
+
+#include <iostream>
+#include <map>
+#include <vector>
+#include "../variables/Object.hpp"
+
+typedef variable::Object*(*builtinF)(std::vector<variable::Object*> args);
+
+namespace interpreter {
+    using namespace std;
+    using namespace variable;
+
+    class Namespace {
+        public:
+            map<string, builtinF> functions;
+    };
+}

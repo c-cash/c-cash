@@ -4,6 +4,7 @@ project(c-cash VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 set(INTERPRETER 
+    interpreter/Namespace.cpp
     interpreter/Functions.cpp
     interpreter/Interpreter.cpp
 )
@@ -23,6 +24,14 @@ set(TRANSPILER
     transpiler/Transpiler.cpp
 )
 
+set(VARIABLE
+    variables/Object.cpp
+    variables/Integer.cpp
+    variables/Double.cpp
+    variables/String.cpp
+    variables/Boolean.cpp
+)
+
 #add execute file
 add_executable(${PROJECT_NAME} main.cpp)
 
@@ -31,12 +40,14 @@ add_library(${PROJECT_NAME}-inter STATIC ${INTERPRETER})
 add_library(${PROJECT_NAME}-parser STATIC ${PARSER})
 add_library(${PROJECT_NAME}-other STATIC ${OTHER})
 add_library(${PROJECT_NAME}-transpiler STATIC ${TRANSPILER})
+add_library(${PROJECT_NAME}-variable STATIC ${VARIABLE})
 
 #link lib
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-inter)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-parser)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-other)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-transpiler)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-variable)
 
 #Set C++ version
 set_target_properties(${PROJECT_NAME} PROPERTIES

@@ -1,4 +1,12 @@
 #include "Interpreter.hpp"
+#include "Functions.hpp"
+
+#include "../variables/Object.hpp"
+#include "../variables/Integer.hpp"
+#include "../variables/String.hpp"
+#include "Namespace.hpp"
+
+#include "../transpiler/Transpiler.hpp"
 
 #include <iostream>
 #include <string>
@@ -7,186 +15,90 @@
 namespace interpreter{
     using namespace std;
     using namespace parser;
+    using namespace variable;
 
-    bool ifIf;
-    map<string, parser::FunctionDefinition> mFunctions;
-    Functions func;
+    map<string, builtinF> Interpreter::globalBuiltins;
+    map<string, Namespace*> Interpreter::namespaces;
+    map<string, FunctionDefinition> Interpreter::definitions;
 
-    bool Interpreter::executeFunction(FunctionDefinition &commandsFunc, vector<Statement> &args, Scope &scope) {
-        size_t i=0;
-        if(commandsFunc.mName != "IF" && commandsFunc.mName != "ELIF" && commandsFunc.mName != "ELSE" && commandsFunc.mName != "LOOP") {
-            Scope secondScope = Scope();
-            if(commandsFunc.mParameters.size() == args.size()) {
-                for(auto var : commandsFunc.mParameters) {
-                    func.declareParameter(var, args[i], secondScope);
-                    ++i;
-                }
-                for(auto cmd : commandsFunc.mStatements){
-                    bool ex = executeCommand(secondScope, cmd);
-                    if(ex == false){ return false;}
-                }
-            } else {
-                throw runtime_error(": Invalid number of arguments was supplied!");
-            }
-        } else {
-            if(commandsFunc.mParameters.size() == args.size()) {
-                for(auto var : commandsFunc.mParameters) {
-                    func.declareParameter(var, args[i], scope);
-                    ++i;
-                }
-                for(auto cmd : commandsFunc.mStatements){
-                    bool ex = executeCommand(scope, cmd);
-                    if(ex == false){ return false;}
-                }
-            } else {
-                throw runtime_error(": Invalid number of arguments was supplied!");
-            }
+    void Interpreter::interpret(map<string, FunctionDefinition> &mFunctions) {
+        definitions = mFunctions;
+        // if program does not have a main function then throw an error
+        if (definitions.find("main") == definitions.end()) throw runtime_error("Program must have a 'main' function");
+
+        // execute main function
+        vector<Object*> temp;
+        evaluateFunction(definitions["main"], temp);
+    }
+    
+    Object* Interpreter::evaluateFunction(FunctionDefinition &func, vector<Object*> &args) {
+        Scope fScope; // create new scope for the function
+        // create variables from args
+        if (func.mParameters.size() != args.size())
+            throw runtime_error("Function " + func.mName + " needs exactly " + to_string(func.mParameters.size()) + " parameters but got " + to_string(args.size()));
+        for (int i=0; i<func.mParameters.size(); i++) {
+            ParameterDefinition& d = func.mParameters[i]; // get definition
+            fScope.varTab[d.mName] = args[i]; // assign parameter to the variable
         }
 
-        return true;
+        // execute all statements
+        for (Statement &s : func.mStatements) {
+            evaluateStatement(s, fScope); // evaluate statement with scope
+        }
+    }
+    
+    Object* Interpreter::evaluateStatement(Statement &stmt, Scope &scope) {
+        if (stmt.mKind == StatementKind::VARIABLE_DECLARATION) {
+            // declare variable and return null
+            if (scope.varTab.find(stmt.mName) != scope.varTab.end()) throw runtime_error("variable '" + stmt.mName + "' already exists");
+            transpiler::Transpiler::fixName(stmt); // fix signed integer instead of signed int
+            Object* obj = Object::checkAll(stmt.mType.mName, evaluateStatement(stmt.mStatements[0], scope));
+            if (obj == nullptr);
+            scope.varTab[stmt.mName] = obj;
+            return nullptr;
+        } else if (stmt.mKind == StatementKind::LITERAL) {
+            // get value from litteral :D
+            return Object::fromLitteral(stmt);
+        } else if (stmt.mKind == StatementKind::LOGIC_CALL) {
+            return Functions::evaluateLogic(stmt, scope);
+        } else if (stmt.mKind == StatementKind::OPERATOR_CALL) {
+            return Functions::evaluateMath(stmt, scope);
+        } else if (stmt.mKind == StatementKind::VARIABLE_CALL) {
+            if (scope.varTab.find(stmt.mName) == scope.varTab.end()) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+            if (stmt.mStatements.size() > 0) { // assign to existing variable
+                scope.varTab[stmt.mName] = Object::checkAll(scope.varTab[stmt.mName]->getType(), evaluateStatement(stmt.mStatements[0], scope));
+                return scope.varTab[stmt.mName];
+            }
+            return scope.varTab[stmt.mName];
+        } else if (stmt.mKind == StatementKind::FUNCTION_CALL) {
+            // TODO: create builtins
+            return Functions::evaluateFunctionCall(stmt, scope);
+        }
     }
 
-    bool Interpreter::executeCommand(Scope &scope, Statement &cmd) {
-        switch (cmd.mKind) {
-            case StatementKind::VARIABLE_DECLARATION:
-                func.declareVariableFunc(cmd, scope);
-                break;
-            case StatementKind::FUNCTION_CALL:
-                if(cmd.mName == "write"){
-                    func.writeFunc(cmd, scope);
-                    break;
-                } else if(cmd.mName == "read"){
-                    func.readFunc(cmd, scope);
-                    break;
-                } else if(cmd.mName == "exit"){
-                    exit(0);
-                    break;
-                } else if(cmd.mName == "IF") {
-                    if(func.startIf(cmd.mStatements[0], scope)) {
-                        cmd.mStatements.erase(cmd.mStatements.begin());
-                        FunctionDefinition ifDef;
-                        ifDef.mName = cmd.mName;
-                        ifDef.mStatements = cmd.mStatements;
-                        vector<Statement> args;
-                        bool checkReturn = executeFunction(ifDef, args, scope);
-                        ifIf = false;
-                        if(checkReturn == false) return  false;
-                    } else {
-                        ifIf = true;
-                    }
-                    break;
-                } else if(cmd.mName == "ELIF") {
-                    if(ifIf){
-                        if(func.startIf(cmd.mStatements[0], scope)) {
-                            cmd.mStatements.erase(cmd.mStatements.begin());
-                            FunctionDefinition ifDef;
-                            ifDef.mName = cmd.mName;
-                            ifDef.mStatements = cmd.mStatements;
-                            vector<Statement> args;
-                            bool checkReturn = executeFunction(ifDef, args, scope);
-                            ifIf = false;
-                            if(checkReturn == false) return  false;
-                        }
-                    }
-                    break;
-                } else if(cmd.mName == "ELSE") {
-                    if(ifIf){
-                        FunctionDefinition ifDef;
-                        ifDef.mName = cmd.mName;
-                        ifDef.mStatements = cmd.mStatements;
-                        vector<Statement> args;
-                        bool checkReturn = executeFunction(ifDef, args, scope);
-                        ifIf = false;
-                        if(checkReturn == false) return  false;
-                    }
-                    break;
-                } else if(cmd.mName == "return") {
-                    func.returnFunc(cmd, scope);
-                    return false;
-                    break;
-                } else if(cmd.mName == "LOOP") {
-                    if(cmd.mStatements[0].mStatements.size() == 3) {
-                        if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::VARIABLE_DECLARATION){
-                            func.declareVariableFunc(cmd.mStatements[0].mStatements[0], scope);
-                        } else if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::VARIABLE_CALL){
-                            func.changeVarValue(cmd.mStatements[0].mStatements[0], scope);
-                        }
-
-                        if(cmd.mStatements[0].mStatements[1].mKind == StatementKind::LOGIC_CALL){
-                            Statement condition = cmd.mStatements[0].mStatements[1];
-                            Statement varCall = cmd.mStatements[0].mStatements[2];
-                            cmd.mStatements.erase(cmd.mStatements.begin());
-
-                            FunctionDefinition loopDef;
-                            loopDef.mName = cmd.mName;
-                            loopDef.mStatements = cmd.mStatements;
-                            vector<Statement> args;
-                            while(func.startIf(condition, scope)) {
-                                bool chceckReturn = executeFunction(loopDef, args, scope);
-                                if(chceckReturn == false) return  false;
-                                func.changeVarValue(varCall, scope);
-                            }
-                        }
-                    } else if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::LOGIC_CALL) {
-
-                        Statement condition = cmd.mStatements[0].mStatements[0];
-                        cmd.mStatements.erase(cmd.mStatements.begin());
-
-                        FunctionDefinition loopDef;
-                        loopDef.mName = cmd.mName;
-                        loopDef.mStatements = cmd.mStatements;
-
-                        vector<Statement> args;
-
-                        while(func.startIf(condition, scope)) {
-                            bool chceckReturn = executeFunction(loopDef, args, scope);
-                            if(chceckReturn == false) return  false;
-                        }
-                    } else if(cmd.mStatements[0].mStatements[0].mKind == StatementKind::LITERAL || cmd.mStatements[0].mStatements[0].mKind == StatementKind::OPERATOR_CALL || cmd.mStatements[0].mStatements[0].mKind == StatementKind::VARIABLE_CALL || cmd.mStatements[0].mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
-                        long long forCounting = func.startCalculations(cmd.mStatements[0].mStatements[0], scope);
-                        cmd.mStatements.erase(cmd.mStatements.begin());
-
-                        FunctionDefinition loopDef;
-                        loopDef.mName = cmd.mName;
-                        loopDef.mStatements = cmd.mStatements;
-                        vector<Statement> args;
-                        while(forCounting > 0) {
-                            bool chceckReturn = executeFunction(loopDef, args, scope); 
-                            if(chceckReturn == false) return  false;             
-                            --forCounting;
-                        }                        
-                    } else {
-                        throw runtime_error("Wrong arguments in loop statement.");
-                    }
-                } else if(cmd.mName == "break"){
-                    return false;
-                    break;
-                } else {
-                    if(mFunctions.find(cmd.mName) != mFunctions.end()){
-                        bool checkReturn = executeFunction(mFunctions[cmd.mName], cmd.mStatements, scope);
-                        if(checkReturn == false) return  false;
-                    } else {
-                        throw runtime_error("Don't find function");
-                    }
-                    break;
-                }
-                break;
-            case StatementKind::VARIABLE_CALL:
-                func.changeVarValue(cmd, scope);
-                break;
-            default:
-                throw runtime_error("Don't find function!");
-        }
-        return true;
+    void Interpreter::addBuiltin(string name, builtinF f) {
+        Interpreter::globalBuiltins[name] = f;
+    }
+    void Interpreter::addBuiltin(string ns, string name, builtinF f) {
+        //TODO: implement namespaces
     }
 
-    void Interpreter::interpreter(map<string, parser::FunctionDefinition> &mFunctionss){
-        mFunctions = mFunctionss;
-        if(mFunctions.find("main") == mFunctions.end()){
-            throw runtime_error("Main function not found.");
-        }
-        vector<Statement> args;
-        Scope scope;
-        executeFunction(mFunctions["main"], args, scope);
+    void Interpreter::addDefaultBuiltins() {
+        // write function
+        addBuiltin("write", [](vector<Object*> args)->Object*{
+            for (int i=0; i<args.size(); i++) cout << args[i]->toString();
+            return nullptr;
+        });
+        // read function
+        addBuiltin("read", [](vector<Object*> args)->Object*{
+            string r;
+            cin >> r;
+            return new String(r);
+        });
+        // exit function
+        addBuiltin("exit", [](vector<Object*> args)->Object*{
+            if (args.size() != 1 || args[0]->getType() != "Integer") throw runtime_error("invalid arguments for 'exit' function");
+            exit(stoi(args[0]->getValueString()));
+        });
     }
 }

@@ -1,304 +1,167 @@
 #include "Functions.hpp"
 #include "Interpreter.hpp"
+#include "../variables/Object.hpp"
 
 #include <stdexcept>
 #include <algorithm>
 #include <string>
 
+#include "Namespace.hpp"
+
+#include "../variables/Double.hpp"
+#include "../variables/Integer.hpp"
+#include "../variables/Boolean.hpp"
+
 namespace interpreter {
     using namespace std;
     using namespace parser;
+    using namespace variable;
 
-    double ret=0;
-    extern map<string, parser::FunctionDefinition> mFunctions;
-
-    Interpreter inter;
-
-    void Functions::declareVariableFunc(Statement &variable, Scope &scope) {
-        switch(variable.mType.mType) {
-            case DOUBLE:
-                if(variable.mStatements.size() > 0){
-                    scope.doubleVarTab[variable.mName] =  startCalculations(variable.mStatements[0], scope);
-                } else {
-                    scope.doubleVarTab[variable.mName] = 0;
-                }
+    Object* Functions::evaluateMath(Statement &stmt, Scope &scope) {
+        switch (stmt.mName[0]) {
+            case '+':
+                // evaluate and add next two statements
+                return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->add(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
                 break;
-            case INT8:
-                if(variable.mStatements.size() > 0){
-                    scope.charVarTab[variable.mName] =  startCalculations(variable.mStatements[0], scope);
-                } else {
-                    scope.charVarTab[variable.mName] = 0;
-                }
+            case '-':
+                // evaluate and subtract next two statements
+                return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->subtract(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
                 break;
-            case UINT8:
-                if(variable.mStatements.size() > 0){
-                    scope.ucharVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
-                } else {
-                    scope.ucharVarTab[variable.mName] = 0;
-                }
+            case '*':
+                // evaluate and multiply next two statements
+                return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->multiply(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
                 break;
-            case INT32:
-                if(variable.mStatements.size() > 0){
-                    scope.intVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
-                } else {
-                    scope.intVarTab[variable.mName] = 0;
-                }
+            case '/':
+                // evaluate and divide next two statements
+                return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->divide(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
                 break;
-            case UINT32:
-                if(variable.mStatements.size() > 0){
-                    scope.uintVarTab[variable.mName] = startCalculations(variable.mStatements[0], scope);
-                } else {
-                   scope. uintVarTab[variable.mName] = 0;
-                }
-                break;
-            case STRING:
-                if(variable.mStatements.size() > 0){
-                    scope.stringVarTab[variable.mName] = variable.mStatements[0].mName;
-                } else {
-                   scope. stringVarTab[variable.mName] = "";
-                }
-            
             default:
-                return;
+                return nullptr;
         }
     }
 
-    void Functions::declareParameter(ParameterDefinition &var, Statement &value, Scope &scope) {
-        if(var.mType.mName == "double") {
-            scope.doubleVarTab[var.mName] = startCalculations(value, scope);
-        } else if(var.mType.mName == "signed char") {  
-            scope.charVarTab[var.mName] = startCalculations(value, scope);
-        } else if(var.mType.mName == "unsigned char")  {
-            scope.ucharVarTab[var.mName] = startCalculations(value, scope);
-        } else if(var.mType.mName == "signed int")  {
-            scope.intVarTab[var.mName] = startCalculations(value, scope);
-        } else if(var.mType.mName == "unsigned int") {
-            scope.uintVarTab[var.mName] = startCalculations(value, scope);
-        } else if(var.mType.mName == "string") {
-            scope.stringVarTab[var.mName] = startCalculations(value, scope);
-        }  else {
-            return;
-        }
+    Object* Functions::evaluateLogic(Statement &stmt, Scope &scope) {
+        if (stmt.mName == "==")
+            return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->equal(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
+        else if (stmt.mName == "<") 
+            return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->less(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
+        else if (stmt.mName == "<=")
+            return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->lesseq(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
+        else if (stmt.mName == ">")
+            return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->greater(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
+        else if (stmt.mName == ">=")
+            return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->greatereq(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
+        else if (stmt.mName == "!=")
+            return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->noteq(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
+        
+        else if (stmt.mName == "and")
+            return new Boolean((stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()) == 1) &&  (stoi(Interpreter::evaluateStatement(stmt.mStatements[1], scope)->getValueString()) == 1));
+        else if (stmt.mName == "or")
+            return new Boolean((stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()) == 1) ||  (stoi(Interpreter::evaluateStatement(stmt.mStatements[1], scope)->getValueString()) == 1));
+        
+        return nullptr;
     }
 
-    double Functions::startCalculations(Statement &operations, Scope &scope) {
-        if(operations.mKind == StatementKind::LOGIC_CALL) {
-                if(startIf(operations, scope)) { return true; }
-                else { return false; }
-        } else {
-            switch (operations.mName[0]) {
-                case '+':
-                    return calculating(operations.mStatements[0], scope) + calculating(operations.mStatements[1], scope);
-                    break;
-                case '-':
-                    return calculating(operations.mStatements[0], scope) - calculating(operations.mStatements[1], scope);
-                    break;
-                case '*':
-                    return calculating(operations.mStatements[0], scope) * calculating(operations.mStatements[1], scope);
-                    break;
-                case '/':
-                    if(calculating(operations.mStatements[1], scope) == 0) {
-                        throw runtime_error("Division by zero is impossible");
+    Object* Functions::evaluateFunctionCall(Statement &stmt, Scope &scope) {
+        // TODO: implement LOOP, RETURN
+
+        // LOOP
+        if (stmt.mName == "LOOP") {
+            return evaluateLoop(stmt, scope);
+        }
+
+        // IF / ELSE / ELIF
+        if (stmt.mName == "IF") {
+            scope.isPreviousIf = true;
+            // check if correct
+            if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'if' must have an expression");
+            // check logic
+            bool e = (bool) stoi(evaluateLogic(stmt.mStatements[0], scope)->getValueString());
+            scope.previousResult = e;
+            if (!e) return nullptr;
+            // create scope for variables
+            Scope* s = new Scope(scope);
+            // execute everything inside :D
+            for (int i=1; i<stmt.mStatements.size(); i++){
+                Object* obj = Interpreter::evaluateStatement(stmt.mStatements[i], *s);
+                if (obj != nullptr && obj->getType() == "SpecialObject") {string t=obj->getValueString(); if (t == "break" || t == "return") {return Functions::useSpecial(obj, "if");}}
+            }
+            return nullptr;
+        } else if (stmt.mName == "ELSE") {
+            if (!scope.isPreviousIf || scope.previousResult) return nullptr;
+            scope.isPreviousIf = false;
+            // create scope for variables
+            Scope* s = new Scope(scope);
+            // execute everything inside :D
+            for (int i=0; i<stmt.mStatements.size(); i++){
+                Object* obj = Interpreter::evaluateStatement(stmt.mStatements[i], *s);
+                if (obj != nullptr && obj->getType() == "SpecialObject") {string t=obj->getValueString(); if (t == "break" || t == "return") {return Functions::useSpecial(obj, "else");}}
+            }
+            return nullptr;
+        } else if (stmt.mName == "ELIF") {
+            if (!scope.isPreviousIf || scope.previousResult) return nullptr;
+            scope.isPreviousIf = true;
+            // check if correct
+            if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'elif' must have an expression");
+            // check logic
+            bool e = (bool) stoi(evaluateLogic(stmt.mStatements[0], scope)->getValueString());
+            scope.previousResult = e;
+            if (!e) return nullptr;
+            // create scope for variables
+            Scope* s = new Scope(scope);
+            // execute everything inside :D
+            for (int i=1; i<stmt.mStatements.size(); i++){
+                Object* obj = Interpreter::evaluateStatement(stmt.mStatements[i], *s);
+                if (obj != nullptr && obj->getType() == "SpecialObject") {string t=obj->getValueString(); if (t == "break" || t == "return") {return Functions::useSpecial(obj, "elif");}}
+            }
+            return nullptr;
+        }
+        scope.isPreviousIf = false;
+
+        // generate function arguments
+        vector<Object*> args;
+        for (Statement &s : stmt.mStatements) {
+            args.emplace_back(Interpreter::evaluateStatement(s, scope));
+        }
+
+        // check if function is in builtins
+        if (Interpreter::globalBuiltins.find(stmt.mName) != Interpreter::globalBuiltins.end()) {
+            // if it is, then run it :D
+            return Interpreter::globalBuiltins[stmt.mName](args);
+        }
+
+        // TODO: implement namespaced builtins
+
+        // check if function exists and if not then throw error
+        if (Interpreter::definitions.find(stmt.mName) == Interpreter::definitions.end()) throw runtime_error("Cannot find function '" + stmt.mName + "'");
+
+        // run function
+        return Interpreter::evaluateFunction(Interpreter::definitions[stmt.mName], args);
+    }
+
+    Object* Functions::useSpecial(Object* s, string place) {
+        return nullptr;
+    }
+
+    Object* Functions::evaluateLoop(Statement &stmt, Scope &scope) {
+        if (stmt.mStatements[0].mKind != StatementKind::FUNCTION_CALL) throw runtime_error("Loop must have an expression");
+        Statement &params = stmt.mStatements[0];
+        // SIMPLE LOOP WITH INTEGER
+        if (params.mStatements.size() == 1 && params.mStatements[0].mKind != StatementKind::LOGIC_CALL) {
+            // execute loop
+            int count = stoi(Interpreter::evaluateStatement(params.mStatements[0], scope)->getValueString());
+            for (int i=0; i<count; i++) {
+                Scope* s = new Scope(scope);
+                for (int j=1; j<stmt.mStatements.size(); j++){ // execute each statement
+                    Object* obj = Interpreter::evaluateStatement(stmt.mStatements[j], *s);
+                    if (obj == nullptr) continue;
+                    if (obj->getType() == "SpecialObject") {
+                        string t=obj->getValueString(); 
+                        if (t == "break" || t == "return")
+                            return Functions::useSpecial(obj, "loop");
                     }
-                    return calculating(operations.mStatements[0], scope) / calculating(operations.mStatements[1], scope);
-                    break;
-                default:
-                    if(operations.mKind == StatementKind::LITERAL){
-                        std::string::size_type st;
-                        return stod(operations.mName, &st);
-                    }/* else if(operations.mKind == StatementKind::VARIBLE_CALL){
-                        return findVar(operations, scope);
-                    } */ else if(operations.mKind == StatementKind::VARIABLE_CALL){
-                        return findVar(operations, scope);
-                    } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-                        if(mFunctions.find(operations.mName) != mFunctions.end()){
-                            vector<Statement> args;
-                            for(auto i : operations.mStatements){
-                                Statement arg;
-                                arg.mName = to_string(startCalculations(i, scope));
-                                arg.mKind = StatementKind::LITERAL;
-                                args.push_back(arg);
-                            }
-
-                            inter.executeFunction(mFunctions[operations.mName], args, scope);
-                            return ret;
-                        } else {
-                            throw runtime_error("No function find!");
-                        }   
-                        return ret;
-                    }
-                    break;
-            } 
-        }
-        return 0;   
-    }
-
-    double Functions::calculating(Statement &operations, Scope &scope) {
-        if(operations.mKind == StatementKind::LITERAL){
-            std::string::size_type st;
-            return stod(operations.mName, &st);
-        } else if(operations.mKind == StatementKind::VARIABLE_CALL){
-            return findVar(operations, scope);
-        } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-            if(mFunctions.find(operations.mName) != mFunctions.end()){
-                vector<Statement> args;
-                for(auto i : operations.mStatements){
-                    Statement arg;
-                    arg.mName = to_string(startCalculations(i, scope));
-                    arg.mKind = StatementKind::LITERAL;
-                    args.push_back(arg);
                 }
-
-                inter.executeFunction(mFunctions[operations.mName], args, scope);
-                return ret;
-            } else {
-                throw runtime_error("No function find!");
-            }
-        } else {
-            return startCalculations(operations, scope);
-        }
-        return 0;
-    }
-
-    double Functions::findVar(Statement &operations, Scope &scope){
-        if(scope.doubleVarTab.find(operations.mName) != scope.doubleVarTab.end()){
-           return scope.doubleVarTab[operations.mName];
-        } else if(scope.intVarTab.find(operations.mName) != scope.intVarTab.end()){
-            return scope.intVarTab[operations.mName];
-        } else if(scope.uintVarTab.find(operations.mName) != scope.uintVarTab.end()){
-            return scope.uintVarTab[operations.mName];
-        } else if(scope.charVarTab.find(operations.mName) != scope.charVarTab.end()){
-            return scope.charVarTab[operations.mName];
-        } else if(scope.ucharVarTab.find(operations.mName) != scope.ucharVarTab.end()){
-            return  scope.ucharVarTab[operations.mName];
-        } /* else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
-            return scope.stringVarTab[operations.mName];
-        } */ else {
-            throw runtime_error("Don't find varible!");
-        }
-        return 0;
-    }
-   
-    void Functions::returnFunc(Statement &operations, Scope &scope) {
-        Statement o = operations.mStatements[0];
-        if(o.mKind == StatementKind::VARIABLE_CALL){
-            ret = findVar(o, scope);
-        } else if(o.mKind == StatementKind::OPERATOR_CALL) {
-            ret = startCalculations(o, scope);
-        } else if(o.mKind == StatementKind::LITERAL) {
-            std::string::size_type st;
-            ret = stod(o.mName, &st);
-        } else if(operations.mKind == StatementKind::FUNCTION_CALL){
-            if(mFunctions.find(operations.mStatements[0].mName) != mFunctions.end()){
-                vector<Statement> args;
-                for(auto i : operations.mStatements[0].mStatements){
-                    Statement arg;
-                    arg.mName = to_string(startCalculations(i, scope));
-                    arg.mKind = StatementKind::LITERAL;
-                    args.push_back(arg);
-                }
-
-                inter.executeFunction(mFunctions[operations.mStatements[0].mName], args, scope);
-            } else {
-                throw runtime_error("No function find!");
-            }
-        } else {
-            ret = 0;
-        } 
-    }
-
-    void Functions::writeFunc(Statement &operations, Scope &scope) {
-        for(auto i : operations.mStatements){
-            if(i.mKind == StatementKind::VARIABLE_CALL){
-                cout << findVar(i, scope);
-            } else if(i.mKind == StatementKind::OPERATOR_CALL) {
-                cout << startCalculations(i, scope);
-            } else if(i.mKind == StatementKind::LITERAL) {
-                cout << i.mName;
-            } else if(i.mKind == StatementKind::LOGIC_CALL) {
-                if(startIf(i, scope)) { cout << true; }
-                else { cout << false; }
-            } else if(i.mKind == StatementKind::FUNCTION_CALL){
-                if(mFunctions.find(i.mName) != mFunctions.end()){
-                    startCalculations(i, scope);
-                    cout << ret;
-                } else {
-                    throw runtime_error("No function find!");
-                }  
-            } else {
-                throw runtime_error("Don't find cmd in write!");
             }
         }
-    }
-
-    void Functions::changeVarValue(Statement &operations, Scope &scope) {
-        if(scope.doubleVarTab.find(operations.mName) != scope.doubleVarTab.end()){
-            scope.doubleVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-        } else if(scope.intVarTab.find(operations.mName) != scope.intVarTab.end()){
-            scope.intVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-        } else if(scope.uintVarTab.find(operations.mName) != scope.uintVarTab.end()){
-            scope.uintVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-        } else if(scope.charVarTab.find(operations.mName) != scope.charVarTab.end()){
-            scope.charVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-        } else if(scope.ucharVarTab.find(operations.mName) != scope.ucharVarTab.end()){
-            scope.ucharVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-        } else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
-            scope.stringVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-        } else {
-            throw runtime_error("Don't find varible!");
-        }
-    }
-
-    void Functions::readFunc(Statement &operations, Scope &scope) {
-        for(auto i=0; i<operations.mStatements.size(); ++i){
-            if(scope.doubleVarTab.find(operations.mStatements[i].mName) != scope.doubleVarTab.end()){
-                cin >> scope.doubleVarTab[operations.mStatements[i].mName];
-            } else if(scope.intVarTab.find(operations.mStatements[i].mName) != scope.intVarTab.end()){
-                cin >> scope.intVarTab[operations.mStatements[i].mName];
-            } else if(scope.uintVarTab.find(operations.mStatements[i].mName) != scope.uintVarTab.end()){
-                cin >> scope.uintVarTab[operations.mStatements[i].mName];
-            } else if(scope.charVarTab.find(operations.mStatements[i].mName) != scope.charVarTab.end()){
-                cin >> scope.charVarTab[operations.mStatements[i].mName];
-            } else if(scope.ucharVarTab.find(operations.mStatements[i].mName) != scope.ucharVarTab.end()){
-                cin >> scope.ucharVarTab[operations.mStatements[i].mName];
-            } else if(scope.stringVarTab.find(operations.mName) != scope.stringVarTab.end()){
-                scope.stringVarTab[operations.mName] = startCalculations(operations.mStatements[0], scope);
-            }  else {
-                throw runtime_error("Don't find varible!");
-            }
-        }
-    }
-
-    bool Functions::startIf(Statement &operations, Scope &scope) {
-        if ("and" == operations.mName) {
-            return calculateIf(operations.mStatements[0], scope) && calculateIf(operations.mStatements[1], scope);
-        } else if("or" == operations.mName) {
-            return calculateIf(operations.mStatements[0], scope) || calculateIf(operations.mStatements[1], scope);
-        } else {
-            return calculateIf(operations, scope);
-        }
-    }
-
-    bool Functions::calculateIf(Statement &operations, Scope &scope) {
-        if(">" == operations.mName){
-            return startCalculations(operations.mStatements[0], scope) >  startCalculations(operations.mStatements[1], scope);
-        } else if("<" == operations.mName) {
-            return startCalculations(operations.mStatements[0], scope) < startCalculations(operations.mStatements[1], scope);
-        } else if("==" == operations.mName) {
-            return startCalculations(operations.mStatements[0], scope) == startCalculations(operations.mStatements[1], scope);
-        } else if ("!=" == operations.mName) {
-            return startCalculations(operations.mStatements[0], scope) != startCalculations(operations.mStatements[1], scope);
-        } else if("<=" == operations.mName) {
-            return startCalculations(operations.mStatements[0], scope) <= startCalculations(operations.mStatements[1], scope);
-        } else if (">=" == operations.mName) {
-            return startCalculations(operations.mStatements[0], scope) >= startCalculations(operations.mStatements[1], scope);
-        } else if("or" == operations.mName){
-            return startIf(operations, scope);
-        } else if("and" == operations.mName){
-            return startIf(operations, scope);
-        } else {
-            throw runtime_error("Error in if operator");
-        }
-        return false;
     }
 }

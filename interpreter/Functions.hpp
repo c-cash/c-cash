@@ -5,6 +5,9 @@
 #include <iostream>
 #include <map>
 #include <string>
+
+#include "../variables/Object.hpp"
+#include "Namespace.hpp"
  
 namespace interpreter {
     using namespace std;
@@ -17,27 +20,26 @@ namespace interpreter {
 */
     class Scope {
         public:
-            map<string, double> doubleVarTab;
-            map<string, int> intVarTab;
-            map<string, unsigned int> uintVarTab;
-            map<string, char> charVarTab;
-            map<string, unsigned char> ucharVarTab;
-            map<string, string> stringVarTab;
+            map<string, variable::Object*> varTab;
+            bool isPreviousIf = false;
+            bool previousResult = false;
+
+            Scope() {};
+            Scope(Scope &b) {
+                for (pair<string, variable::Object*> p : b.varTab) {
+                    varTab[p.first] = p.second; // create clone of current scope
+                }
+            }
     };
 
     class Functions {
         public:
-            void declareVariableFunc(Statement &variable, Scope &scope);
-            void declareParameter(ParameterDefinition &var, Statement &value, Scope &scope);
-            void returnFunc(Statement &operations, Scope &scope);
-            void writeFunc(Statement &operations, Scope &scope);
-            void readFunc(Statement &operations, Scope &scope);
-            void changeVarValue(Statement &operations, Scope &scope);
-            bool startIf(Statement &operations, Scope &scope);
-            double startCalculations(Statement &operations, Scope &scope);
-            bool calculateIf(Statement &operations, Scope &scope);
+            static variable::Object* evaluateMath(Statement &stmt, Scope &scope);
+            static variable::Object* evaluateLogic(Statement &stmt, Scope &scope);
+            static variable::Object* evaluateFunctionCall(Statement &stmt, Scope &scope);
+
         private:
-            double calculating(Statement &operations, Scope &scope);
-            double findVar(Statement &operations, Scope &scope);
+            static variable::Object* evaluateLoop(Statement &stmt, Scope &scope);
+            static variable::Object* useSpecial(Object* s, string place);
     };
 }

@@ -16,6 +16,8 @@ namespace transpiler {
             void transpile(string path, map<string, FunctionDefinition> &mFunctions);
             string discoverType(FunctionDefinition &func);
 
+            static void fixName(Statement &stmt);
+
         private:
 
             string transpileStatement(Statement &stmt);
@@ -40,6 +42,5 @@ namespace transpiler {
             string connect(vector<T> &v, string c);
             string getEnd(Statement &stmt);
             void unescape(string &s);
-            void fixName(Statement &stmt);
     };
 }

@@ -1,7 +1,5 @@
 func main() {
-    int a;
-    read(a);
-    loop(a) {
-        write("Number: ", a);
+    loop(5) {
+        write("A");
     }
 }

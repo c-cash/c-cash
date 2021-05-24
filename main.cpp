@@ -83,8 +83,8 @@ int main (int argc, char **argv) {
                 Transpiler t;
                 t.transpile(args[index+1]+".cpp", functions);
             } else {
-                Interpreter interpreter;
-                interpreter.interpreter(functions);
+                Interpreter::addDefaultBuiltins();
+                Interpreter::interpret(functions);
             }
         }
     } catch(exception& err) {
