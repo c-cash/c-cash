@@ -9,6 +9,13 @@
 namespace library {
 
     void MathLibrary::linkGlobally(Scope &s) {
+        // (F)round function
+        s.functions["round"] = [](vector<Object*> args) -> Object*{
+            if (args.size() != 1) throw runtime_error("round function takes exactly one argument");
+            string t = args[0]->getType();
+            if (t == "Integer" || t == "Double") return new Integer(std::round(stod(args[0]->getValueString())));
+            throw runtime_error("You can round function only double or integer");
+        };
         // (F)floor function
         s.functions["floor"] = [](vector<Object*> args) -> Object*{
             if (args.size() != 1) throw runtime_error("floor function takes exactly one argument");
@@ -56,13 +63,29 @@ namespace library {
                 return new Double(std::cos(stod(args[0]->getValueString())));
             throw runtime_error("You can use cos function only with doubles or integers");
         };
-        // (F)cos function
+        // (F)sin function
         s.functions["sin"] = [](vector<Object*> args) -> Object*{
             if (args.size() != 1) throw runtime_error("sin function takes exactly one argument");
             string t = args[0]->getType();
             if (t == "Integer" || t == "Double")
                 return new Double(std::sin(stod(args[0]->getValueString())));
             throw runtime_error("You can use sin function only with doubles or integers");
+        };
+        // (F)cos function
+        s.functions["acos"] = [](vector<Object*> args) -> Object*{
+            if (args.size() != 1) throw runtime_error("acos function takes exactly one argument");
+            string t = args[0]->getType();
+            if (t == "Integer" || t == "Double")
+                return new Double(std::acos(stod(args[0]->getValueString())));
+            throw runtime_error("You can use acos function only with doubles or integers");
+        };
+        // (F)sin function
+        s.functions["asin"] = [](vector<Object*> args) -> Object*{
+            if (args.size() != 1) throw runtime_error("asin function takes exactly one argument");
+            string t = args[0]->getType();
+            if (t == "Integer" || t == "Double")
+                return new Double(std::asin(stod(args[0]->getValueString())));
+            throw runtime_error("You can use asin function only with doubles or integers");
         };
         // (F)tan function
         s.functions["tan"] = [](vector<Object*> args) -> Object*{
@@ -71,6 +94,14 @@ namespace library {
             if (t == "Integer" || t == "Double")
                 return new Double(std::tan(stod(args[0]->getValueString())));
             throw runtime_error("You can use tan function only with doubles or integers");
+        };
+        //(F)atan function
+        s.functions["atan"] = [](vector<Object*> args) -> Object*{
+            if (args.size() != 1) throw runtime_error("atan function takes exactly one argument");
+            string t = args[0]->getType();
+            if (t == "Integer" || t == "Double")
+                return new Double(std::atan(stod(args[0]->getValueString())));
+            throw runtime_error("You can use atan function only with doubles or integers");
         };
         // (F)atant function
         s.functions["atant"] = [](vector<Object*> args) -> Object*{
@@ -99,19 +130,37 @@ namespace library {
         };
         // (F)deg function
         s.functions["deg"] = [](vector<Object*> args) -> Object*{
-            if (args.size() != 1) throw runtime_error("abs function takes exactly one argument");
+            if (args.size() != 1) throw runtime_error("deg function takes exactly one argument");
             string t = args[0]->getType();
             if (t == "Integer" || t == "Double")
                 return new Double(stod(args[0]->getValueString())*(180.0/3.14159265));
-            throw runtime_error("You can use abs function only with doubles or integers");
+            throw runtime_error("You can use deg function only with doubles or integers");
         };
         // (F)rad function
         s.functions["rad"] = [](vector<Object*> args) -> Object*{
-            if (args.size() != 1) throw runtime_error("abs function takes exactly one argument");
+            if (args.size() != 1) throw runtime_error("rad function takes exactly one argument");
             string t = args[0]->getType();
             if (t == "Integer" || t == "Double")
                 return new Double(stod(args[0]->getValueString())*(3.14159265/180.0));
-            throw runtime_error("You can use abs function only with doubles or integers");
+            throw runtime_error("You can use rad function only with doubles or integers");
+        };
+        // (F)max function
+        s.functions["max"] = [](vector<Object*> args) -> Object*{
+            if (args.size() != 2) throw runtime_error("max function takes exactly two arguments");
+            string t = args[0]->getType();
+            string t2 = args[1]->getType();
+            if (t == "Integer" || t == "Double")
+                return new Double(std::fmax(stod(args[0]->getValueString()), stod(args[1]->getValueString())));
+            throw runtime_error("You can use max function only with doubles or integers");
+        };
+        // (F)min function
+        s.functions["min"] = [](vector<Object*> args) -> Object*{
+            if (args.size() != 2) throw runtime_error("min function takes exactly two arguments");
+            string t = args[0]->getType();
+            string t2 = args[1]->getType();
+            if (t == "Integer" || t == "Double")
+                return new Double(std::fmin(stod(args[0]->getValueString()), stod(args[1]->getValueString())));
+            throw runtime_error("You can use min function only with doubles or integers");
         };
     }
 
