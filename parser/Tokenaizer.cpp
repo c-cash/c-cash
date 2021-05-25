@@ -125,7 +125,8 @@ namespace parser {
                     break;
 
                 case '*':
-                case '/': 
+                case '/':
+                case '%':
                     if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT){
                         endToken(currentToken, tokens);
                         currentToken.mType = POTENTIAL_SPECIFIC_OPERATOR;

@@ -13,7 +13,8 @@ namespace parser {
 		{"+", OperatorEntry{"+", 1}}, 
 		{"-", OperatorEntry{"-", 1}}, 
 		{"*", OperatorEntry{"*", 10}}, 
-		{"/", OperatorEntry{"/", 10}} 
+		{"/", OperatorEntry{"/", 10}},
+        {"%", OperatorEntry{"%", 10}} 
 	};
 
     static map<string, OperatorEntry> sLogics {
@@ -35,7 +36,7 @@ namespace parser {
             if(possibleName.has_value()){ //Name
                 optional<Token> possibleOperator = expectOperator("("); 
                 if(possibleOperator.has_value()){ //Function or varible
-				FunctionDefinition func;
+				    FunctionDefinition func;
 					func.mName = possibleName->mText;
 
                     while (!expectOperator(")").has_value()) {
@@ -70,11 +71,21 @@ namespace parser {
                         
                     return true;
                 }  else {
+                    cout << "tuttajjjjj\n";
                     mCurrentToken = parseStart;
                 }
             }  else {
                 mCurrentToken = parseStart;
             }
+        } else {
+            mCurrentToken = parseStart;
+            //TODO: Parsowanie statemetu
+            optional<Statement> statement = expectStatement();
+            if(statement.has_value()) {
+                if(!expectOperator(";").has_value()) {throw runtime_error("Expected semicolon");}
+                includes.mStatements.emplace_back(statement.value());
+            }
+            return true;
         }
 		return false;
 	}
@@ -87,10 +98,12 @@ namespace parser {
             if(expectFunctionDefinition()) {
 				
 			} else {
-                cerr << "Unknow indentifier " << mCurrentToken->mText << endl;
+                cerr << "Unknown indentifier " << mCurrentToken->mText << endl;
                 ++mCurrentToken;
             }
         }
+        includes.mName = "*";
+        mFunction[includes.mName] = includes;
     }
 
 	Parser::Parser() {
@@ -101,6 +114,7 @@ namespace parser {
         mTypes["uchar"] = Type("unsigned char", UINT8);
         mTypes["double"] = Type("double", DOUBLE);
         mTypes["string"] = Type("string", STRING);
+        mTypes["bool"] = Type("bool", STRING);
     }
 
     optional<Token> Parser::expectIdentifier(const string &name) {
@@ -445,7 +459,7 @@ namespace parser {
             result = parseIfStatement();
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "loop")) {
             result = parseLoopStatement();
-        } else {
+        }  else {
             result = expectExpression();
 
             if(!result.has_value()){

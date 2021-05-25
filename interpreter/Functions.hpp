@@ -7,6 +7,7 @@
 #include <string>
 
 #include "../variables/Object.hpp"
+#include "../variables/SpecialObject.hpp"
 #include "Namespace.hpp"
  
 namespace interpreter {
@@ -21,6 +22,8 @@ namespace interpreter {
     class Scope {
         public:
             map<string, variable::Object*> varTab;
+            map<string, builtinF> functions;
+            map<string, Namespace*> namespaces;
             bool isPreviousIf = false;
             bool previousResult = false;
 
@@ -37,9 +40,11 @@ namespace interpreter {
             static variable::Object* evaluateMath(Statement &stmt, Scope &scope);
             static variable::Object* evaluateLogic(Statement &stmt, Scope &scope);
             static variable::Object* evaluateFunctionCall(Statement &stmt, Scope &scope);
+            static variable::Object* specialVariable(Statement &stmt, Scope &scope);
+            static void includeLibrary(FunctionDefinition &func, Scope &scope);
 
         private:
             static variable::Object* evaluateLoop(Statement &stmt, Scope &scope);
-            static variable::Object* useSpecial(Object* s, string place);
+            static variable::Object* useSpecial(SpecialObject* s, string place);
     };
 }

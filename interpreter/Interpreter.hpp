@@ -9,6 +9,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "../libraries/Library.hpp"
 
 typedef variable::Object*(*builtinF)(std::vector<variable::Object*> args);
 
@@ -18,10 +19,11 @@ namespace interpreter {
     using namespace variable;
 
     class Interpreter {
-        public:       
+        public:
+
             static map<string, builtinF> globalBuiltins;
-            static map<string, Namespace*> namespaces;
             static map<string, FunctionDefinition> definitions;
+            static Scope* includes;
 
             static void interpret(map<string, FunctionDefinition> &mFunctions);
             static Object* evaluateFunction(FunctionDefinition &func, vector<Object*> &args);

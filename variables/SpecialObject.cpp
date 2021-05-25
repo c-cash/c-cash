@@ -7,8 +7,9 @@
 namespace variable {
     using namespace std;
 
-    SpecialObject::SpecialObject(SpecialType value) {
+    SpecialObject::SpecialObject(SpecialType value, Object* var) {
         this->value = value;
+        this->var = var;
     }
     SpecialObject::SpecialObject() {};
 
@@ -23,6 +24,9 @@ namespace variable {
     }
     Object* SpecialObject::divide (Object* other) {
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
+    }
+    Object* SpecialObject::modulo (Object* other) {
+        throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
 
     bool SpecialObject::equal(Object* other) {
@@ -44,8 +48,30 @@ namespace variable {
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
 
-    string SpecialObject::toString() {return "null";}
-    string SpecialObject::getValueString() {return "null";}
+    void SpecialObject::assign(Object* from) {
+        throw runtime_error("Cannot assign to SpecialObject type");
+    }
+    void SpecialObject::assign(SpecialType type) {
+        this->value = type;
+    }
+
+    string SpecialObject::toString() {
+        switch (this->value) {
+            case SpecialType::RETURN: 
+                return "return";
+                break;
+            case SpecialType::BREAK:
+                return "break";
+                break;
+            case SpecialType::CONTINUE:
+                return "continue";
+                break;
+            default:
+                return "null";
+                break;
+        }
+    }
+    string SpecialObject::getValueString() {return toString();}
 
     string SpecialObject::getType() {return "SpecialObject";}
 

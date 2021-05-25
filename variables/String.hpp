@@ -15,6 +15,7 @@ namespace variable {
             Object* subtract (Object* other);
             Object* multiply (Object* other);
             Object* divide (Object* other);
+            Object* modulo (Object* other);
 
             bool equal (Object* other);
             bool less (Object* other);
@@ -22,6 +23,8 @@ namespace variable {
             bool greater (Object* other);
             bool greatereq (Object* other);
             bool noteq (Object* other);
+
+            void assign(Object* from);
 
             string getType();
             string toString();

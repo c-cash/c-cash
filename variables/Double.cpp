@@ -1,8 +1,10 @@
-#include <iostream>
 #include "Double.hpp"
 #include "Object.hpp"
 #include "String.hpp"
 #include "Integer.hpp"
+
+#include <iostream>
+#include <cmath>
 
 namespace variable {
     using namespace std;
@@ -15,7 +17,7 @@ namespace variable {
     // ADDITION
     Object* Double::add (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Integer(value + stoi(other->getValueString()));
+        if (otherType == "Integer") return new Double(value + stod(other->getValueString()));
         else if (otherType == "Double") return new Double(value + stod(other->getValueString()));
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
@@ -23,23 +25,30 @@ namespace variable {
     // SUBTRACTION
     Object* Double::subtract (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Integer(value - stoi(other->getValueString()));
+        if (otherType == "Integer") return new Double(value - stod(other->getValueString()));
         else if (otherType == "Double") return new Double(value - stod(other->getValueString()));
         throw runtime_error("Cannot subtract " + this->getType() + " and " + other->getType());
     }
     // MULTIPLICATION
     Object* Double::multiply (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Integer(value * stoi(other->getValueString()));
+        if (otherType == "Integer") return new Double(value * stod(other->getValueString()));
         else if (otherType == "Double") return new Double(value * stod(other->getValueString()));
         throw runtime_error("Cannot multiply " + this->getType() + " and " + other->getType());
     }
     // DIVISION
     Object* Double::divide (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Integer(value / stoi(other->getValueString()));
+        if (otherType == "Integer") return new Double(value / stod(other->getValueString()));
         else if (otherType == "Double") return new Double(value / stod(other->getValueString()));
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
+    }
+    // DIVISION
+    Object* Double::modulo (Object* other) {
+        string otherType = other->getType();
+        if (otherType == "Integer") return new Double(std::fmod(value, stod(other->getValueString())));
+        else if (otherType == "Double") return new Double(std::fmod(value, stod(other->getValueString())));
+        throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
 
     bool Double::equal(Object* other) {
@@ -78,13 +87,30 @@ namespace variable {
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
 
-    string Double::toString() {return to_string(value); }
-    string Double::getValueString() {return to_string(value);}
+    void Double::assign(Object* from) {
+        string t = from->getType();
+        if (t != "Integer" && t != "Double") throw runtime_error("Cannot assign to double");
+        this->value = stod(from->getValueString());
+    }
 
-    string Double::getType() {return "Boolean";}
+    string Double::toString() {
+        // generate string value
+        string v = to_string(value);
+        int len = v.size();
+        // remove zeros from end
+        for (int i=v.size()-1; i>0; i--) {
+            if (v[i] == '0') len--;
+            else break;
+        }
+        if (v[len-1] == '.') len--;
+        return v.substr(0, len);
+    }
+    string Double::getValueString() {return toString();}
+
+    string Double::getType() {return "Double";}
 
     Object* Double::check(Object &other) {
-            if (other.getType() == "Boolean") return &other;
+            if (other.getType() == "Double") return &other;
             throw runtime_error("variable types does not match");
     }
 

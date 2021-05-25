@@ -14,5 +14,6 @@ namespace interpreter {
     class Namespace {
         public:
             map<string, builtinF> functions;
+            void addBuiltin(string name, builtinF); // normal builtin
     };
 }

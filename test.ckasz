@@ -1,5 +1,3 @@
 func main() {
-    loop(5) {
-        write("A");
-    }
+    int[] a = [];
 }

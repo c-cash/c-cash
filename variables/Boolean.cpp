@@ -22,6 +22,9 @@ namespace variable {
     Object* Boolean::divide (Object* other) {
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
     }
+    Object* Boolean::modulo (Object* other) {
+        throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
+    }
 
     bool Boolean::equal(Object* other) {
         string otherT = other->getType();
@@ -46,10 +49,16 @@ namespace variable {
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
 
+    void Boolean::assign(Object* from) {
+        string t = from->getType();
+        if (t != "Integer" && t != "Boolean") throw runtime_error("Cannot assign to boolean");
+        this->value = stoi(from->getValueString());
+    }
+
     string Boolean::toString() {return value ? "true" : "false"; }
     string Boolean::getValueString() {return value ? "1" : "0";}
 
-    string Boolean::getType() {return "String";}
+    string Boolean::getType() {return "Boolean";}
 
     Object* Boolean::check(Object &other) {
             if (other.getType() == "String") return &other;

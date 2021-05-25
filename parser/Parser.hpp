@@ -63,5 +63,6 @@ namespace parser {
             size_t operatorPrecedence(const string &operatorName);
             size_t logicPrecedence(const string &operatorName);
             Statement * findRightmostStatement(Statement *lhs, size_t rhsPrecedence);
+            FunctionDefinition includes;
     };
 }

@@ -1,11 +1,17 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+#include <string>
 
 using namespace std;
 
+
 int main(){
-    system("./../build/c-cash ../tests/returnTest.ccash > ../tests/~retrunTest.txt");
+    #ifdef _WIN32
+        system("c-cash ../tests/returnTest.ccash > ../tests/~retrunTest.txt");
+    #else
+        system("./../build/c-cash ../tests/returnTest.ccash > ../tests/~retrunTest.txt");
+    #endif
 
     ifstream file("../tests/~retrunTest.txt");
 

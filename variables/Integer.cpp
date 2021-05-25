@@ -1,8 +1,10 @@
-#include <iostream>
 #include "Integer.hpp"
 #include "Double.hpp"
 #include "String.hpp"
 #include "Object.hpp"
+
+#include <iostream>
+#include <cmath>
 
 namespace variable {
     using namespace std;
@@ -16,7 +18,7 @@ namespace variable {
     Object* Integer::add (Object* other) {
         string otherType = other->getType();
         if (otherType == "Integer") return new Integer(value + stoi(other->getValueString()));
-        else if (otherType == "Double") return new Double(value + stod(other->getValueString()));
+        else if (otherType == "Double") return new Double(1.0 * value + stod(other->getValueString()));
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
@@ -25,23 +27,31 @@ namespace variable {
     Object* Integer::subtract (Object* other) {
         string otherType = other->getType();
         if (otherType == "Integer") return new Integer(value - stoi(other->getValueString()));
-        else if (otherType == "Double") return new Double(value - stod(other->getValueString()));
+        else if (otherType == "Double") return new Double(1.0 * value - stod(other->getValueString()));
         throw runtime_error("Cannot subtract " + this->getType() + " and " + other->getType());
     }
     // MULTIPLICATION
     Object* Integer::multiply (Object* other) {
         string otherType = other->getType();
         if (otherType == "Integer") return new Integer(value * stoi(other->getValueString()));
-        else if (otherType == "Double") return new Double(value * stod(other->getValueString()));
+        else if (otherType == "Double") return new Double(1.0 * value * stod(other->getValueString()));
         else if (otherType == "String") 
             return new String([&]()->string {string t=other->getValueString();string r; for (int i=0; i<value; i++) r+=t; return r;}());
         throw runtime_error("Cannot multiply " + this->getType() + " and " + other->getType());
     }
+    // DIVISION
     Object* Integer::divide (Object* other) {
         string otherType = other->getType();
         if (otherType == "Integer") return new Integer(value / stoi(other->getValueString()));
-        else if (otherType == "Double") return new Double(value / stod(other->getValueString()));
+        else if (otherType == "Double") return new Double(1.0 * value / stod(other->getValueString()));
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
+    }
+    // MODULO
+    Object* Integer::modulo (Object* other) {
+        string otherType = other->getType();
+        if (otherType == "Integer") return new Integer(value % stoi(other->getValueString()));
+        else if (otherType == "Double") return new Double(std::fmod(1.0 * value, stod(other->getValueString())));
+        throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
 
     bool Integer::equal(Object* other) {
@@ -78,6 +88,12 @@ namespace variable {
         if (otherT == "Integer") return value != stoi(other->getValueString());
         else if (otherT == "Double") return value != stod(other->getValueString());
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
+    }
+
+    void Integer::assign(Object* from) {
+        string t = from->getType();
+        if (t != "Integer" && t != "Double") throw runtime_error("Cannot assign to int");
+        this->value = stoi(from->getValueString());
     }
 
     string Integer::toString() {return to_string(value); }

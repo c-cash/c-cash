@@ -23,9 +23,9 @@
 
 ## Version 0.2.0
 - [ ] tables
-- [ ] break statement in loop
+- [x] break statement in loop
 - [x] quick assignment operators (`+=`, `-=`, etc...)
 - [x] increase and decrease operators (`i++`, `i--`)
-- [ ] string
-- [ ] bool
+- [x] string
+- [ ] bool (brakuje w parserze)
 - [ ] fix block comments

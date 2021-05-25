@@ -1,6 +1,7 @@
 #include "Object.hpp"
 
 #include <iostream>
+#include <cmath>
 
 #include "../parser/Statement.hpp"
 #include "../transpiler/Transpiler.hpp"
@@ -8,6 +9,7 @@
 #include "Integer.hpp"
 #include "Double.hpp"
 #include "String.hpp"
+#include "Boolean.hpp"
 
 namespace variable {
     using namespace std;
@@ -17,10 +19,20 @@ namespace variable {
     Object* Object::fromLitteral(parser::Statement &stmt) {
         if (stmt.mKind != parser::StatementKind::LITERAL) return nullptr;
         transpiler::Transpiler::fixName(stmt);
+        // other
         if (stmt.mType.mName == "double") return new variable::Double(stod(stmt.mName));
         else if (stmt.mType.mName == "signed int") return new variable::Integer(stoi(stmt.mName));
         else if (stmt.mType.mName == "string") return new variable::String(stmt.mName);
         return nullptr;
+    }
+
+    Object* Object::getDefault(string type) {
+        if (type == "signed int") return new Integer(0);
+        else if (type == "double") return new Double(0);
+        else if (type == "string") return new String("");
+        else if (type == "bool") return new Boolean(false);
+        
+        throw runtime_error("this type of variable needs assignment after delaration");
     }
 
     Object* Object::checkAll(string expected, Object* val) {
@@ -28,11 +40,17 @@ namespace variable {
             if ((expected == "signed int"||expected=="Integer") && valT == "Integer") return val;
             else if ((expected == "double"||expected=="Double") && valT == "Double") return val;
             else if ((expected == "string"||expected=="String") && valT == "String") return val;
+            else if ((expected == "bool"||expected=="Boolean") && valT == "Boolean") return val;
             //TODO: bool :D
 
             // other cases
+            // BOOLEAN
+            else if ((expected == "bool"||expected=="boolean") && valT == "Integer") return new Boolean(stoi(val->getValueString()));
+            // DOUBLE AND INT
+            else if ((expected == "double"||expected=="Double") && valT == "Integer") return new Double(stod(val->getValueString()));
+            else if ((expected == "signed int"||expected=="Integer") && valT == "Double") return new Integer(floor(stod(val->getValueString())));
             // STRING TO INTEGER
-            else if (expected == "signed int" && valT == "String") {
+            else if ((expected == "signed int"||expected=="Integer") && valT == "String") {
                 try {
                     return new Integer(stoi(val->getValueString()));
                 } catch (exception e) {
@@ -40,18 +58,19 @@ namespace variable {
                 }
             } 
             // STRING TO DOUBLE
-            else if (expected == "double" && valT == "String") {
+            else if ((expected == "double"||expected=="Double") && valT == "String") {
                 try {
                     return new Double(stod(val->getValueString()));
                 } catch (exception e) {
                     throw runtime_error("cannot convert string to double");
                 }
             }
+
             throw runtime_error("variable types does not match");
     }
 
     Object* Object::check(Object &other) {
-            if (other.getType() == "Object") return &other;
-            throw runtime_error("variable types does not match");
+        if (other.getType() == "Object") return &other;
+        throw runtime_error("variable types does not match");
     }
 }

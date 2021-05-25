@@ -7,18 +7,22 @@ namespace variable {
     using namespace std;
 
     enum SpecialType {
-        RETURN
+        RETURN,
+        BREAK,
+        CONTINUE,
+        NONE
     };
 
     class SpecialObject : public variable::Object {
         public:
-            SpecialObject(SpecialType value);
+            SpecialObject(SpecialType value, Object* var);
             SpecialObject();
 
             Object* add (Object* other);
             Object* subtract (Object* other);
             Object* multiply (Object* other);
             Object* divide (Object* other);
+            Object* modulo (Object* other);
 
             bool equal (Object* other);
             bool less (Object* other);
@@ -27,6 +31,9 @@ namespace variable {
             bool greatereq (Object* other);
             bool noteq (Object* other);
 
+            void assign(Object* from);
+            void assign(SpecialType type);
+
             string getType();
             string toString();
             string getValueString();
@@ -34,5 +41,6 @@ namespace variable {
             static Object* check(Object &other);
 
             SpecialType value;
+            Object* var;
     };
 }

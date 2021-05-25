@@ -35,12 +35,14 @@ int main (int argc, char **argv) {
         }
 
         Parser parser;
+        Tokenaizer tokenaizer;
+        vector<Token> tokens;
+        
         if (isParsed) {
             ParseSaver saver;
             parser.mFunction = saver.load(args[1]);
         } else {
-            Tokenaizer tokenaizer;
-            vector<Token> tokens = tokenaizer.parse(allCode);
+            tokens = tokenaizer.parse(allCode);
 
             parser.parse(tokens);
         }
@@ -48,6 +50,9 @@ int main (int argc, char **argv) {
         vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
         if (debugIterator != end(args)) {
             // there is -D in argv
+            for (Token &t : tokens) {
+                t.DebugPrint();
+            }
             parser.DebugPrint();
         }
 
@@ -75,7 +80,6 @@ int main (int argc, char **argv) {
                     saver.save("c.ccc", functions);
                 }
             }   
-
         } else { // interpret
             if (transpileIterator != end(args)) {
                 // transpile

@@ -24,6 +24,9 @@ namespace variable {
     Object* String::divide (Object* other) {
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
     }
+    Object* String::modulo (Object* other) {
+        throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
+    }
 
     bool String::equal(Object* other) {
         if (other->getType() == "String")
@@ -46,6 +49,10 @@ namespace variable {
        if (other->getType() == "String")
             return value != other->getValueString();
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
+    }
+
+    void String::assign(Object* from) {
+        this->value = from->getValueString();
     }
 
     string String::toString() {return value;}
