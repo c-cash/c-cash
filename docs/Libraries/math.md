@@ -126,13 +126,13 @@ deg(1) // this is equal to about 0.0174 radians
 ```
 
 ## max
-This function takes two numbers and returns greater.
+This function takes one or more numbers and returns greatest of them.
 ```clike
 max(3, 8) // this is equal to 8
 ```
 
 ## min
-This function takes two numbers and returns smaller.
+This function takes one or more numbers and returns smallest of them.
 ```clike
 deg(3, 8) // this is equal to 3
 ```

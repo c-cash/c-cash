@@ -146,21 +146,35 @@ namespace library {
         };
         // (F)max function
         s.functions["max"] = [](vector<Object*> args) -> Object*{
-            if (args.size() != 2) throw runtime_error("max function takes exactly two arguments");
-            string t = args[0]->getType();
-            string t2 = args[1]->getType();
-            if (t == "Integer" || t == "Double")
-                return new Double(std::fmax(stod(args[0]->getValueString()), stod(args[1]->getValueString())));
-            throw runtime_error("You can use max function only with doubles or integers");
+            if (args.size() < 1) throw runtime_error("max function takes exactly two arguments");
+            double md = numeric_limits<double>::min();
+            int mi = numeric_limits<int>::min();
+            for (Object* e : args) {
+                string t = e->getType();
+                int iv = stoi(e->getValueString());
+                double dv = stod(e->getValueString());
+                if (t == "Integer" && iv > mi) {mi = std::max(mi, iv);}
+                else if (t == "Double" && dv > md) {md = std::fmax(md, dv);}
+                else throw runtime_error("You can use max function only with doubles or integers");
+            }
+            if (md >= mi) return new Double(md);
+            else return new Integer(mi);
         };
         // (F)min function
         s.functions["min"] = [](vector<Object*> args) -> Object*{
-            if (args.size() != 2) throw runtime_error("min function takes exactly two arguments");
-            string t = args[0]->getType();
-            string t2 = args[1]->getType();
-            if (t == "Integer" || t == "Double")
-                return new Double(std::fmin(stod(args[0]->getValueString()), stod(args[1]->getValueString())));
-            throw runtime_error("You can use min function only with doubles or integers");
+            if (args.size() < 1) throw runtime_error("min function takes exactly two arguments");
+            double md = numeric_limits<double>::max();
+            int mi = numeric_limits<int>::max();
+            for (Object* e : args) {
+                string t = e->getType();
+                int iv = stoi(e->getValueString());
+                double dv = stod(e->getValueString());
+                if (t == "Integer" && iv < mi) {mi = std::max(mi, iv);}
+                else if (t == "Double" && dv < md) {md = std::fmax(md, dv);}
+                else throw runtime_error("You can use min function only with doubles or integers");
+            }
+            if (md <= mi) return new Double(md);
+            else return new Integer(mi);
         };
     }
 
