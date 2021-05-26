@@ -337,6 +337,7 @@ namespace parser {
             Statement one;
             one.mName = "1";
             one.mKind = StatementKind::LITERAL;
+            one.mType =  Type("signed integer", INT32);
             if(!initialValue.has_value()) {
                 operatorStatement.mStatements.push_back(statementVar);
                 operatorStatement.mStatements.push_back(one);

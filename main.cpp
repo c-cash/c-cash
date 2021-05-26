@@ -4,10 +4,10 @@
 #include <fstream>
 #include <algorithm>
 
-#include "parser/Tokenizer.hpp"
-#include "parser/Parser.hpp"
-#include "interpreter/Interpreter.hpp"
-#include "other/ParseSaver.hpp"
+#include "src/parser/Tokenizer.hpp"
+#include "src/parser/Parser.hpp"
+#include "src/interpreter/Interpreter.hpp"
+#include "src/other/ParseSaver.hpp"
 #include "transpiler/Transpiler.hpp"
 
 using namespace std;

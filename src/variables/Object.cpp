@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "../parser/Statement.hpp"
-#include "../transpiler/Transpiler.hpp"
+#include "../../transpiler/Transpiler.hpp"
 
 #include "Integer.hpp"
 #include "Double.hpp"
