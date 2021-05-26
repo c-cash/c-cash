@@ -158,13 +158,13 @@ namespace interpreter {
         // check if function is in builtins
         if (Interpreter::globalBuiltins.find(stmt.mName) != Interpreter::globalBuiltins.end()) {
             // if it is, then run it :D
-            return Interpreter::globalBuiltins[stmt.mName](args);
+            return Interpreter::globalBuiltins[stmt.mName](args)[0];
         }
 
         // library functions
         if (Interpreter::includes->functions.find(stmt.mName) != Interpreter::includes->functions.end()) {
             // this is a global function from library :D
-            return Interpreter::includes->functions[stmt.mName](args);
+            return Interpreter::includes->functions[stmt.mName](args)[0];
         }
         // TODO: implement namespaced builtins
 

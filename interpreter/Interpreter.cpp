@@ -115,18 +115,18 @@ namespace interpreter{
 
     void Interpreter::addDefaultBuiltins() {
         // write function
-        addBuiltin("write", [](vector<Object*> args)->Object*{
+        addBuiltin("write", [](vector<Object*> args)->vector<Object*>{
             for (int i=0; i<args.size(); i++) cout << args[i]->toString();
-            return nullptr;
+            return {nullptr};
         });
         // read function
-        addBuiltin("read", [](vector<Object*> args)->Object*{
+        addBuiltin("read", [](vector<Object*> args)->vector<Object*>{
             string r;
             cin >> r;
-            return new String(r);
+            return {new String(r)};
         });
         // exit function
-        addBuiltin("exit", [](vector<Object*> args)->Object*{
+        addBuiltin("exit", [](vector<Object*> args)->vector<Object*>{
             if (args.size() != 1 || args[0]->getType() != "Integer") throw runtime_error("invalid arguments for 'exit' function");
             exit(stoi(args[0]->getValueString()));
         });
