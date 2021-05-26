@@ -4,20 +4,20 @@ project(c-cash VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 set(INTERPRETER
-    interpreter/Namespace.cpp
-    interpreter/Functions.cpp
-    interpreter/Interpreter.cpp
+    src/interpreter/Namespace.cpp
+    src/interpreter/Functions.cpp
+    src/interpreter/Interpreter.cpp
 )
 
 set(PARSER 
-    parser/FunctionDefinition.cpp
-    parser/Parser.cpp
-    parser/Statement.cpp
-    parser/Tokenaizer.cpp
+    src/parser/FunctionDefinition.cpp
+    src/parser/Parser.cpp
+    src/parser/Statement.cpp
+    src/parser/Tokenaizer.cpp
 )
 
 set(OTHER
-    other/ParseSaver.cpp
+    src/other/ParseSaver.cpp
 )
 
 set(TRANSPILER
@@ -25,18 +25,18 @@ set(TRANSPILER
 )
 
 set(VARIABLE
-    variables/Object.cpp
-    variables/Integer.cpp
-    variables/Double.cpp
-    variables/String.cpp
-    variables/Boolean.cpp
-    variables/SpecialObject.cpp
+    src/variables/Object.cpp
+    src/variables/Integer.cpp
+    src/variables/Double.cpp
+    src/variables/String.cpp
+    src/variables/Boolean.cpp
+    src/variables/SpecialObject.cpp
 )
 
 set(LIBRARIES
-    libraries/LibraryRegistry.cpp
-    libraries/Library.cpp
-    libraries/MathLibrary.cpp
+    src/libraries/LibraryRegistry.cpp
+    src/libraries/Library.cpp
+    src/libraries/MathLibrary.cpp
 )
 
 #add execute file

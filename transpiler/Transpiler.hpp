@@ -3,8 +3,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include "../parser/Statement.hpp"
-#include "../parser/FunctionDefinition.hpp"
+#include "../src/parser/Statement.hpp"
+#include "../src/parser/FunctionDefinition.hpp"
 
 namespace transpiler {
 
