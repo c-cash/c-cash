@@ -34,7 +34,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 
 -----------------------0.2.0-----------------------
 
-1. tablice
+1. tablice                                             (done)
 2. break w loop                                        (done)
 3. skrócone operatory przypisania: +=, -=, *=, /=      (done)
 4. inkrementacja oraz dekrementacja(i++, i--)          (done)

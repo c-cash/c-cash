@@ -21,6 +21,13 @@ namespace parsesaver {
         PARAMETERS_NEXT = 0b101
     };
 
+
+    /*
+        ARRAY_DECLARATION,
+        ARRAY,
+        ARRAY_ELEMENT,
+        ARRAY_CALL
+    */
     map<parser::StatementKind, char> statementMap {
         {parser::StatementKind::FUNCTION_CALL, 0b110},
         {parser::StatementKind::LITERAL, 0b111},
@@ -28,7 +35,11 @@ namespace parsesaver {
         {parser::StatementKind::OPERATOR_CALL, 0b1001},
         {parser::StatementKind::VARIABLE, 0b1011}, // skip new line (0x1010)
         {parser::StatementKind::VARIABLE_CALL, 0b1100},
-        {parser::StatementKind::VARIABLE_DECLARATION, 0b1101}
+        {parser::StatementKind::VARIABLE_DECLARATION, 0b1101},
+        {parser::StatementKind::ARRAY_DECLARATION, 0b1110},
+        {parser::StatementKind::ARRAY, 0b1111},
+        {parser::StatementKind::ARRAY_ELEMENT, 0b10000},
+        {parser::StatementKind::ARRAY_CALL, 0b10001}
     };
     map<char, parser::StatementKind> inverseStatementMap {
         {0b110, parser::StatementKind::FUNCTION_CALL},
@@ -37,7 +48,11 @@ namespace parsesaver {
         {0b1001, parser::StatementKind::OPERATOR_CALL},
         {0b1011, parser::StatementKind::VARIABLE}, // skip new line (0x1010)
         {0b1100, parser::StatementKind::VARIABLE_CALL},
-        {0b1101, parser::StatementKind::VARIABLE_DECLARATION}
+        {0b1101, parser::StatementKind::VARIABLE_DECLARATION},
+        {0b1110, parser::StatementKind::ARRAY_DECLARATION},
+        {0b1111, parser::StatementKind::ARRAY},
+        {0b10000, parser::StatementKind::ARRAY_ELEMENT},
+        {0b10001, parser::StatementKind::ARRAY_CALL}
     };
 
     map<parser::BUILTIN_TYPE, char> typeMap {
@@ -64,7 +79,7 @@ namespace parsesaver {
     string varnamechars = "abcdefghijklmoprstuvwxyzABCDEFGHIJKLMNOPRSTUVWXYZ";
 
     vector<string> staticnames = {
-        "main", "write", "read", "IF", "ELSE", "LOOP", "ELIF"
+        "main", "write", "read", "IF", "ELSE", "LOOP", "ELIF", "break", "continue"
     };
 
     // SAVE
@@ -133,6 +148,8 @@ namespace parsesaver {
     }
 
     string ParseSaver::getNextName(string current) {
+        return current;
+        // TEMPORARY DISABLED DUE TO THE BIG CHANGES
         map<string, string>::iterator index = varmap.find(current);
         if (index == varmap.end()) {
             // generate new name

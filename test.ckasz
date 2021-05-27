@@ -1,10 +1,8 @@
 include("math");
 
 func main() {
-    string[] test = ["a", "b"];
-    int[] a = [2, 3];
+    int[] a;
     a.add(8, 0);
     write(a);
     write(max(a));
-    write(test);
 }

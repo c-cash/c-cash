@@ -22,10 +22,11 @@
 - [x] fix multiple `and`, `or` expressions
 
 ## Version 0.2.0
-- [ ] tables
+- [x] tables
 - [x] break statement in loop
 - [x] quick assignment operators (`+=`, `-=`, etc...)
 - [x] increase and decrease operators (`i++`, `i--`)
 - [x] string
-- [ ] bool (brakuje w parserze)
+- [x] bool
 - [ ] fix block comments
+- [ ] namespaces
