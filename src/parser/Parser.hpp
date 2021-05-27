@@ -54,6 +54,7 @@ namespace parser {
             optional<Statement> expectVariableCall();
             optional<Statement> expectExpressionFunc();
             optional<Statement> expectOneValueFunc();
+            optional<Statement> expectArrayDeclaration();
             optional<Statement> parseIfStatement();
             optional<Statement> expectLogicExpressionFunc();
             optional<Statement> parseLoopStatement();

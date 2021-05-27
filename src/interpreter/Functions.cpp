@@ -12,6 +12,7 @@
 #include "../variables/Integer.hpp"
 #include "../variables/Boolean.hpp"
 #include "../variables/SpecialObject.hpp"
+#include "../variables/Array.hpp"
 
 #include "../libraries/LibraryRegistry.hpp"
 
@@ -284,5 +285,32 @@ namespace interpreter {
                     }
             }
         }
+    }
+
+    Object* Functions::evaluateArrayDeclaration(Statement &stmt, Scope &scope) {
+        // declare array and return null
+        if (stmt.mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
+        else if (stmt.mStatements.size() > 1) throw runtime_error("unexpected error (1)");
+        else scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+        return nullptr;
+    }
+
+    Object* Functions::evaluateArrayCreation(Statement &stmt, Scope &scope) {
+        // create new array from all of the objects
+        vector<Object*> objects;
+        for (Statement &s : stmt.mStatements) {
+            objects.emplace_back(Interpreter::evaluateStatement(s, scope));
+        }
+        return new Array(objects);
+    }
+
+    Object* Functions::evaluateArrayElement(Statement &stmt, Scope &scope) {
+        if (stmt.mStatements.size() != 2) throw runtime_error("unexpected error (2)");
+        // array assignment
+        if (stmt.mStatements[1].mKind != StatementKind::ARRAY_CALL) {
+            Array::assignIndex(stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()), scope.varTab[stmt.mName], 
+            Interpreter::evaluateStatement(stmt.mStatements[1], scope));
+        }
+        return nullptr;
     }
 }

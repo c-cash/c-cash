@@ -93,6 +93,8 @@ namespace parser {
                 case ')':
                 case ';':
                 case ',':
+                case '[':
+                case ']':
                     if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);

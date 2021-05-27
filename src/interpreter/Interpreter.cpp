@@ -4,6 +4,7 @@
 #include "../variables/Object.hpp"
 #include "../variables/Integer.hpp"
 #include "../variables/String.hpp"
+#include "../variables/Array.hpp"
 #include "Namespace.hpp"
 
 #include "../../transpiler/Transpiler.hpp"
@@ -96,8 +97,23 @@ namespace interpreter{
                 break;
             }
             case StatementKind::FUNCTION_CALL: {
-                // TODO: create builtins
                 return Functions::evaluateFunctionCall(stmt, scope);
+                break;
+            }
+            case StatementKind::ARRAY_DECLARATION: {
+                return Functions::evaluateArrayDeclaration(stmt, scope);
+                break;
+            }
+            case StatementKind::ARRAY: {
+                return Functions::evaluateArrayCreation(stmt, scope);
+                break;
+            }
+            case StatementKind::ARRAY_CALL: {
+                return Array::check(*scope.varTab[stmt.mName]);
+                break;
+            }
+            case StatementKind::ARRAY_ELEMENT: {
+                return Functions::evaluateArrayElement(stmt, scope);
                 break;
             }
             default:
@@ -116,7 +132,9 @@ namespace interpreter{
     void Interpreter::addDefaultBuiltins() {
         // write function
         addBuiltin("write", [](vector<Object*> args)->vector<Object*>{
-            for (int i=0; i<args.size(); i++) cout << args[i]->toString();
+          
+            for (int i=0; i<args.size(); ++i) cout << args[i]->toString();
+
             return {nullptr};
         });
         // read function
