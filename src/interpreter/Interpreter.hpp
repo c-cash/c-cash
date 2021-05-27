@@ -11,7 +11,7 @@
 #include <vector>
 #include "../libraries/Library.hpp"
 
-typedef variable::Object*(*builtinF)(std::vector<variable::Object*> args);
+typedef std::vector<variable::Object*>(*builtinF)(std::vector<variable::Object*> args);
 
 namespace interpreter {
     using namespace std;

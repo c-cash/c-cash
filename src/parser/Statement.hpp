@@ -14,7 +14,11 @@ namespace parser {
         OPERATOR_CALL,
         VARIABLE,
         VARIABLE_CALL,
-        LOGIC_CALL
+        LOGIC_CALL,
+        ARRAY_DECLARATION,
+        ARRAY,
+        ARRAY_ELEMENT,
+        ARRAY_CALL
     };
 
     static const char* sStatementKindStrings[] = {
@@ -24,7 +28,11 @@ namespace parser {
         "OPERATOR_CALL",
         "VARIABLE",
         "VARIABLE_CALL",
-        "LOGIC_CALL"
+        "LOGIC_CALL",
+        "ARRAY_DECLARATION",
+        "ARRAY",
+        "ARRAY_ELEMENT",
+        "ARRAY_CALL"
     };
 
     class Statement {

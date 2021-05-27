@@ -44,15 +44,21 @@ int main (int argc, char **argv) {
         } else {
             tokens = tokenaizer.parse(allCode);
 
+            //If debug mode
+            vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
+            if (debugIterator != end(args)) {
+                // there is -D in argv
+                for (Token &t : tokens) {
+                    t.DebugPrint();
+                }
+            }
+
             parser.parse(tokens);
         }
         // debug print
         vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
         if (debugIterator != end(args)) {
             // there is -D in argv
-            for (Token &t : tokens) {
-                t.DebugPrint();
-            }
             parser.DebugPrint();
         }
 

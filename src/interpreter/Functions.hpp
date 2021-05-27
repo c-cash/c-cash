@@ -9,6 +9,7 @@
 #include "../variables/Object.hpp"
 #include "../variables/SpecialObject.hpp"
 #include "Namespace.hpp"
+#include "../variables/Array.hpp"
  
 namespace interpreter {
     using namespace std;
@@ -40,6 +41,9 @@ namespace interpreter {
             static variable::Object* evaluateMath(Statement &stmt, Scope &scope);
             static variable::Object* evaluateLogic(Statement &stmt, Scope &scope);
             static variable::Object* evaluateFunctionCall(Statement &stmt, Scope &scope);
+            static variable::Object* evaluateArrayDeclaration(Statement &stmt, Scope &scope);
+            static variable::Object* evaluateArrayCreation(Statement &stmt, Scope &scope);
+            static variable::Object* evaluateArrayElement(Statement &stmt, Scope &scope);
             static variable::Object* specialVariable(Statement &stmt, Scope &scope);
             static void includeLibrary(FunctionDefinition &func, Scope &scope);
 

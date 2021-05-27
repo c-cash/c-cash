@@ -31,6 +31,7 @@ set(VARIABLE
     src/variables/String.cpp
     src/variables/Boolean.cpp
     src/variables/SpecialObject.cpp
+    src/variables/Array.cpp
 )
 
 set(LIBRARIES

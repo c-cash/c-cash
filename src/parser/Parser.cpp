@@ -71,7 +71,6 @@ namespace parser {
                         
                     return true;
                 }  else {
-                    cout << "tuttajjjjj\n";
                     mCurrentToken = parseStart;
                 }
             }  else {
@@ -278,12 +277,22 @@ namespace parser {
             functionCallStatement = expectFunctionCall();
             result = functionCallStatement;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER){
+            vector<Token>::iterator startToken = mCurrentToken;
             Statement variableCallStatement;
-            variableCallStatement.mKind = StatementKind::VARIABLE_CALL;
-            variableCallStatement.mName = mCurrentToken->mText;
-            variableCallStatement.mType =  Type("string", UINT8);
-            result = variableCallStatement;
-            ++mCurrentToken; 
+
+            ++mCurrentToken;
+            //If its table element 
+            if(expectOperator("[")){
+                mCurrentToken = startToken;
+                return expectVariableCall().value();
+            } else {
+                mCurrentToken = startToken;
+                variableCallStatement.mKind = StatementKind::VARIABLE_CALL;
+                variableCallStatement.mName = mCurrentToken->mText;
+                variableCallStatement.mType =  Type("string", UINT8);
+                result = variableCallStatement;
+                ++mCurrentToken; 
+            }
         } else if (expectOperator("(").has_value()) {
             result = expectExpression();
             if (!expectOperator(")").has_value()) {
@@ -303,8 +312,10 @@ namespace parser {
 
         statementVar.mKind = StatementKind::VARIABLE_CALL;
 
+
         optional<Token> possibleVaribleName = expectIdentifier();
         statementVar.mName = possibleVaribleName->mText;
+        if(expectOperator("(")) return nullopt;
 
         if(expectOperator("=").has_value()) {
             optional<Statement> initialValue = expectExpressionFunc();
@@ -345,6 +356,43 @@ namespace parser {
             } else {
                 throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
             }
+        } else if(expectOperator(".").has_value()) {
+            // a.b;
+            vector<Token>::iterator startToken = mCurrentToken;
+
+            optional<Statement> varcall = expectVariableCall();
+            if (varcall.has_value()) { // this is variable call :D
+                statementVar.mStatements.push_back(varcall.value());
+            } else {
+                mCurrentToken = startToken;
+                optional<Statement> funccall = expectFunctionCall();
+                if (funccall.has_value()) { // this is function call
+                    statementVar.mStatements.push_back(funccall.value());
+                } else {
+                    throw runtime_error(string("Expected variable or function call after '.' in line ") + to_string(mCurrentToken->mLine));
+                }
+                
+            }
+        }  else if(expectOperator("[").has_value()) {
+            vector<Token>::iterator startToken = mCurrentToken;
+
+            //a[1] = 2+2
+            //write(a[1]);
+            statementVar.mKind = StatementKind::ARRAY_ELEMENT;
+            statementVar.mStatements.push_back(expectExpressionFunc().value());
+            if(!expectOperator("]").has_value())  throw runtime_error(string("XD ") + to_string(mCurrentToken->mLine));
+            if(expectOperator("=").has_value()){
+                statementVar.mStatements.push_back(expectExpressionFunc().value());
+            } else {
+                string name = statementVar.mName;
+                statementVar.mName = "";
+                statementVar.mType.mName = "func";
+                Statement s;
+                s.mKind = StatementKind::ARRAY_CALL;
+                s.mType.mName = "func";
+                s.mName = possibleVaribleName->mText;
+                statementVar.mStatements.push_back(s);
+            }
         }
 
         return statementVar;
@@ -354,28 +402,37 @@ namespace parser {
         vector<Token>::iterator startToken = mCurrentToken;
         optional<Type> possibleType = expectType();
  
-        Statement statment;
+        Statement statement;
 
         if(!possibleType.has_value()) {
             return expectVariableCall();
         } else {
-            statment.mKind = StatementKind::VARIABLE_DECLARATION;
-            statment.mType = possibleType.value();
+            if(expectOperator("[").has_value() && expectOperator("]").has_value()){
+                //Run table init function
+                statement.mKind = StatementKind::ARRAY_DECLARATION;
+                statement.mType = possibleType.value();
+            } else {
+                statement.mKind = StatementKind::VARIABLE_DECLARATION;
+                statement.mType = possibleType.value();
+            }
         }
 
         optional<Token> possibleVaribleName = expectIdentifier();
-        statment.mName = possibleVaribleName->mText;
-
+        statement.mName = possibleVaribleName->mText;
         if(expectOperator("=").has_value()) {
-            optional<Statement> initialValue = expectExpressionFunc();
-            if(!initialValue.has_value()) {
-                throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
+            if (statement.mKind == StatementKind::ARRAY_DECLARATION) {
+                statement.mStatements.push_back(expectArrayDeclaration().value());
+            } else {
+                optional<Statement> initialValue = expectExpressionFunc();
+                if(!initialValue.has_value()) {
+                    throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
+                }
+
+                statement.mStatements.push_back(initialValue.value());
             }
+        }
 
-            statment.mStatements.push_back(initialValue.value());
-        } 
-
-        return statment;
+        return statement;
     }
 
     optional<Statement> Parser::expectFunctionCall(){
@@ -512,7 +569,9 @@ namespace parser {
 
     optional<Statement> Parser::expectExpressionFunc() {
         optional<Statement> lhs = expectOneValueFunc();
-		if(!lhs.has_value()) { return nullopt; }
+		if(!lhs.has_value()) { 
+            return expectArrayDeclaration();
+        }
 
         while (true) {
 			optional<Token> op = expectOperator();
@@ -604,8 +663,6 @@ namespace parser {
                     orStatement.mName = "or";
                     back_parameter = orStatement;
                 }
-
-                if(expectOperator(")").has_value()) break;
             }
             ifS.mStatements.push_back(back_parameter.value());
         }
@@ -620,7 +677,6 @@ namespace parser {
 
     optional<Statement> Parser::expectLogicExpressionFunc() {
         optional<Statement> lhs = expectExpressionFunc();
-        //cout << lhs->mStatements[0].mName << '\n';
         if(!lhs.has_value()) { return nullopt;}
         optional<Token> log = expectLogic();
         if(!log.has_value()) { return nullopt; }
@@ -755,5 +811,27 @@ namespace parser {
         }
         mCurrentToken = startToken;
         return true;
+    }
+
+    optional<Statement> Parser::expectArrayDeclaration() {
+        // [] - empty array :D
+        // [1] - array with one number
+        // [1, 2] - array with multiple numbers
+
+        // if no opening bracket then it's not an array declaration
+        if (!expectOperator("[").has_value()) { return nullopt; }
+        
+        Statement statement;
+        statement.mKind = StatementKind::ARRAY;
+        statement.mType.mName = "arr";
+        
+        while (!expectOperator("]").has_value()) {
+            optional<Statement> stmt = expectExpressionFunc();
+            statement.mStatements.push_back(stmt.value());
+            if(expectOperator("]").has_value()) { break; }
+            if(!expectOperator(",").has_value()) { throw runtime_error(string("Expected ',' to separate values in array in line ") + to_string(mCurrentToken->mLine)); }
+            
+        }
+        return statement;
     }
 }
