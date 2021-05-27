@@ -37,6 +37,9 @@ namespace variable {
 
     Object* Object::checkAll(string expected, Object* val) {
             string valT = val->getType();
+            // if array then it will throw error somewhere else
+            if (valT.substr(0,5)=="Array") return val;
+
             if ((expected == "signed int"||expected=="Integer") && valT == "Integer") return val;
             else if ((expected == "double"||expected=="Double") && valT == "Double") return val;
             else if ((expected == "string"||expected=="String") && valT == "String") return val;

@@ -80,4 +80,8 @@ namespace variable {
             throw runtime_error("variable types does not match");
     }
 
+    map<string, objectF> SpecialObject::getFunctions() {
+        return {};
+    }
+
 }

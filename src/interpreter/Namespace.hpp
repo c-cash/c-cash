@@ -5,7 +5,7 @@
 #include <vector>
 #include "../variables/Object.hpp"
 
-typedef std::vector<variable::Object*>(*builtinF)(std::vector<variable::Object*> args);
+typedef variable::Object*(*builtinF)(std::vector<variable::Object*> args);
 
 namespace interpreter {
     using namespace std;

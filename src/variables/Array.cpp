@@ -38,12 +38,10 @@ namespace variable {
     }
 
     bool Array::equal(Object* other) {
-        if (instanceof<Array*>(other)) {
-            Array* arr = (Array*) other;
-            if (type != arr->type) throw runtime_error("Array types does not match");
-            if (value.size() != arr->value.size()) throw runtime_error("Array sizes does not match");
-            return std::equal(value.begin(), value.end(), arr->value.begin());
-        }
+        Array* arr = convert(other);
+        if (type != arr->type) throw runtime_error("Array types does not match");
+        if (value.size() != arr->value.size()) throw runtime_error("Array sizes does not match");
+        return std::equal(value.begin(), value.end(), arr->value.begin());
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Array::less(Object* other) {
@@ -63,8 +61,9 @@ namespace variable {
     }
 
     void Array::assign(Object* from) {
-        if (!instanceof<Array*>(from)) throw runtime_error("Cannot assign litteral to array");
-        this->value = ((Array*) from)->value;
+        Array* arr = convert(from);
+        checkArray(type, arr->value);
+        this->value = arr->value;
     }
 
     string Array::toString() {
@@ -103,14 +102,14 @@ namespace variable {
     }
 
     Object* Array::check(Object &other) {
-        if (other.getType().substr(0, 6) == "Array") return &other;
+        if (other.getType().substr(0, 5) == "Array") return &other;
         throw runtime_error("variable types does not match");
     }
 
     Array* Array::convert(Object* obj) {
         Array* arr = nullptr;
         try {
-            arr = dynamic_cast<Array*>(obj);
+            arr = reinterpret_cast<Array*>(obj);
         } catch (exception e) {
             throw runtime_error("cannot convert from " + obj->getType() + " to array");
         }
@@ -125,10 +124,29 @@ namespace variable {
         return array;
     }
 
+    Object* Array::getIndex(size_t index, Object* array) {
+        Array* arr = convert(array);
+        if (index < 0 || arr->value.size() < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
+        return arr->value[index];
+    }
+
     void Array::checkArray(string type, vector<Object*> arr) {
         for (Object* o : arr) {
             if (o->getType() != type) throw runtime_error("invalid type in array: " + o->getType());
         }
+    }
+
+    map<string, objectF> Array::getFunctions() {
+        map<string, objectF> functions;
+        
+        functions["add"] = [](Object* t, vector<Object*> arg) -> Object*{
+            Array* arr = Array::convert(t);
+            Array:checkArray(arr->type, arg);
+            arr->value.insert(arr->value.end(), arg.begin(), arg.end());
+            return nullptr;
+        };
+
+        return functions;
     }
 
 }

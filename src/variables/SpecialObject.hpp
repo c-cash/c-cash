@@ -3,6 +3,8 @@
 #include <iostream>
 #include "Object.hpp"
 
+typedef variable::Object*(*objectF)(variable::Object* t, std::vector<variable::Object*> args);
+
 namespace variable {
     using namespace std;
 
@@ -15,6 +17,7 @@ namespace variable {
 
     class SpecialObject : public variable::Object {
         public:
+
             SpecialObject(SpecialType value, Object* var);
             SpecialObject();
 
@@ -37,6 +40,8 @@ namespace variable {
             string getType();
             string toString();
             string getValueString();
+
+            map<string, objectF> getFunctions();
 
             static Object* check(Object &other);
 

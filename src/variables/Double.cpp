@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <map>
 
 namespace variable {
     using namespace std;
@@ -112,6 +113,10 @@ namespace variable {
     Object* Double::check(Object &other) {
             if (other.getType() == "Double") return &other;
             throw runtime_error("variable types does not match");
+    }
+
+    map<string, objectF> Double::getFunctions() {
+        return {};
     }
 
 }

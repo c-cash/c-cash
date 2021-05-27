@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <map>
 
 namespace variable {
     using namespace std;
@@ -104,5 +105,9 @@ namespace variable {
     Object* Integer::check(Object &other) {
             if (other.getType() == "Integer") return &other;
             throw runtime_error("variable types does not match");
+    }
+
+    map<string, objectF> Integer::getFunctions() {
+        return {};
     }
 }

@@ -159,13 +159,13 @@ namespace interpreter {
         // check if function is in builtins
         if (Interpreter::globalBuiltins.find(stmt.mName) != Interpreter::globalBuiltins.end()) {
             // if it is, then run it :D
-            return Interpreter::globalBuiltins[stmt.mName](args)[0];
+            return Interpreter::globalBuiltins[stmt.mName](args);
         }
 
         // library functions
         if (Interpreter::includes->functions.find(stmt.mName) != Interpreter::includes->functions.end()) {
             // this is a global function from library :D
-            return Interpreter::includes->functions[stmt.mName](args)[0];
+            return Interpreter::includes->functions[stmt.mName](args);
         }
         // TODO: implement namespaced builtins
 
@@ -311,6 +311,33 @@ namespace interpreter {
             Array::assignIndex(stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()), scope.varTab[stmt.mName], 
             Interpreter::evaluateStatement(stmt.mStatements[1], scope));
         }
+        // array call :D
+        else {
+            return Array::getIndex(stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()), 
+                Interpreter::evaluateStatement(stmt.mStatements[1], scope));
+        }
         return nullptr;
+    }
+
+    Object* Functions::evaluateVariableCall(Statement &stmt, Scope &scope) {
+        Object* special = Functions::specialVariable(stmt, scope);
+            if (special != nullptr) return special;
+            if (scope.varTab.find(stmt.mName) == scope.varTab.end()) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+            if (stmt.mStatements.size() >= 1) { // assign to existing variable
+                 if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
+                    // this is a function inside of object
+                    map<string, objectF> funcs = scope.varTab[stmt.mName]->getFunctions();
+                    if (funcs.find(stmt.mStatements[0].mName) == funcs.end()) throw runtime_error("class " + stmt.mName + " does not have a member " + stmt.mStatements[0].mName);
+                    // collect arguments
+                    vector<Object*> args;
+                    for (Statement &s : stmt.mStatements[0].mStatements) {
+                        args.emplace_back(Interpreter::evaluateStatement(s, scope));
+                    }
+                    return funcs[stmt.mStatements[0].mName](scope.varTab[stmt.mName], args);
+                }
+                else scope.varTab[stmt.mName]->assign(Object::checkAll(scope.varTab[stmt.mName]->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope)));
+                return scope.varTab[stmt.mName];
+            }
+            return scope.varTab[stmt.mName];
     }
 }

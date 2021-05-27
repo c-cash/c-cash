@@ -11,6 +11,7 @@
 #include "Namespace.hpp"
 #include "../variables/Array.hpp"
  
+
 namespace interpreter {
     using namespace std;
     using namespace parser;
@@ -20,6 +21,8 @@ namespace interpreter {
         T data;
     };
 */
+    typedef variable::Object*(*builtinF)(std::vector<variable::Object*> args);
+
     class Scope {
         public:
             map<string, variable::Object*> varTab;
@@ -44,6 +47,7 @@ namespace interpreter {
             static variable::Object* evaluateArrayDeclaration(Statement &stmt, Scope &scope);
             static variable::Object* evaluateArrayCreation(Statement &stmt, Scope &scope);
             static variable::Object* evaluateArrayElement(Statement &stmt, Scope &scope);
+            static variable::Object* evaluateVariableCall(Statement &stmt, Scope &scope); 
             static variable::Object* specialVariable(Statement &stmt, Scope &scope);
             static void includeLibrary(FunctionDefinition &func, Scope &scope);
 

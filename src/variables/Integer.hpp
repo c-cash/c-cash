@@ -3,11 +3,14 @@
 #include <iostream>
 #include "Object.hpp"
 
+typedef variable::Object*(*objectF)(variable::Object* t, std::vector<variable::Object*> args);
+
 namespace variable {
     using namespace std;
 
     class Integer : public variable::Object {
         public:
+
             Integer(int value);
             Integer();
             Object* add (Object* other);
@@ -28,6 +31,8 @@ namespace variable {
             string getType();
             string toString();
             string getValueString();
+
+            map<string, objectF> getFunctions();
 
             static Object* check(Object &other);
             

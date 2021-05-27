@@ -3,12 +3,14 @@
 #include <iostream>
 
 #include "../parser/Statement.hpp"
+#include <map>
 
 namespace variable {
     using namespace std;
 
     class Object {
         public:
+
             Object();
             virtual Object* add (Object* other) = 0;
             virtual Object* subtract (Object* other) = 0;
@@ -27,6 +29,8 @@ namespace variable {
             virtual string toString() = 0;
             virtual string getValueString() = 0;
             virtual string getType() = 0;
+
+            virtual map<string, Object*(*)(variable::Object* t, std::vector<variable::Object*> args)> getFunctions() = 0;
             
             static Object* getDefault(string type);
             static Object* fromLitteral(parser::Statement &stmt);

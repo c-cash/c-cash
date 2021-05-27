@@ -15,6 +15,8 @@
 
 #include "../libraries/MathLibrary.hpp"
 
+typedef variable::Object*(*objectF)(variable::Object* t, std::vector<variable::Object*> args);
+
 namespace interpreter{
     using namespace std;
     using namespace parser;
@@ -86,14 +88,7 @@ namespace interpreter{
                 break;
             }
             case StatementKind::VARIABLE_CALL: {
-                Object* special = Functions::specialVariable(stmt, scope);
-                if (special != nullptr) return special;
-                if (scope.varTab.find(stmt.mName) == scope.varTab.end()) throw runtime_error("cannot find variable '" + stmt.mName + "'");
-                if (stmt.mStatements.size() >= 1) { // assign to existing variable
-                    scope.varTab[stmt.mName]->assign(Object::checkAll(scope.varTab[stmt.mName]->getType(), evaluateStatement(stmt.mStatements[0], scope)));
-                    return scope.varTab[stmt.mName];
-                }
-                return scope.varTab[stmt.mName];
+                return Functions::evaluateVariableCall(stmt, scope);
                 break;
             }
             case StatementKind::FUNCTION_CALL: {
@@ -131,20 +126,18 @@ namespace interpreter{
 
     void Interpreter::addDefaultBuiltins() {
         // write function
-        addBuiltin("write", [](vector<Object*> args)->vector<Object*>{
-          
+        addBuiltin("write", [](vector<Object*> args)->Object*{
             for (int i=0; i<args.size(); ++i) cout << args[i]->toString();
-
-            return {nullptr};
+            return nullptr;
         });
         // read function
-        addBuiltin("read", [](vector<Object*> args)->vector<Object*>{
+        addBuiltin("read", [](vector<Object*> args)->Object*{
             string r;
             cin >> r;
-            return {new String(r)};
+            return new String(r);
         });
         // exit function
-        addBuiltin("exit", [](vector<Object*> args)->vector<Object*>{
+        addBuiltin("exit", [](vector<Object*> args)->Object*{
             if (args.size() != 1 || args[0]->getType() != "Integer") throw runtime_error("invalid arguments for 'exit' function");
             exit(stoi(args[0]->getValueString()));
         });
