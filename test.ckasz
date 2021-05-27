@@ -1,9 +1,5 @@
 include("math");
 
 func main() {
-    int a = 0;
-    a += 1;
-    write(a, "\n");
-    a--;
-    write(a, "\n");
+    write(max(1, 5, 3, 5));
 }

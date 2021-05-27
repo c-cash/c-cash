@@ -153,9 +153,9 @@ namespace library {
                 string t = e->getType();
                 int iv = stoi(e->getValueString());
                 double dv = stod(e->getValueString());
-                if (t == "Integer" && iv > mi) {mi = std::max(mi, iv);}
-                else if (t == "Double" && dv > md) {md = std::fmax(md, dv);}
-                else throw runtime_error("You can use max function only with doubles or integers");
+                if (t == "Integer") {if (iv > mi) mi = std::max(mi, iv);}
+                else if (t == "Double") {if (dv > md) md = std::fmax(md, dv);}
+                else {std::cout << t; throw runtime_error("You can use max function only with doubles or integers");}
             }
             if (md >= mi) return {new Double(md)};
             else return {new Integer(mi)};
@@ -169,8 +169,8 @@ namespace library {
                 string t = e->getType();
                 int iv = stoi(e->getValueString());
                 double dv = stod(e->getValueString());
-                if (t == "Integer" && iv < mi) {mi = std::max(mi, iv);}
-                else if (t == "Double" && dv < md) {md = std::fmax(md, dv);}
+                if (t == "Integer") {if (iv < mi) mi = std::max(mi, iv);}
+                else if (t == "Double") {if (dv < md) md = std::fmax(md, dv);}
                 else throw runtime_error("You can use min function only with doubles or integers");
             }
             if (md <= mi) return {new Double(md)};
