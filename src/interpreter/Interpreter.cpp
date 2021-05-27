@@ -132,7 +132,9 @@ namespace interpreter{
     void Interpreter::addDefaultBuiltins() {
         // write function
         addBuiltin("write", [](vector<Object*> args)->vector<Object*>{
+          
             for (int i=0; i<args.size(); ++i) cout << args[i]->toString();
+
             return {nullptr};
         });
         // read function

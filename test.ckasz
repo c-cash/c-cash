@@ -1,8 +1,10 @@
 func main() {
+
     int[] a = [2, 3];
     int b = 1;
     a[b] = 2;
     write(a);
     #write(a[1]);
     #a = [3, 4, 2 , "fbuefhwi"];
+
 }
