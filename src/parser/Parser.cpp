@@ -282,7 +282,13 @@ namespace parser {
                 throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
             }
         }
-        if(!result.has_value()) { result = expectFunctionCall(); }
+        if(!result.has_value()) { 
+            if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && nextTokenIsAlias()) {
+                result = parseNamespaceAlias();
+            } else {
+                result = expectFunctionCall(); 
+            }
+        }
 
         return result;
     }
@@ -291,6 +297,10 @@ namespace parser {
         optional<Statement> result;
         if(mCurrentToken != mEndToken && ( mCurrentToken->mType == DOUBLE_LITERAL || mCurrentToken->mType == INTEGER_LITERAL || mCurrentToken->mType == STRING_LITERAL)){
             return  expectOneValue();
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && nextTokenIsAlias()){
+            optional<Statement> namespaceAlias;
+            namespaceAlias = parseNamespaceAlias();
+            result = namespaceAlias;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && expectFuncOperator("(").has_value()){
             optional<Statement> functionCallStatement;
             functionCallStatement = expectFunctionCall();
@@ -319,7 +329,13 @@ namespace parser {
             }
         }
 
-        if(!result.has_value()){ result = expectFunctionCall(); }
+        if(!result.has_value()) { 
+            if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && nextTokenIsAlias()) {
+                result = parseNamespaceAlias();
+            } else {
+                result = expectFunctionCall(); 
+            } 
+        }
 
         return result;
     }
@@ -533,7 +549,7 @@ namespace parser {
             result = parseIfStatement();
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "loop")) {
             result = parseLoopStatement();
-        }  else {
+        } else {
             result = expectExpression();
 
             if(!result.has_value()){
@@ -542,6 +558,28 @@ namespace parser {
         }
 
         return result;
+    }
+
+    bool Parser::nextTokenIsAlias() {
+        vector<Token>::iterator actual = mCurrentToken;
+        mCurrentToken++;
+        if(mCurrentToken->mType == NAMESPACE_ALIAS) {
+            mCurrentToken = actual;
+            return true;
+        } else {
+            mCurrentToken = actual;
+            return false;
+        }
+    }
+
+    optional<Statement> Parser::parseNamespaceAlias() {
+        Statement namespaceAlias;
+		namespaceAlias.mKind = StatementKind::NAMESPACE;
+		namespaceAlias.mName = mCurrentToken->mText;
+        mCurrentToken++;
+        mCurrentToken++;
+		namespaceAlias.mStatements.push_back(expectFunctionCall().value());
+        return namespaceAlias;
     }
 
     //Check expression    

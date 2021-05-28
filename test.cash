@@ -1,10 +1,8 @@
 include("math");
 
-namespace abc() {
-
-    func main() {
-        math:sqrt(16);
-    }
-
+func main() {
+    int a = math::sqrt(16);
+    write(math::min(3, 1));
+    int[] c;
 }
 #Zrobić namespace :D

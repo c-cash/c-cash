@@ -49,7 +49,9 @@ namespace parser {
             optional<Token> expectLogic(const string &name = string());
             bool isDeclaration();
             bool expectFunctionDefinition();
+            bool nextTokenIsAlias();
 
+            optional<Statement> parseNamespaceAlias();
             optional<Statement> parseLoopStatement();
             optional<vector<Statement>> parseFunctionBody();
             optional<Statement> parseIfStatement();
