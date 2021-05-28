@@ -22,7 +22,9 @@ namespace parser {
         BLOCK_COMMENT,
         COMPOUND_ASSIGNMENT_OPERATOR,
         INC_DEC_OPERATOR,
-        POTENTIAL_SPECIFIC_OPERATOR
+        POTENTIAL_SPECIFIC_OPERATOR,
+        NAMESPACE_ALIAS,
+        POTENTIAL_NAMESPACE_ALIAS
     };
 
     static const char *sTokenTypeStrings[] = {
@@ -40,7 +42,9 @@ namespace parser {
         "BLOCK_COMMENT",
         "COMPOUND_ASSIGNMENT_OPERATOR",
         "INC_DEC_OPERATOR",
-        "POTENTIAL_SPECIFIC_OPERATOR"
+        "POTENTIAL_SPECIFIC_OPERATOR",
+        "NAMESPACE_ALIAS",
+        "POTENTIAL_NAMESPACE_ALIAS"
     };
 
     class Token {

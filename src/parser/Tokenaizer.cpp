@@ -167,7 +167,20 @@ namespace parser {
                         currentToken.mText.append(1, currCh);
                     }
                     break;
-                
+
+                case ':':
+                    if(currentToken.mType == POTENTIAL_NAMESPACE_ALIAS){
+                        currentToken.mType = NAMESPACE_ALIAS;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                    } else if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT) {
+                        endToken(currentToken, tokens);
+                        currentToken.mType = POTENTIAL_NAMESPACE_ALIAS;
+                        currentToken.mText.append(1, currCh);
+                    }  else {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
                 case ' ':
                 case '\t':
                     if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){
