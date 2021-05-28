@@ -295,9 +295,11 @@ namespace interpreter {
 
     Object* Functions::evaluateArrayDeclaration(Statement &stmt, Scope &scope) {
         // declare array and return null
-        if (stmt.mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
+        if (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
         else if (stmt.mStatements.size() > 1) throw runtime_error("unexpected error (1)");
-        else scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+        else {
+            scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+        }
         return nullptr;
     }
 

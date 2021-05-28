@@ -2,6 +2,7 @@
 #include <vector>
 #include "Array.hpp"
 #include "Object.hpp"
+#include "Integer.hpp"
 
 template<typename Base, typename T>
 inline bool instanceof(const T*) {
@@ -11,6 +12,17 @@ inline bool instanceof(const T*) {
 namespace variable {
     using namespace std;
 
+    Array::Array(vector<Object*> value, string type) {
+        if (value.size() == 0) {
+            Array* a = convert(getDefault(type));
+            this->value = a->value;
+            this->type = a->type;
+            return;
+        }
+        this->value = value;
+        this->type = value[0]->getType();
+        checkArray(type, value);
+    }
     Array::Array(vector<Object*> value) {
         this->value = value;
         this->type = value[0]->getType();
@@ -145,6 +157,11 @@ namespace variable {
             Array:checkArray(arr->type, arg);
             arr->value.insert(arr->value.end(), arg.begin(), arg.end());
             return nullptr;
+        };
+
+        functions["size"] = [](Object* t, vector<Object*> arg) -> Object*{
+            if (arg.size() != 0) throw runtime_error("'size' function doesn't take any arguments");
+            return new Integer(convert(t)->value.size());
         };
 
         return functions;

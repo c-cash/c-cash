@@ -13,6 +13,7 @@ namespace variable {
     class Array : public variable::Object {
         public:
 
+            Array(std::vector<Object*> value, string type);
             Array(std::vector<Object*> value);
             Array(std::string type);
             Array();
