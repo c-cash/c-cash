@@ -123,7 +123,6 @@ namespace interpreter{
                 if (stmt.mStatements.size() != 1) throw runtime_error("unexpected error (3)");
                 if (scope.namespaces.find(stmt.mName) == scope.namespaces.end()) throw runtime_error("cannot find namespace '" + stmt.mName + "'");
                 Scope* s = new Scope(scope, *scope.namespaces[stmt.mName]);
-                cout << "\nS " << s->functions.size() << "\n";
                 return Interpreter::evaluateStatement(stmt.mStatements[0], *s);
                 break;
             }

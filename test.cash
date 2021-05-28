@@ -1,6 +1,6 @@
-include("math");
+nsinclude("math");
 
 func main() {
-    write(max(16, 8));
+    write(math::sqrt(16));
 }
 #Zrobić namespace :D
