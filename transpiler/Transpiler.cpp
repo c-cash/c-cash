@@ -1,4 +1,4 @@
-#include "./Transpiler.hpp"
+#include "Transpiler.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -282,6 +282,8 @@ namespace transpiler {
     }
 
     string Transpiler::getNextName(string current) {
+        return current;
+        // this part is temporary disabled
         map<string, string>::iterator index = varmap.find(current);
         if (index == varmap.end()) {
            string newName = getNextRandom(varnamechars);
@@ -302,7 +304,7 @@ namespace transpiler {
                 value /= size;
                 newName += l[remainder];
             }
-            clen++;
+            ++clen;
             return newName;
     }
     

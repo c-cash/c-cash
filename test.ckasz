@@ -1,8 +1,0 @@
-include("math");
-
-func main() {
-    int[] a;
-    a.add(8, 0);
-    write(a);
-    write(max(a));
-}
