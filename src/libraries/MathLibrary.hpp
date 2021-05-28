@@ -11,7 +11,7 @@ namespace library {
     class MathLibrary : public Library {
         public:
             void linkGlobally(Scope &s);
-            void linkNamespaced(string name, Namespace &ns);
+            void linkNamespaced(string name, Scope &scope);
 
             static Library* getInstance();
     };

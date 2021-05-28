@@ -9,6 +9,6 @@ namespace library {
         public:
 
             virtual void linkGlobally(Scope &s) = 0;
-            virtual void linkNamespaced(string name, Namespace &ns) = 0;
+            virtual void linkNamespaced(string name, Scope &scope) = 0;
     };
 }

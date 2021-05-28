@@ -8,13 +8,13 @@
 
 #include "../variables/Object.hpp"
 #include "../variables/SpecialObject.hpp"
-#include "Namespace.hpp"
 #include "../variables/Array.hpp"
  
 
 namespace interpreter {
     using namespace std;
     using namespace parser;
+    using namespace variable;
 /*
     template <typename T, std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, std::string> || std::is_same_v<T, bool>, bool> = true>
     struct findVarStruct {
@@ -27,16 +27,13 @@ namespace interpreter {
         public:
             map<string, variable::Object*> varTab;
             map<string, builtinF> functions;
-            map<string, Namespace*> namespaces;
+            map<string, Scope*> namespaces;
             bool isPreviousIf = false;
             bool previousResult = false;
 
             Scope() {};
-            Scope(Scope &b) {
-                for (pair<string, variable::Object*> p : b.varTab) {
-                    varTab[p.first] = p.second; // create clone of current scope
-                }
-            }
+            Scope(Scope &b);
+            Scope(Scope &i, Scope &b);
     };
 
     class Functions {

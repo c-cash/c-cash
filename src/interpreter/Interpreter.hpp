@@ -4,7 +4,6 @@
 #include "../parser/Type.hpp"
 #include "Functions.hpp"
 #include "../variables/Object.hpp"
-#include "Namespace.hpp"
 
 #include <string>
 #include <map>

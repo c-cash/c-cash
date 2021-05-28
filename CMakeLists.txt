@@ -4,7 +4,6 @@ project(c-cash VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 set(INTERPRETER
-    src/interpreter/Namespace.cpp
     src/interpreter/Functions.cpp
     src/interpreter/Interpreter.cpp
 )

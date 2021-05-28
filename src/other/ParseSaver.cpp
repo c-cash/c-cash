@@ -39,7 +39,8 @@ namespace parsesaver {
         {parser::StatementKind::ARRAY_DECLARATION, 0b1110},
         {parser::StatementKind::ARRAY, 0b1111},
         {parser::StatementKind::ARRAY_ELEMENT, 0b10000},
-        {parser::StatementKind::ARRAY_CALL, 0b10001}
+        {parser::StatementKind::ARRAY_CALL, 0b10001},
+        {parser::StatementKind::NAMESPACE, 0b10010}
     };
     map<char, parser::StatementKind> inverseStatementMap {
         {0b110, parser::StatementKind::FUNCTION_CALL},
@@ -52,7 +53,8 @@ namespace parsesaver {
         {0b1110, parser::StatementKind::ARRAY_DECLARATION},
         {0b1111, parser::StatementKind::ARRAY},
         {0b10000, parser::StatementKind::ARRAY_ELEMENT},
-        {0b10001, parser::StatementKind::ARRAY_CALL}
+        {0b10001, parser::StatementKind::ARRAY_CALL},
+        {0b10010, parser::StatementKind::NAMESPACE}
     };
 
     map<parser::BUILTIN_TYPE, char> typeMap {
