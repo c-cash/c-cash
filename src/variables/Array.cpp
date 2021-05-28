@@ -108,8 +108,9 @@ namespace variable {
 
     Array* Array::convert(Object* obj) {
         Array* arr = nullptr;
+        if (obj->getType().substr(0,5) != "Array") throw runtime_error("cannot convert from " + obj->getType() + " to array");
         try {
-            arr = reinterpret_cast<Array*>(obj);
+            arr = static_cast<Array*>(obj);
         } catch (exception e) {
             throw runtime_error("cannot convert from " + obj->getType() + " to array");
         }

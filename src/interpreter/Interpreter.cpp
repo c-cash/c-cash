@@ -40,12 +40,21 @@ namespace interpreter{
     
     Object* Interpreter::evaluateFunction(FunctionDefinition &func, vector<Object*> &args) {
         Scope* fScope = new Scope(*includes); // create new scope for the function
-        // create variables from args
+        
         if (func.mParameters.size() != args.size())
             throw runtime_error("Function " + func.mName + " needs exactly " + to_string(func.mParameters.size()) + " parameters but got " + to_string(args.size()));
+        
+        // create variables from args
         for (int i=0; i<func.mParameters.size(); i++) {
             ParameterDefinition& d = func.mParameters[i]; // get definition
-            fScope->varTab[d.mName] = args[i]; // assign parameter to the variable
+            try {
+                if (d.isArray) {
+                    Array::convert(args[i]);
+                }
+            } catch (exception e) {
+                throw runtime_error("argument " + d.mName + " is type of array but got " + args[i]->getType());
+            }
+            fScope->varTab[d.mName] = Object::checkAll(d.mType.mName, args[i]); // assign parameter to the variable
         }
 
         // execute all statements
@@ -140,6 +149,11 @@ namespace interpreter{
         addBuiltin("exit", [](vector<Object*> args)->Object*{
             if (args.size() != 1 || args[0]->getType() != "Integer") throw runtime_error("invalid arguments for 'exit' function");
             exit(stoi(args[0]->getValueString()));
+        });
+        // typeof function
+        addBuiltin("typeof", [](vector<Object*> args)->Object*{
+            if (args.size() != 1) throw runtime_error("'typeof' function takes exactly one argument");
+            return new String(args[0]->getType());
         });
     }
 }

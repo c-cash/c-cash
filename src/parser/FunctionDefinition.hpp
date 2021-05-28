@@ -13,6 +13,7 @@ namespace parser {
         public:
             string mName; //Emty -> no name given
             Type mType;
+            bool isArray { false };
 
             void DebugPrint(size_t indent) const;
     };

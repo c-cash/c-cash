@@ -1,0 +1,8 @@
+include("math");
+
+func main() {
+    math::sqrt(16);
+    
+}
+
+#Zrobić namespace :D
