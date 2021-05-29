@@ -305,6 +305,21 @@ namespace parser {
             optional<Statement> functionCallStatement;
             functionCallStatement = expectFunctionCall();
             result = functionCallStatement;
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && expectFuncOperator(".").has_value()){
+            vector<Token>::iterator startToken = mCurrentToken;
+
+            optional<Statement> varcall = expectVariableCall();
+            if (varcall.has_value()) { // this is variable call :D
+                result = varcall.value();
+            } else {
+                mCurrentToken = startToken;
+                optional<Statement> funccall = expectFunctionCall();
+                if (funccall.has_value()) { // this is function call
+                    result = funccall.value();
+                } else {
+                    throw runtime_error(string("Expected variable or function call after '.' in line ") + to_string(mCurrentToken->mLine));
+                }
+            }
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER){
             vector<Token>::iterator startToken = mCurrentToken;
             Statement variableCallStatement;
@@ -357,7 +372,7 @@ namespace parser {
             }
 
             statementVar.mStatements.push_back(initialValue.value());
-        } else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value()) {
+        } else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value() || expectAssignmentOperator("%=").has_value()) {
             Statement operatorStatement;
             char opt = mCurrentToken->mText[0];
             operatorStatement.mName =  opt;
@@ -409,10 +424,56 @@ namespace parser {
 
             statementVar.mKind = StatementKind::ARRAY_ELEMENT;
             statementVar.mStatements.push_back(expectExpressionFunc().value());
-            if(!expectOperator("]").has_value())  throw runtime_error(string("XD ") + to_string(mCurrentToken->mLine));
+            if(!expectOperator("]").has_value())  throw runtime_error(string("You have to close square bracket in line ") + to_string(mCurrentToken->mLine));
             if(expectOperator("=").has_value()){
                 statementVar.mStatements.push_back(expectExpressionFunc().value());
+            }  else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value() || expectAssignmentOperator("%=").has_value()) {
+                Statement operatorStatement;
+                char opt = mCurrentToken->mText[0];
+                operatorStatement.mName =  opt;
+                operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+                ++mCurrentToken;
+                optional<Statement> initialValue = expectExpressionFunc();
+                if(!initialValue.has_value()) {
+                    throw runtime_error(string("Expected value to right of '=' in variable call in line ") + to_string(mCurrentToken->mLine));
+                }
+                Statement array = statementVar;
+                Statement arrName;
+                arrName.mName = array.mName;
+                arrName.mKind = StatementKind::ARRAY_CALL;
+                arrName.mType.mName = "func";
+                array.mName = "";
+                array.mStatements.push_back(arrName);
+                operatorStatement.mStatements.push_back(array);
+                operatorStatement.mStatements.push_back(initialValue.value());
+
+                statementVar.mStatements.push_back(operatorStatement);
+            } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
+                Statement operatorStatement;
+                char opt = mCurrentToken->mText[0];
+                operatorStatement.mName =  opt;
+                operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+                ++mCurrentToken;
+                optional<Statement> initialValue = expectExpressionFunc();
+                Statement one;
+                one.mName = "1";
+                one.mKind = StatementKind::LITERAL;
+                one.mType =  Type("signed integer", INT32);
+            if(!initialValue.has_value()) {
+                Statement array = statementVar;
+                Statement arrName;
+                arrName.mName = array.mName;
+                arrName.mKind = StatementKind::ARRAY_CALL;
+                arrName.mType.mName = "func";
+                array.mName = "";
+                array.mStatements.push_back(arrName);
+                operatorStatement.mStatements.push_back(array);
+                operatorStatement.mStatements.push_back(one);
+                statementVar.mStatements.push_back(operatorStatement);
             } else {
+                throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
+            }
+        } else {
                 string name = statementVar.mName;
                 statementVar.mName = "";
                 statementVar.mType.mName = "func";

@@ -1,9 +1,15 @@
 include("math");
 
-func main() {
-    int[] a = [];
-    a.add(2);
-    int b = a.size();
-    write(b);
-    #write(a.size());
+func abc() {
+    return(2);
 }
+
+func main() {
+    int[] a = [1];
+    a.add(2);
+    a[1]=8;
+    a[0]+=2;
+    a[0]++;
+    a[1]--;
+    write(a[0], " ", a[1]);
+} 
