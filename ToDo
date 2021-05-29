@@ -42,29 +42,50 @@ ___________WYDANIE NOWEJ WERSJI______________
 6. String                                              (done)
 7. Bool                                                (done)
 8. Naprawa kometarzy blokowych                         (done)
+9. continue w loop                                     (done)
+
+
+-----------------------------CLOSED------------------------
+
+___________WYDANIE NOWEJ WERSJI______________
+
+
+-----------------------0.3.0-----------------------
+
+1. obsługa licz ujemnych, operator - (infuś & antis)
+2. deklaracja wielu zmiennych w jednej linii (infuś, antis)
+3. includowanie plików (olix)
+4. funkcja system() (olix)
+5. libki: (infuś, antis, olix)
+    - liczby losowe <random>
+    - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>
+    - konwersja zmiennych <convert>
+    - algorytmy <algorithms>
+    - obsługa stringów <string>
+    - 
+6. try i catch i throw (antis, infuś, olix)
+7. char jako znak (antis, infuś, olix)
+8. true oraz false (olix, antis, infuś)
+9. kolejność działań z ) i ( (infuś, antis)
+10. negacja (antis, infuś)
+11. numery linii w errorach w interpreterze (antis, infuś, olix)
+12. komunikat o braku plików wejściowych dla interpretera (infuś, olix)
+13. naprawa tablic (olix)
 
 
 
 -------odległe wersje byle żeby nie zapomnieć(to wszystko na wercję 1.0.0)----------
 1. do loop
-2. includowanie plików
-3. switch
-4. funkcja system()
-5. obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...)
-6. kolejność działań z ) i (
-7. typ var
-8. obsługa licz ujemnych, operator -
-9. negacja
-10. liczby losowe
-11. typ data i metody obsługujące go
-12. referencje
-13. konwersja zmiennych
-14. continue w loop
-15. deklaracja wielu zmiennych w jednej linii
-16. error do 
-17. asynchroniczność
-18. stałe
-19. zmienne globalne
-20. long long
-21. try i catch i throw
-22. char jako znak
+2. switch
+3. typ var
+4. typ data i metody obsługujące go
+5. referencje
+6. asynchroniczność
+7. const
+8. klasy
+9. interfejsy
+10. struct
+11. zmienne globalne
+12. long long
+13. typ dynamic
+14. namespace
