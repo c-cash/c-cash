@@ -3,7 +3,7 @@ include("math");
 func main() {
     int[] a = [];
     a.add(2);
-    a.size();
-    write(a.size());
+    int b = a.size();
+    write(b);
+    #write(a.size());
 }
-#Zrobić namespace :D

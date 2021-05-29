@@ -131,7 +131,7 @@ namespace variable {
 
     Object* Array::assignIndex(size_t index, Object* array, Object* value) {
         Array* arr = convert(array);
-        if (index < 0 || arr->value.size() < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
+        if (index < 0 || arr->value.size()-1 < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
         if (value->getType() != arr->type) throw runtime_error("cannot assign " + value->getType() + " to the array of " + arr->type);
         arr->value[index] = value;
         return array;
@@ -139,7 +139,7 @@ namespace variable {
 
     Object* Array::getIndex(size_t index, Object* array) {
         Array* arr = convert(array);
-        if (index < 0 || arr->value.size() < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
+        if (index < 0 || arr->value.size()-1 < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
         return arr->value[index];
     }
 
