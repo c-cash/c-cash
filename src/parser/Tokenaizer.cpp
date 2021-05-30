@@ -47,8 +47,10 @@ namespace parser {
                 case '8':
                 case '9':
                     if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
-                        currentToken.mType = OPERATOR;
-                        endToken(currentToken, tokens);
+                        if(currentToken.mText != "-"){
+                            currentToken.mType = OPERATOR;
+                            endToken(currentToken, tokens);
+                        }
                         currentToken.mType = INTEGER_LITERAL;
                         currentToken.mText.append(1, currCh);
                     } else if(currentToken.mType == WHITESPACE){

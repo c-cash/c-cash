@@ -52,12 +52,12 @@ ___________WYDANIE NOWEJ WERSJI______________
 
 -----------------------0.3.0-----------------------
 
-1. obsługa licz ujemnych, operator - (infuś & antis)
+1. obsługa liczb ujemnych, operator - (infuś & antis)                          (done)
 2. deklaracja wielu zmiennych w jednej linii (infuś, antis)
 3. includowanie plików (olix)
 4. funkcja system() (olix)
 5. libki: (infuś, antis, olix)
-    - liczby losowe <random>
+    - liczby losowe <random>                                                   (done)
     - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>
     - konwersja zmiennych <convert>
     - algorytmy <algorithms>
@@ -71,6 +71,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 11. numery linii w errorach w interpreterze (antis, infuś, olix)
 12. komunikat o braku plików wejściowych dla interpretera (infuś, olix)
 13. naprawa tablic (olix)
+14. przypisywanie do tablic funkcji i zmiennych
 
 
 

@@ -8,9 +8,9 @@ using namespace std;
 
 int main(){
     #ifdef _WIN32
-        system("c-cash ../tests/variableTest.ccash > ../tests/~variableTest.txt");
+        system("c-cash ../tests/variableTest.cash > ../tests/~variableTest.txt");
     #else
-        system("./../build/c-cash ../tests/variableTest.ccash > ../tests/~variableTest.txt");
+        system("./../build/c-cash ../tests/variableTest.cash > ../tests/~variableTest.txt");
     #endif
 
     ifstream file("../tests/~variableTest.txt");

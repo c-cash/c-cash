@@ -37,6 +37,7 @@ set(LIBRARIES
     src/libraries/LibraryRegistry.cpp
     src/libraries/Library.cpp
     src/libraries/MathLibrary.cpp
+    src/libraries/RandomLibrary.cpp
 )
 
 #add execute file
@@ -89,3 +90,6 @@ add_test(VarTest varTest)
 
 add_executable(loopTest tests/loopTest.cpp)
 add_test(LoopTest loopTest)
+
+add_executable(tableTest tests/tableTest.cpp)
+add_test(TableTest tableTest)

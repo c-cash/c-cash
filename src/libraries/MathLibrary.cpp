@@ -1,10 +1,7 @@
-#include <iostream>
-
 #include "../variables/Integer.hpp"
 #include "../variables/Double.hpp"
-
 #include "MathLibrary.hpp"
-#include <cmath>
+
 
 namespace library {
 

@@ -5,21 +5,20 @@
 
 using namespace std;
 
-
 int main(){
     #ifdef _WIN32
-        system("c-cash ../tests/mathTest.cash > ../tests/~mathTest.txt");
+        system("c-cash ../tests/tableTest.cash > ../tests/~tableTest.txt");
     #else
-        system("./../build/c-cash ../tests/mathTest.cash > ../tests/~mathTest.txt");
+        system("./../build/c-cash ../tests/tableTest.cash > ../tests/~tableTest.txt");
     #endif
 
-    ifstream file("../tests/~mathTest.txt");
+    ifstream file("../tests/~tableTest.txt");
 
     string line, allCode="";
     while (std::getline(file, line)){
         allCode += line;
     }
 
-    if(allCode == "4041664") return 0; 
+    if(allCode == "3465") return 0; 
     return 1;
 }

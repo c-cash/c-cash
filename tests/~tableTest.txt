@@ -1,0 +1,10 @@
+int
+write
+write
+a
+add
+write
+size
+size
+string
+3465

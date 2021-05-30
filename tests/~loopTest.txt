@@ -1,1 +1,12 @@
+write
+write
+int
+write
+a
+int
+write
+b
+write
+write
+write
 aaaaabbbbc012dddddd1098765432102468

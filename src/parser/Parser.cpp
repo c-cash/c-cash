@@ -512,7 +512,16 @@ namespace parser {
         statement.mName = possibleVaribleName->mText;
         if(expectOperator("=").has_value()) {
             if (statement.mKind == StatementKind::ARRAY_DECLARATION) {
-                statement.mStatements.push_back(expectArrayDeclaration().value());
+                optional<Statement> check = expectArrayDeclaration();
+                if(!check.has_value()) {
+                    optional<Statement> initialValue = expectExpressionFunc();
+                    if(!initialValue.has_value()) {
+                        throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
+                    }
+                    statement.mStatements.push_back(initialValue.value());
+                } else {
+                    statement.mStatements.push_back(check.value());
+                }
             } else {
                 optional<Statement> initialValue = expectExpressionFunc();
                 if(!initialValue.has_value()) {

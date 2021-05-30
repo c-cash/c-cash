@@ -1,0 +1,8 @@
+func main(){
+    int[] a = [20, 34, 12, 34];
+    write(a[1]);
+    write(a[2] / 2);
+    a.add(33);
+    write(a.size());
+    string[] b = ["Hello ", "World!"];
+}
