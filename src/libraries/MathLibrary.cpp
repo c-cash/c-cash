@@ -1,10 +1,7 @@
-#include <iostream>
-
 #include "../variables/Integer.hpp"
 #include "../variables/Double.hpp"
-
 #include "MathLibrary.hpp"
-#include <cmath>
+
 
 namespace library {
 
@@ -182,8 +179,8 @@ namespace library {
         };
     }
 
-    void MathLibrary::linkNamespaced(string name, Namespace &ns) {
-        // TODO: use linkglobally to get all functions and link them to the namespace
+    void MathLibrary::linkNamespaced(string name, Scope &scope) {
+        linkGlobally(scope);
     }
 
     Library* MathLibrary::getInstance() {

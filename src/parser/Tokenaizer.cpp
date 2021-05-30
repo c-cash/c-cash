@@ -47,8 +47,10 @@ namespace parser {
                 case '8':
                 case '9':
                     if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
-                        currentToken.mType = OPERATOR;
-                        endToken(currentToken, tokens);
+                        if(currentToken.mText != "-"){
+                            currentToken.mType = OPERATOR;
+                            endToken(currentToken, tokens);
+                        }
                         currentToken.mType = INTEGER_LITERAL;
                         currentToken.mText.append(1, currCh);
                     } else if(currentToken.mType == WHITESPACE){
@@ -167,7 +169,20 @@ namespace parser {
                         currentToken.mText.append(1, currCh);
                     }
                     break;
-                
+
+                case ':':
+                    if(currentToken.mType == POTENTIAL_NAMESPACE_ALIAS){
+                        currentToken.mType = NAMESPACE_ALIAS;
+                        currentToken.mText.append(1, currCh);
+                        endToken(currentToken, tokens);
+                    } else if(currentToken.mType != STRING_LITERAL && currentToken.mType != COMMENT && currentToken.mType != BLOCK_COMMENT) {
+                        endToken(currentToken, tokens);
+                        currentToken.mType = POTENTIAL_NAMESPACE_ALIAS;
+                        currentToken.mText.append(1, currCh);
+                    }  else {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
                 case ' ':
                 case '\t':
                     if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){

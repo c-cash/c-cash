@@ -11,7 +11,7 @@ namespace parser {
 
     class ParameterDefinition {
         public:
-            string mName; //Emty -> no name given
+            string mName; //Empty -> no name given
             Type mType;
             bool isArray { false };
 

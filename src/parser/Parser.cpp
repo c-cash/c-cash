@@ -282,7 +282,13 @@ namespace parser {
                 throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
             }
         }
-        if(!result.has_value()) { result = expectFunctionCall(); }
+        if(!result.has_value()) { 
+            if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && nextTokenIsAlias()) {
+                result = parseNamespaceAlias();
+            } else {
+                result = expectFunctionCall(); 
+            }
+        }
 
         return result;
     }
@@ -291,10 +297,29 @@ namespace parser {
         optional<Statement> result;
         if(mCurrentToken != mEndToken && ( mCurrentToken->mType == DOUBLE_LITERAL || mCurrentToken->mType == INTEGER_LITERAL || mCurrentToken->mType == STRING_LITERAL)){
             return  expectOneValue();
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && nextTokenIsAlias()){
+            optional<Statement> namespaceAlias;
+            namespaceAlias = parseNamespaceAlias();
+            result = namespaceAlias;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && expectFuncOperator("(").has_value()){
             optional<Statement> functionCallStatement;
             functionCallStatement = expectFunctionCall();
             result = functionCallStatement;
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && expectFuncOperator(".").has_value()){
+            vector<Token>::iterator startToken = mCurrentToken;
+
+            optional<Statement> varcall = expectVariableCall();
+            if (varcall.has_value()) { // this is variable call :D
+                result = varcall.value();
+            } else {
+                mCurrentToken = startToken;
+                optional<Statement> funccall = expectFunctionCall();
+                if (funccall.has_value()) { // this is function call
+                    result = funccall.value();
+                } else {
+                    throw runtime_error(string("Expected variable or function call after '.' in line ") + to_string(mCurrentToken->mLine));
+                }
+            }
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER){
             vector<Token>::iterator startToken = mCurrentToken;
             Statement variableCallStatement;
@@ -319,7 +344,13 @@ namespace parser {
             }
         }
 
-        if(!result.has_value()){ result = expectFunctionCall(); }
+        if(!result.has_value()) { 
+            if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && nextTokenIsAlias()) {
+                result = parseNamespaceAlias();
+            } else {
+                result = expectFunctionCall(); 
+            } 
+        }
 
         return result;
     }
@@ -341,7 +372,7 @@ namespace parser {
             }
 
             statementVar.mStatements.push_back(initialValue.value());
-        } else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value()) {
+        } else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value() || expectAssignmentOperator("%=").has_value()) {
             Statement operatorStatement;
             char opt = mCurrentToken->mText[0];
             operatorStatement.mName =  opt;
@@ -393,10 +424,56 @@ namespace parser {
 
             statementVar.mKind = StatementKind::ARRAY_ELEMENT;
             statementVar.mStatements.push_back(expectExpressionFunc().value());
-            if(!expectOperator("]").has_value())  throw runtime_error(string("XD ") + to_string(mCurrentToken->mLine));
+            if(!expectOperator("]").has_value())  throw runtime_error(string("You have to close square bracket in line ") + to_string(mCurrentToken->mLine));
             if(expectOperator("=").has_value()){
                 statementVar.mStatements.push_back(expectExpressionFunc().value());
+            }  else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value() || expectAssignmentOperator("%=").has_value()) {
+                Statement operatorStatement;
+                char opt = mCurrentToken->mText[0];
+                operatorStatement.mName =  opt;
+                operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+                ++mCurrentToken;
+                optional<Statement> initialValue = expectExpressionFunc();
+                if(!initialValue.has_value()) {
+                    throw runtime_error(string("Expected value to right of '=' in variable call in line ") + to_string(mCurrentToken->mLine));
+                }
+                Statement array = statementVar;
+                Statement arrName;
+                arrName.mName = array.mName;
+                arrName.mKind = StatementKind::ARRAY_CALL;
+                arrName.mType.mName = "func";
+                array.mName = "";
+                array.mStatements.push_back(arrName);
+                operatorStatement.mStatements.push_back(array);
+                operatorStatement.mStatements.push_back(initialValue.value());
+
+                statementVar.mStatements.push_back(operatorStatement);
+            } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
+                Statement operatorStatement;
+                char opt = mCurrentToken->mText[0];
+                operatorStatement.mName =  opt;
+                operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+                ++mCurrentToken;
+                optional<Statement> initialValue = expectExpressionFunc();
+                Statement one;
+                one.mName = "1";
+                one.mKind = StatementKind::LITERAL;
+                one.mType =  Type("signed integer", INT32);
+            if(!initialValue.has_value()) {
+                Statement array = statementVar;
+                Statement arrName;
+                arrName.mName = array.mName;
+                arrName.mKind = StatementKind::ARRAY_CALL;
+                arrName.mType.mName = "func";
+                array.mName = "";
+                array.mStatements.push_back(arrName);
+                operatorStatement.mStatements.push_back(array);
+                operatorStatement.mStatements.push_back(one);
+                statementVar.mStatements.push_back(operatorStatement);
             } else {
+                throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
+            }
+        } else {
                 string name = statementVar.mName;
                 statementVar.mName = "";
                 statementVar.mType.mName = "func";
@@ -435,7 +512,16 @@ namespace parser {
         statement.mName = possibleVaribleName->mText;
         if(expectOperator("=").has_value()) {
             if (statement.mKind == StatementKind::ARRAY_DECLARATION) {
-                statement.mStatements.push_back(expectArrayDeclaration().value());
+                optional<Statement> check = expectArrayDeclaration();
+                if(!check.has_value()) {
+                    optional<Statement> initialValue = expectExpressionFunc();
+                    if(!initialValue.has_value()) {
+                        throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
+                    }
+                    statement.mStatements.push_back(initialValue.value());
+                } else {
+                    statement.mStatements.push_back(check.value());
+                }
             } else {
                 optional<Statement> initialValue = expectExpressionFunc();
                 if(!initialValue.has_value()) {
@@ -533,7 +619,7 @@ namespace parser {
             result = parseIfStatement();
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "loop")) {
             result = parseLoopStatement();
-        }  else {
+        } else {
             result = expectExpression();
 
             if(!result.has_value()){
@@ -542,6 +628,28 @@ namespace parser {
         }
 
         return result;
+    }
+
+    bool Parser::nextTokenIsAlias() {
+        vector<Token>::iterator actual = mCurrentToken;
+        mCurrentToken++;
+        if(mCurrentToken->mType == NAMESPACE_ALIAS) {
+            mCurrentToken = actual;
+            return true;
+        } else {
+            mCurrentToken = actual;
+            return false;
+        }
+    }
+
+    optional<Statement> Parser::parseNamespaceAlias() {
+        Statement namespaceAlias;
+		namespaceAlias.mKind = StatementKind::NAMESPACE;
+		namespaceAlias.mName = mCurrentToken->mText;
+        mCurrentToken++;
+        mCurrentToken++;
+		namespaceAlias.mStatements.push_back(expectFunctionCall().value());
+        return namespaceAlias;
     }
 
     //Check expression    

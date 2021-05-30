@@ -7,9 +7,9 @@ using namespace std;
 
 int main(){
     #ifdef _WIN32
-        system("c-cash ../tests/loopTest.ccash > ../tests/~loopTest.txt");
+        system("c-cash ../tests/loopTest.cash > ../tests/~loopTest.txt");
     #else
-        system("./../build/c-cash ../tests/loopTest.ccash > ../tests/~loopTest.txt");
+        system("./../build/c-cash ../tests/loopTest.cash > ../tests/~loopTest.txt");
     #endif
 
     ifstream file("../tests/~loopTest.txt");

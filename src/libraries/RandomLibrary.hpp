@@ -1,15 +1,16 @@
 #pragma once
 
+#include <iostream>
+#include <random>
+#include <time.h>
+
 #include "Library.hpp"
 #include "../variables/Double.hpp"
-
-#include <iostream>
-#include <cmath>
 
 namespace library {
     using namespace variable;
 
-    class MathLibrary : public Library {
+    class RandomLibrary : public Library {
         public:
             void linkGlobally(Scope &s);
             void linkNamespaced(string name, Scope &scope);

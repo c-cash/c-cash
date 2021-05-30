@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <string>
 
-#include "Namespace.hpp"
-
 #include "../variables/Double.hpp"
 #include "../variables/Integer.hpp"
 #include "../variables/Boolean.hpp"
@@ -82,7 +80,6 @@ namespace interpreter {
     }
 
     Object* Functions::evaluateFunctionCall(Statement &stmt, Scope &scope) {
-
         // RETURN
         if (stmt.mName == "return") {
             return new SpecialObject(SpecialType::RETURN, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
@@ -163,9 +160,9 @@ namespace interpreter {
         }
 
         // library functions
-        if (Interpreter::includes->functions.find(stmt.mName) != Interpreter::includes->functions.end()) {
+        if (scope.functions.find(stmt.mName) != scope.functions.end()) {
             // this is a global function from library :D
-            return Interpreter::includes->functions[stmt.mName](args);
+            return scope.functions[stmt.mName](args);
         }
         // TODO: implement namespaced builtins
 
@@ -275,23 +272,34 @@ namespace interpreter {
                     string name = s.mStatements[0].mName;
                     if (library::libraries.find(name) == library::libraries.end()) throw runtime_error("cannot find library '" + name + "'");
                     library::libraries[name]()->linkGlobally(*Interpreter::includes);
-            } else {
-                if ((s.mStatements.size() != 1 && s.mStatements.size() != 2) ||
-                    s.mStatements[0].mKind != StatementKind::LITERAL || 
-                    (s.mStatements.size() == 2 && s.mStatements[1].mKind != StatementKind::LITERAL) ||
-                    s.mStatements[0].mType.mName != "string" ||
-                    (s.mStatements.size() == 2 && s.mStatements[1].mType.mName != "string")) {
-                        // include namespaced
-                    }
+            } else if (s.mName == "nsinclude") {
+                if (s.mStatements[0].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function");
+                string nsname;
+                string libname;
+                if (s.mStatements.size() == 1) { // library name
+                    nsname = s.mStatements[0].mName;
+                    libname = s.mStatements[0].mName;
+                } else if (s.mStatements.size() == 2) { // custom name
+                    if (s.mStatements[1].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function");
+                    nsname = s.mStatements[0].mName;
+                    libname = s.mStatements[1].mName;
+                } else {throw runtime_error("invalid argument count for 'include' function");}
+                // include this library into namespace
+                if(library::libraries.find(libname) == library::libraries.end()) throw runtime_error("cannot find library '" + libname + "'");
+                Scope* ns = new Scope(*Interpreter::includes);
+                library::libraries[libname]()->linkNamespaced(nsname, *ns);
+                scope.namespaces[nsname] = ns;
             }
         }
     }
 
     Object* Functions::evaluateArrayDeclaration(Statement &stmt, Scope &scope) {
         // declare array and return null
-        if (stmt.mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
+        if (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
         else if (stmt.mStatements.size() > 1) throw runtime_error("unexpected error (1)");
-        else scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+        else {
+            scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+        }
         return nullptr;
     }
 
@@ -339,5 +347,38 @@ namespace interpreter {
                 return scope.varTab[stmt.mName];
             }
             return scope.varTab[stmt.mName];
+    }
+
+    Scope::Scope(Scope &b) {
+        for (pair<string, variable::Object*> p : b.varTab) {
+            varTab[p.first] = p.second; // create clone of current scope
+        }
+        for (pair<string, builtinF> f : b.functions) {
+            functions[f.first] = f.second;
+        }
+        for (pair<string, Scope*> n : b.namespaces) {
+            namespaces[n.first] = n.second; // create clone of current namespaces
+        }
+    }
+
+    Scope::Scope(Scope &i, Scope &b) {
+        for (pair<string, variable::Object*> p : i.varTab) {
+            varTab[p.first] = p.second; // create clone of i scope
+        }
+        for (pair<string, builtinF> f : i.functions) {
+            functions[f.first] = f.second;
+        }
+        for (pair<string, Scope*> n : i.namespaces) {
+            namespaces[n.first] = n.second; // create clone of i namespaces
+        }
+        for (pair<string, variable::Object*> p : b.varTab) {
+            varTab[p.first] = p.second; // create clone of b scope
+        }
+        for (pair<string, builtinF> f : b.functions) {
+            functions[f.first] = f.second;
+        }
+        for (pair<string, Scope*> n : b.namespaces) {
+            namespaces[n.first] = n.second; // create clone of b namespaces
+        }
     }
 }

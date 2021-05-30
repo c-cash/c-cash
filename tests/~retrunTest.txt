@@ -1,1 +1,5 @@
+return
+write
+abc
+abc
 1

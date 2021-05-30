@@ -4,7 +4,6 @@ project(c-cash VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 set(INTERPRETER
-    src/interpreter/Namespace.cpp
     src/interpreter/Functions.cpp
     src/interpreter/Interpreter.cpp
 )
@@ -38,6 +37,7 @@ set(LIBRARIES
     src/libraries/LibraryRegistry.cpp
     src/libraries/Library.cpp
     src/libraries/MathLibrary.cpp
+    src/libraries/RandomLibrary.cpp
 )
 
 #add execute file
@@ -90,3 +90,6 @@ add_test(VarTest varTest)
 
 add_executable(loopTest tests/loopTest.cpp)
 add_test(LoopTest loopTest)
+
+add_executable(tableTest tests/tableTest.cpp)
+add_test(TableTest tableTest)

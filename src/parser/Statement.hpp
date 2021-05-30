@@ -18,7 +18,8 @@ namespace parser {
         ARRAY_DECLARATION,
         ARRAY,
         ARRAY_ELEMENT,
-        ARRAY_CALL
+        ARRAY_CALL,
+        NAMESPACE
     };
 
     static const char* sStatementKindStrings[] = {
@@ -32,7 +33,8 @@ namespace parser {
         "ARRAY_DECLARATION",
         "ARRAY",
         "ARRAY_ELEMENT",
-        "ARRAY_CALL"
+        "ARRAY_CALL",
+        "NAMESPACE"
     };
 
     class Statement {

@@ -1,1 +1,8 @@
+int
+int
+double
+int
+int
+double
+write
 251.2145.2
