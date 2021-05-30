@@ -11,3 +11,4 @@ func main(){
     a.add(c);
     write(a);
 }
+
