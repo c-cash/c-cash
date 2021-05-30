@@ -2,5 +2,7 @@
     - [**Syntax**](syntax.md)
     - [**Libraries**](Libraries/README.md)
         - [Builtin](Libraries/builtin.md)
+        - [Math](Libraries/math.md)
+        - [Random](Libraries/random.md)
     - [**Examples**](examples.md)
     - [**TODO**](TODO.md)

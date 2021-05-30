@@ -9,7 +9,7 @@
 - [x] bugfixing
 - [x] division by 0 exception
 
-## Version 0.1.0
+## Version 0.1.0 (current)
 - [x] function parameters
 - [x] `return` in function
 - [x] loop statement
@@ -21,12 +21,15 @@
 - [x] recursion
 - [x] fix multiple `and`, `or` expressions
 
-## Version 0.2.0 (current)
-- [x] tables
+## Version 0.2.0
+- [x] arrays
 - [x] break statement in loop
 - [x] quick assignment operators (`+=`, `-=`, etc...)
 - [x] increase and decrease operators (`i++`, `i--`)
 - [x] string
 - [x] bool
 - [x] fix block comments
-- [x] namespaces
+- [x] namespaces (only simple)
+
+## Version 0.3.0
+- coming soon
