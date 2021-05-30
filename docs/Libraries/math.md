@@ -55,7 +55,7 @@ sqrt(25); // this is equal to 5
 ## nthroot
 This function takes two arguments (`a` - number to get the root of; `n` - which root) and returns it's sqare root
 ```clike
-sqrt(27, 3); // this is equal to 3
+nthroot(27, 3); // this is equal to 3
 ```
 
 ## cos

@@ -2,6 +2,7 @@
 * [`write`](#write) - write something to the console
 * [`read`](#read) - read input from console
 * [`exit`](#exit) - stop the program
+* [`typeof`](#typeof) - return the type of a given variable
 
 ## Write
 `write` function allows you to write anything to the console.
@@ -34,5 +35,14 @@ func main() {
             exit();
         }
     }
+}
+```
+
+## Typeof
+`typeof` function returns the type of a given variable
+```clike
+func main() {
+    int a;
+    write(typeof(a));
 }
 ```
