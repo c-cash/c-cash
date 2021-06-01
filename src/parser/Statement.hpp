@@ -40,7 +40,6 @@ namespace parser {
     class Statement {
         public:
             string mName;
-            string mLine {mCurrentToken->mLine};
             Type mType{Type("func", FUNC)};
             vector<Statement> mStatements;
             StatementKind mKind{StatementKind::FUNCTION_CALL};
