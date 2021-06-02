@@ -33,11 +33,12 @@ set(VARIABLE
     src/variables/Array.cpp
 )
 
-set(LIBRARIES
+set( LIBRARIES
     src/libraries/LibraryRegistry.cpp
     src/libraries/Library.cpp
     src/libraries/MathLibrary.cpp
     src/libraries/RandomLibrary.cpp
+    src/libraries/FileLibrary.cpp
 )
 
 #add execute file
