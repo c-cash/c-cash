@@ -7,11 +7,11 @@
 namespace variable {
     using namespace std;
 
-    class Integer : public variable::Object {
+    class Long : public variable::Object {
         public:
 
-            Integer(int value);
-            Integer();
+            Long(long long value);
+            Long();
             Object* add (Object* other);
             Object* subtract (Object* other);
             Object* multiply (Object* other);
@@ -35,6 +35,6 @@ namespace variable {
 
             static Object* check(Object &other);
             
-            int value;
+            long long value;
     };
 }

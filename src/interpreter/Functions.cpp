@@ -295,7 +295,7 @@ namespace interpreter {
 
     Object* Functions::evaluateArrayDeclaration(Statement &stmt, Scope &scope) {
         // declare array and return null
-        if (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
+        if (stmt.mKind == StatementKind::ARRAY && (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0)) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
         else if (stmt.mStatements.size() > 1) throw runtime_error("unexpected error (1)");
         else {
             scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
@@ -350,35 +350,17 @@ namespace interpreter {
     }
 
     Scope::Scope(Scope &b) {
-        for (pair<string, variable::Object*> p : b.varTab) {
-            varTab[p.first] = p.second; // create clone of current scope
-        }
-        for (pair<string, builtinF> f : b.functions) {
-            functions[f.first] = f.second;
-        }
-        for (pair<string, Scope*> n : b.namespaces) {
-            namespaces[n.first] = n.second; // create clone of current namespaces
-        }
+        varTab = b.varTab;
+        functions = b.functions;
+        namespaces = b.namespaces;
     }
 
     Scope::Scope(Scope &i, Scope &b) {
-        for (pair<string, variable::Object*> p : i.varTab) {
-            varTab[p.first] = p.second; // create clone of i scope
-        }
-        for (pair<string, builtinF> f : i.functions) {
-            functions[f.first] = f.second;
-        }
-        for (pair<string, Scope*> n : i.namespaces) {
-            namespaces[n.first] = n.second; // create clone of i namespaces
-        }
-        for (pair<string, variable::Object*> p : b.varTab) {
-            varTab[p.first] = p.second; // create clone of b scope
-        }
-        for (pair<string, builtinF> f : b.functions) {
-            functions[f.first] = f.second;
-        }
-        for (pair<string, Scope*> n : b.namespaces) {
-            namespaces[n.first] = n.second; // create clone of b namespaces
-        }
+        varTab = b.varTab;
+        functions = b.functions;
+        namespaces = b.namespaces;
+        varTab.insert(i.varTab.begin(), i.varTab.end());
+        functions.insert(i.functions.begin(), i.functions.end());
+        namespaces.insert(i.namespaces.begin(), i.namespaces.end());
     }
 }

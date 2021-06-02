@@ -21,7 +21,8 @@ namespace interpreter {
         T data;
     };
 */
-    typedef variable::Object*(*builtinF)(std::vector<variable::Object*> args);
+    typedef variable::Object*(*builtinF)(std::vector<variable::Object*> &args);
+    typedef variable::Object*(*objectF)(variable::Object* t, std::vector<variable::Object*> &args);
 
     class Scope {
         public:

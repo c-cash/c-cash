@@ -1,6 +1,7 @@
 #include <iostream>
 #include "String.hpp"
 #include "Object.hpp"
+#include "Integer.hpp"
 
 namespace variable {
     using namespace std;
@@ -66,7 +67,14 @@ namespace variable {
     }
 
     map<string, objectF> String::getFunctions() {
-        return {};
+        map<string, objectF> functions;
+
+        functions["size"] = [](Object* t, vector<Object*> &arg) -> Object*{
+            if (arg.size() != 0) throw runtime_error("'size' function doesn't take any arguments");
+            return new Integer(static_cast<String*>(t)->value.size());
+        };
+
+        return functions;
     }
 
 }

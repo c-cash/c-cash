@@ -4,12 +4,13 @@
 #include <cmath>
 
 #include "../parser/Statement.hpp"
-#include "../../transpiler/Transpiler.hpp"
+#include "../transpiler/Transpiler.hpp"
 
 #include "Integer.hpp"
 #include "Double.hpp"
 #include "String.hpp"
 #include "Boolean.hpp"
+#include "Long.hpp"
 
 namespace variable {
     using namespace std;
@@ -26,7 +27,7 @@ namespace variable {
         return nullptr;
     }
 
-    Object* Object::getDefault(string type) {
+    Object* Object::getDefault(string &type) {
         if (type == "signed int") return new Integer(0);
         else if (type == "double") return new Double(0);
         else if (type == "string") return new String("");
@@ -44,9 +45,13 @@ namespace variable {
             else if ((expected == "double"||expected=="Double") && valT == "Double") return val;
             else if ((expected == "string"||expected=="String") && valT == "String") return val;
             else if ((expected == "bool"||expected=="Boolean") && valT == "Boolean") return val;
-            //TODO: bool :D
+            else if ((expected == "long"||expected=="Long") && valT == "Long") return val;
 
             // other cases
+
+            // LONG
+            if ((expected == "long"||expected=="Long") && valT == "Integer") return new Long(stoll(val->getValueString()));
+
             // BOOLEAN
             else if ((expected == "bool"||expected=="boolean") && valT == "Integer") return new Boolean(stoi(val->getValueString()));
             // DOUBLE AND INT

@@ -96,7 +96,8 @@ namespace parser {
         mTypes["uchar"] = Type("unsigned char", UINT8);
         mTypes["double"] = Type("double", DOUBLE);
         mTypes["string"] = Type("string", STRING);
-        mTypes["bool"] = Type("bool", STRING);
+        mTypes["bool"] = Type("bool", BOOL);
+        mTypes["long"] = Type("long", INT64);
     }
 
     //prints parser logs

@@ -1,7 +1,5 @@
-include("file");
+include("math");
 
-func main(){
-    string a = openToString("../test.ccash");
-    write(a, "\n");
+func main() {
+    write(sin(rad(30)));
 }
-

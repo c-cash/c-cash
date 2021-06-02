@@ -1,18 +1,15 @@
 #pragma once
 
 #include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <cstdio>
 
 #include "Library.hpp"
-#include "../variables/Double.hpp"
+#include "../variables/String.hpp"
+#include "../transpiler/Transpiler.hpp"
 
 namespace library {
     using namespace variable;
 
-    class FileLibrary : public Library {
+    class StringLibrary : public Library {
         public:
             void linkGlobally(Scope &s);
             void linkNamespaced(string name, Scope &scope);

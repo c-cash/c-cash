@@ -8,7 +8,7 @@
 #include "src/parser/Parser.hpp"
 #include "src/interpreter/Interpreter.hpp"
 #include "src/other/ParseSaver.hpp"
-#include "transpiler/Transpiler.hpp"
+#include "src/transpiler/Transpiler.hpp"
 
 using namespace std;
 using namespace parser;

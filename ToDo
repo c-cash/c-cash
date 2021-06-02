@@ -1,4 +1,5 @@
------------------------0.0.1-----------------------
+-------------
+----------0.0.1-----------------------
 
 1. Interpretacja if                                    (done)
 2. Łączenie if z elif oraz else                        (done)
@@ -58,7 +59,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 4. funkcja system() (olix)
 5. libki: (infuś, antis, olix)
     - liczby losowe <random>                                                   (done)
-    - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>
+    - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>    (done)
     - konwersja zmiennych <convert>
     - algorytmy <algorithms>
     - obsługa stringów <string>

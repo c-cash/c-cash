@@ -152,14 +152,14 @@ namespace variable {
     map<string, objectF> Array::getFunctions() {
         map<string, objectF> functions;
         
-        functions["add"] = [](Object* t, vector<Object*> arg) -> Object*{
+        functions["add"] = [](Object* t, vector<Object*> &arg) -> Object*{
             Array* arr = Array::convert(t);
             Array:checkArray(arr->type, arg);
             arr->value.insert(arr->value.end(), arg.begin(), arg.end());
             return nullptr;
         };
 
-        functions["size"] = [](Object* t, vector<Object*> arg) -> Object*{
+        functions["size"] = [](Object* t, vector<Object*> &arg) -> Object*{
             if (arg.size() != 0) throw runtime_error("'size' function doesn't take any arguments");
             return new Integer(convert(t)->value.size());
         };
