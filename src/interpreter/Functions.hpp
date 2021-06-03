@@ -2,14 +2,17 @@
 
 #include "../parser/Statement.hpp"
 #include "../parser/FunctionDefinition.hpp"
-#include <iostream>
-#include <map>
-#include <string>
-
 #include "../variables/Object.hpp"
 #include "../variables/SpecialObject.hpp"
 #include "../variables/Array.hpp"
  
+#include <iostream>
+#include <map>
+#include <unordered_map>
+#include <string>
+#include <vector>
+
+
 
 namespace interpreter {
     using namespace std;
@@ -26,15 +29,22 @@ namespace interpreter {
 
     class Scope {
         public:
-            map<string, variable::Object*> varTab;
-            map<string, builtinF> functions;
-            map<string, Scope*> namespaces;
+            unordered_map<string, variable::Object*> varTab;
+            unordered_map<string, builtinF> functions;
+            unordered_map<string, Scope*> namespaces;
+            vector<const char*> varCache;
+
+            Scope* parent {nullptr};
+            Scope* nsparent {nullptr};
+
             bool isPreviousIf = false;
             bool previousResult = false;
 
             Scope() {};
             Scope(Scope &b);
-            Scope(Scope &i, Scope &b);
+            Scope(Scope &b, Scope* n);
+
+            void reset();
     };
 
     class Functions {
@@ -49,7 +59,12 @@ namespace interpreter {
             static variable::Object* specialVariable(Statement &stmt, Scope &scope);
             static void includeLibrary(FunctionDefinition &func, Scope &scope);
 
+            static variable::Object* findVariable(string name, Scope &scope);
+            static builtinF findFunction(string name, Scope &scope);
+            static Scope* findNamespace(string name, Scope &scope);
+
         private:
+
             static variable::Object* evaluateLoop(Statement &stmt, Scope &scope);
             static variable::Object* useSpecial(SpecialObject* s, string place);
     };

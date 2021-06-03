@@ -1,5 +1,24 @@
-include("math");
 
-func main() {
-    write(sin(rad(30)));
+include("time"); # time -> Scope includes
+include("math");
+include("file");
+include("string");
+include("random");
+
+func main() { # Scope main <- includes
+    long a = nanotime();
+    int i = 0;
+    loop(1000000){ # Scope loop {vector<string> cache;}
+        if(2==2){
+            int b;
+            int c;
+            int d;
+            int e;
+            int f;
+        }
+   }
+    long b = nanotime();
+    long c = b-a;
+    write(c/1000000000.0, "s\n");
+
 }

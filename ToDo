@@ -62,8 +62,8 @@ ___________WYDANIE NOWEJ WERSJI______________
     - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>    (done)
     - konwersja zmiennych <convert>
     - algorytmy <algorithms>
-    - obsługa stringów <string>
-    - 
+    - obsługa stringów <string>                                                (done)
+    - czas                                                                     (done)
 6. try i catch i throw (antis, infuś, olix)
 7. char jako znak (antis, infuś, olix)
 8. true oraz false (olix, antis, infuś)

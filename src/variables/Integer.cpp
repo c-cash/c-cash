@@ -100,8 +100,11 @@ namespace variable {
 
     void Integer::assign(Object* from) {
         string t = from->getType();
-        if (t != "Integer" && t != "Double") throw runtime_error("Cannot assign to int");
-        this->value = stoi(from->getValueString());
+        int v = 0;
+        if (t == "Integer") v = static_cast<Integer*>(from)->value;
+        else if (t == "Double") v = static_cast<Double*>(from)->value;
+        else throw runtime_error("Cannot assign to int");
+        this->value = v;
     }
 
     string Integer::toString() {return to_string(value); }

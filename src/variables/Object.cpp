@@ -19,7 +19,6 @@ namespace variable {
 
     Object* Object::fromLitteral(parser::Statement &stmt) {
         if (stmt.mKind != parser::StatementKind::LITERAL) return nullptr;
-        transpiler::Transpiler::fixName(stmt);
         // other
         if (stmt.mType.mName == "double") return new variable::Double(stod(stmt.mName));
         else if (stmt.mType.mName == "signed int") return new variable::Integer(stoi(stmt.mName));

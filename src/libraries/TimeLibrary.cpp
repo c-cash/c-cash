@@ -1,5 +1,3 @@
-#include "../variables/Integer.hpp"
-#include "../variables/Double.hpp"
 #include "../variables/Long.hpp"
 #include "TimeLibrary.hpp"
 

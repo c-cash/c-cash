@@ -16,7 +16,6 @@ namespace transpiler {
             void transpile(string path, map<string, FunctionDefinition> &mFunctions);
             string discoverType(FunctionDefinition &func);
 
-            static void fixName(Statement &stmt);
             static int replace(string &s, string from, string to);
 
         private:

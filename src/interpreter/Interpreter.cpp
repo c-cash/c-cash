@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 
 #include "../libraries/MathLibrary.hpp"
 
@@ -71,8 +72,14 @@ namespace interpreter{
         switch (stmt.mKind) {
             case StatementKind::VARIABLE_DECLARATION: {
                 // declare variable and return null
-                if (scope.varTab.find(stmt.mName) != scope.varTab.end()) throw runtime_error("variable '" + stmt.mName + "' already exists");
-                transpiler::Transpiler::fixName(stmt); // fix signed integer instead of signed int
+
+                if (std::find(begin(scope.varCache), end(scope.varCache), stmt.mName.c_str()) == end(scope.varCache)) {
+                    if (Functions::findVariable(stmt.mName, scope) != nullptr){
+                        throw runtime_error("variable '" + stmt.mName + "' is already defined"); 
+                    }
+                    scope.varCache.emplace_back(stmt.mName.c_str());
+                }
+
                 Object* obj;
                 if (stmt.mStatements.size() == 0) {obj = Object::getDefault(stmt.mType.mName);} // return default value for type
                 else {obj = Object::checkAll(stmt.mType.mName, evaluateStatement(stmt.mStatements[0], scope));};
@@ -119,8 +126,7 @@ namespace interpreter{
             }
             case StatementKind::NAMESPACE: {
                 if (stmt.mStatements.size() != 1) throw runtime_error("unexpected error (3)");
-                if (scope.namespaces.find(stmt.mName) == scope.namespaces.end()) throw runtime_error("cannot find namespace '" + stmt.mName + "'");
-                Scope* s = new Scope(scope, *scope.namespaces[stmt.mName]);
+                Scope* s = new Scope(scope, Functions::findNamespace(stmt.mName, scope));
                 return Interpreter::evaluateStatement(stmt.mStatements[0], *s);
                 break;
             }

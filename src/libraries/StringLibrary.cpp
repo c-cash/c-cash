@@ -23,11 +23,14 @@ namespace library {
             }
             return new String(s);
         };
-        // (F)charat
+        // (F)charat  
         s.functions["charAt"] = [](vector<Object*> &args) -> Object* {
-            if (args.size() != 2) throw runtime_error("toLower function takes exactly one argument");
-            // TODO: implement char variable :D
-        };
+            if (args.size() != 2) throw runtime_error("charAt function takes exactly two arguments");
+            if(args[0]->getType() == "String" && (args[1]->getType() == "Integer" || args[1]->getType() == "Long")){
+                return new String(to_string((args[0]->getValueString())[stoi(args[1]->getValueString())]));
+            }
+            throw runtime_error("charAt needs two arhs string and integer or long");
+        }; 
         // (F)replace
         s.functions["replace"] = [](vector<Object*> &args) -> Object* {
             if (args.size() != 3) throw runtime_error("replace function takes exactly three arguments");

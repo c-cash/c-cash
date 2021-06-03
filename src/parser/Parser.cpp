@@ -64,7 +64,7 @@ namespace parser {
             mCurrentToken = parseStart;
             optional<Statement> statement = expectStatement();
             if(statement.has_value()) {
-                if(!expectOperator(";").has_value()) {throw runtime_error("Expected semicolon");}
+                if(!expectOperator(";").has_value()) {throw runtime_error(string("Expected semicolon in line: ") + to_string(parseStart->mLine));}
                 includes.mStatements.emplace_back(statement.value());
             }
             return true;
@@ -267,7 +267,7 @@ namespace parser {
             Statement integerLiteralStatement;
             integerLiteralStatement.mKind = StatementKind::LITERAL;
             integerLiteralStatement.mName = mCurrentToken->mText;
-            integerLiteralStatement.mType =  Type("signed integer", INT32);
+            integerLiteralStatement.mType =  Type("signed int", INT32);
             result = integerLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == STRING_LITERAL){
@@ -397,7 +397,7 @@ namespace parser {
             Statement one;
             one.mName = "1";
             one.mKind = StatementKind::LITERAL;
-            one.mType =  Type("signed integer", INT32);
+            one.mType =  Type("signed int", INT32);
             if(!initialValue.has_value()) {
                 operatorStatement.mStatements.push_back(statementVar);
                 operatorStatement.mStatements.push_back(one);
@@ -459,7 +459,7 @@ namespace parser {
                 Statement one;
                 one.mName = "1";
                 one.mKind = StatementKind::LITERAL;
-                one.mType =  Type("signed integer", INT32);
+                one.mType =  Type("signed int", INT32);
             if(!initialValue.has_value()) {
                 Statement array = statementVar;
                 Statement arrName;
