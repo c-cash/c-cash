@@ -160,9 +160,10 @@ namespace interpreter {
         }
 
         // library functions
-        if (scope.functions.find(stmt.mName) != scope.functions.end()) {
-            // this is a global function from library :D
-            return scope.functions[stmt.mName](args);
+        builtinF f = findFunction(stmt.mName, scope);
+        if (f != nullptr) {
+            // this is a library function :D
+            return f(args); 
         }
         // TODO: implement namespaced builtins
 
@@ -183,11 +184,11 @@ namespace interpreter {
         Statement &params = stmt.mStatements[0];
         // LOOP WITH INTEGER
         if (params.mStatements.size() == 1 && params.mStatements[0].mKind != StatementKind::LOGIC_CALL) {
-            Scope* t = new Scope(scope);
             // execute loop
-            int count = stoi(Interpreter::evaluateStatement(params.mStatements[0], *t)->getValueString());
+            int count = static_cast<Integer*>(Interpreter::evaluateStatement(params.mStatements[0], scope))->value;
+            Scope* s = new Scope(scope);
             for (int i=0; i<count; i++) {
-                Scope* s = new Scope(*t);
+                s->reset();
                 Object* obj;
                 for (int j=1; j<stmt.mStatements.size(); j++){ // execute each statement
                     obj = Interpreter::evaluateStatement(stmt.mStatements[j], *s);
@@ -205,12 +206,11 @@ namespace interpreter {
         }
         // LOOP WITH LOGIC STATEMENT
         else if (params.mStatements.size() == 1 && params.mStatements[0].mKind == StatementKind::LOGIC_CALL) {
-            Scope* t = new Scope(scope);
             // check logic statement
-            bool e = (bool) stoi(evaluateLogic(params.mStatements[0], *t)->getValueString());
+            bool e = static_cast<Boolean*>(evaluateLogic(params.mStatements[0],scope))->value;
+            Scope* s = new Scope(scope);
             while (e) {
-                Scope* s = new Scope(*t);
-
+                s->reset();
                 Object* obj;
                 for (int j=1; j<stmt.mStatements.size(); j++){ // execute each statement
                     obj = Interpreter::evaluateStatement(stmt.mStatements[j], *s);
@@ -225,7 +225,7 @@ namespace interpreter {
                         else if (obj->getValueString() == "continue") {Functions::useSpecial((SpecialObject*) obj, "loop");}
                 }
 
-                e = (bool) stoi(evaluateLogic(params.mStatements[0], *t)->getValueString());
+                e = static_cast<Boolean*>(evaluateLogic(params.mStatements[0],scope))->value;
             }
         }
         // NORMAL FOR LOOP
@@ -234,9 +234,10 @@ namespace interpreter {
             // execute before statement
             Interpreter::evaluateStatement(params.mStatements[0], *t);
             // check logic statement
-            bool e = (bool) stoi(evaluateLogic(params.mStatements[1], *t)->getValueString());
+            bool e = static_cast<Boolean*>(evaluateLogic(params.mStatements[1], *t))->value;
+            Scope* s = new Scope(*t);
             while (e) {
-                Scope* s = new Scope(*t);
+                s->reset();
                 Object* obj;
                 for (int j=1; j<stmt.mStatements.size(); j++){ // execute each statement
                     obj = Interpreter::evaluateStatement(stmt.mStatements[j], *s);
@@ -253,7 +254,7 @@ namespace interpreter {
                 }
                 // execute after and check again
                 Interpreter::evaluateStatement(params.mStatements[2], *t);
-                e = (bool) stoi(evaluateLogic(params.mStatements[1], *t)->getValueString());
+                e = static_cast<Boolean*>(evaluateLogic(params.mStatements[1],*t))->value;
             }
         }
         return nullptr;
@@ -295,7 +296,7 @@ namespace interpreter {
 
     Object* Functions::evaluateArrayDeclaration(Statement &stmt, Scope &scope) {
         // declare array and return null
-        if (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
+        if (stmt.mKind == StatementKind::ARRAY && (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0)) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
         else if (stmt.mStatements.size() > 1) throw runtime_error("unexpected error (1)");
         else {
             scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
@@ -330,55 +331,74 @@ namespace interpreter {
     Object* Functions::evaluateVariableCall(Statement &stmt, Scope &scope) {
         Object* special = Functions::specialVariable(stmt, scope);
             if (special != nullptr) return special;
-            if (scope.varTab.find(stmt.mName) == scope.varTab.end()) throw runtime_error("cannot find variable '" + stmt.mName + "'");
             if (stmt.mStatements.size() >= 1) { // assign to existing variable
                  if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
                     // this is a function inside of object
-                    map<string, objectF> funcs = scope.varTab[stmt.mName]->getFunctions();
+                    Object* v = findVariable(stmt.mName, scope);
+                    if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+                    map<string, objectF> funcs = v->getFunctions();
                     if (funcs.find(stmt.mStatements[0].mName) == funcs.end()) throw runtime_error("class " + stmt.mName + " does not have a member " + stmt.mStatements[0].mName);
                     // collect arguments
                     vector<Object*> args;
                     for (Statement &s : stmt.mStatements[0].mStatements) {
                         args.emplace_back(Interpreter::evaluateStatement(s, scope));
                     }
-                    return funcs[stmt.mStatements[0].mName](scope.varTab[stmt.mName], args);
+                    return funcs[stmt.mStatements[0].mName](v, args);
                 }
-                else scope.varTab[stmt.mName]->assign(Object::checkAll(scope.varTab[stmt.mName]->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope)));
-                return scope.varTab[stmt.mName];
+                else {
+                    Object* v = findVariable(stmt.mName, scope);
+                    v->assign(Object::checkAll(v->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope)));
+                };
+                Object* v = findVariable(stmt.mName, scope);
+                if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+                return v;
             }
-            return scope.varTab[stmt.mName];
+            Object* v = findVariable(stmt.mName, scope);
+            if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+            return v;
+    }
+
+    Object* Functions::findVariable(string name, Scope &scope) {
+        if (scope.varTab.unordered_map::find(name) == scope.varTab.end()) {
+            if (scope.parent != nullptr) return findVariable(name, *scope.parent);
+            return nullptr;
+        }
+        return scope.varTab[name];
+    }
+
+    builtinF Functions::findFunction(string name, Scope &scope) {
+        if (scope.nsparent != nullptr) {
+            builtinF f = findFunction(name, *scope.nsparent); 
+            if (f==nullptr) {throw runtime_error("cannot find function '" + name + "'");}
+            return f;
+        }
+        if (scope.functions.find(name) == scope.functions.end()) {
+            if (scope.parent != nullptr) return findFunction(name, *scope.parent);
+            return nullptr;
+        }
+        return scope.functions[name];
+    }
+
+    Scope* Functions::findNamespace(string name, Scope &scope) {
+        if (scope.namespaces.find(name) == scope.namespaces.end()) {
+            if (scope.parent != nullptr) return findNamespace(name, *scope.parent);
+            throw runtime_error("cannot find namespace '" + name + "'");
+        }
+        return scope.namespaces[name];
     }
 
     Scope::Scope(Scope &b) {
-        for (pair<string, variable::Object*> p : b.varTab) {
-            varTab[p.first] = p.second; // create clone of current scope
-        }
-        for (pair<string, builtinF> f : b.functions) {
-            functions[f.first] = f.second;
-        }
-        for (pair<string, Scope*> n : b.namespaces) {
-            namespaces[n.first] = n.second; // create clone of current namespaces
-        }
+        this->parent = &b;
     }
 
-    Scope::Scope(Scope &i, Scope &b) {
-        for (pair<string, variable::Object*> p : i.varTab) {
-            varTab[p.first] = p.second; // create clone of i scope
-        }
-        for (pair<string, builtinF> f : i.functions) {
-            functions[f.first] = f.second;
-        }
-        for (pair<string, Scope*> n : i.namespaces) {
-            namespaces[n.first] = n.second; // create clone of i namespaces
-        }
-        for (pair<string, variable::Object*> p : b.varTab) {
-            varTab[p.first] = p.second; // create clone of b scope
-        }
-        for (pair<string, builtinF> f : b.functions) {
-            functions[f.first] = f.second;
-        }
-        for (pair<string, Scope*> n : b.namespaces) {
-            namespaces[n.first] = n.second; // create clone of b namespaces
-        }
+    Scope::Scope(Scope &b, Scope* n) {
+        this->parent = &b;
+        this->nsparent = n;
+    }
+
+    void Scope::reset() {
+        this->varTab.clear();
+        this->functions.clear();
+        this->namespaces.clear();
     }
 }

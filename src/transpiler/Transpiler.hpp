@@ -3,8 +3,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include "../src/parser/Statement.hpp"
-#include "../src/parser/FunctionDefinition.hpp"
+#include "../parser/Statement.hpp"
+#include "../parser/FunctionDefinition.hpp"
 
 namespace transpiler {
 
@@ -16,7 +16,7 @@ namespace transpiler {
             void transpile(string path, map<string, FunctionDefinition> &mFunctions);
             string discoverType(FunctionDefinition &func);
 
-            static void fixName(Statement &stmt);
+            static int replace(string &s, string from, string to);
 
         private:
 
@@ -36,7 +36,6 @@ namespace transpiler {
             Statement* findFirstTyped(Statement &stmt);
             Statement* findFirstReturn(vector<Statement> &stmt);
 
-            int replace(string &s, string from, string to);
             bool replaceOne(string &s, string from, string to);
             template<typename T>
             string connect(vector<T> &v, string c);

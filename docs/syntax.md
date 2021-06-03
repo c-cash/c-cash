@@ -11,7 +11,7 @@ func main() {
 Functions can also take and return data. For example function `add` from below will take two numbers (a and b) and return their sum.
 ```clike
 func add(int a, int b) {
-    return a+b;
+    return(a+b);
 }
 func main() {
     write(add(1, 2));
@@ -25,14 +25,21 @@ Variables can hold only specified type of data:
 - `char` - one character
 - `uchar` - unsigned character
 - `double` - decimal number
-- `string` - text (not yet implemented)
-- `bool` - true/false (not yet implemented)
+- `string` - text
+- `bool` - true/false
 
 ### Declaration
 You can also define and use variables. To define a variable, write its type followed by name (like below).
 ```clike
 func main() {
     int a;
+}
+```
+To declare the table you must do this
+```clike
+func main(){
+    int[] a = [2, 4, 2];
+    string[] b = ["Hello", "World!"];
 }
 ```
 ### Assignment
@@ -55,6 +62,8 @@ You can use math expressions in many places. Currently supported operators are:
 - `-` - subtract
 - `/` - divide
 - `*` - multiply
+- `%` - rest of the division
+
 
 Assuming that `a` is a variable, there are also:
 - `a++` - add 1 to `a`
@@ -63,11 +72,28 @@ Assuming that `a` is a variable, there are also:
 - `a-=4` - subtract value on the right from `a`
 - `a/=4` - divide `a` by value on the right
 - `a*=4` - multiply `a` by value on the right
+- `a%=4` - rest of the division from `a` by value on the right
+
+## Array
+The function you can use on array are:
+- `add()` - add varibles to array
+- `size()` - return number of elements
+
+Example code:
+```clike
+func main(){
+    int[] a = [3, 4, 5];
+    a.add(2, 4, 5);
+    write(a.size());
+    write(a[0]);
+}
+```
 
 ## Statements
 ### Expressions
 For `if` and `loop` statements you will need expressions. Currently supported are:
 - `==` - if things are equal
+- `!=` - if things are NOT equal
 - `<` - less than
 - `<=` - less or equal to
 - `>` - greater
@@ -104,21 +130,20 @@ func main() {
 In many languages there are two types of loop: `for` and `while`. In C$ we have only one, that does three things!
 You can use `loop` with expression inside (like `while`) or with three arguments (like `for`) or provide it just a number to execute code `n` times.
 ```clike
-#// while loop
+// while loop
 int a=0;
-loop (a<5) {
+loop(a < 5) {
     write(a);
     a++;
 }
-
-#// for loop
+// for loop
 loop(int i=0, i<5, i++) {
     write(i);
 }
-
-#// n loop
+// n loop
 loop(5) {
     write("n loop");
 }
 ```
+
 !> Two slashes in comments are not necessary for comment and they are only because of syntax highlighting

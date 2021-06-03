@@ -76,7 +76,6 @@ namespace transpiler {
     string Transpiler::transpileStatement(Statement &stmt) {
         // LITTERAL
         if (stmt.mKind == StatementKind::LITERAL) {
-            fixName(stmt);
             return transpileLitteral(stmt);
         }
         // VARIABLE DECLARATION
@@ -201,7 +200,7 @@ namespace transpiler {
         if (firstReturn == nullptr || firstReturn->mStatements.size() <= 0) return "void";
         Statement* firstLitteral = findFirstTyped(*firstReturn);
         if (firstLitteral == nullptr) return "void";
-        else {fixName(*firstLitteral); return firstLitteral->mType.mName;};
+        else {return firstLitteral->mType.mName;};
     }
 
     void Transpiler::researchVariables(vector<Statement> &stmt) {
@@ -317,7 +316,4 @@ namespace transpiler {
         replace(s, "\t", "\\t");
     }
 
-    void Transpiler::fixName(Statement &stmt) {
-        if (stmt.mType.mName == "signed integer") stmt.mType.mName = "signed int";
-    }
 }

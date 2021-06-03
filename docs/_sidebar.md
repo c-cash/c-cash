@@ -2,5 +2,6 @@
     - [**Syntax**](syntax.md)
     - [**Libraries**](Libraries/README.md)
         - [Builtin](Libraries/builtin.md)
+        - [Math](Libraries/math.md)
     - [**Examples**](examples.md)
     - [**TODO**](TODO.md)

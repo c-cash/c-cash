@@ -1,4 +1,5 @@
------------------------0.0.1-----------------------
+-------------
+----------0.0.1-----------------------
 
 1. Interpretacja if                                    (done)
 2. Łączenie if z elif oraz else                        (done)
@@ -58,11 +59,11 @@ ___________WYDANIE NOWEJ WERSJI______________
 4. funkcja system() (olix)
 5. libki: (infuś, antis, olix)
     - liczby losowe <random>                                                   (done)
-    - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>
+    - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>    (done)
     - konwersja zmiennych <convert>
     - algorytmy <algorithms>
-    - obsługa stringów <string>
-    - 
+    - obsługa stringów <string>                                                (done)
+    - czas                                                                     (done)
 6. try i catch i throw (antis, infuś, olix)
 7. char jako znak (antis, infuś, olix)
 8. true oraz false (olix, antis, infuś)
@@ -72,6 +73,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 12. komunikat o braku plików wejściowych dla interpretera (infuś, olix)
 13. naprawa tablic (olix)
 14. przypisywanie do tablic funkcji i zmiennych
+15. linie w errorach
 
 
 

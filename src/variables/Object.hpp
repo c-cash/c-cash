@@ -30,11 +30,13 @@ namespace variable {
             virtual string getValueString() = 0;
             virtual string getType() = 0;
 
-            virtual map<string, Object*(*)(variable::Object* t, std::vector<variable::Object*> args)> getFunctions() = 0;
+            virtual map<string, Object*(*)(variable::Object* t, std::vector<variable::Object*> &args)> getFunctions() = 0;
             
-            static Object* getDefault(string type);
+            static Object* getDefault(string &type);
             static Object* fromLitteral(parser::Statement &stmt);
             static Object* checkAll(string expected, Object* var);
             static Object* check(Object &other);
     };
+
+    typedef Object*(*objectF)(Object* t, std::vector<Object*> &args);
 }

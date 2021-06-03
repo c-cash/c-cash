@@ -20,12 +20,13 @@ set(OTHER
 )
 
 set(TRANSPILER
-    transpiler/Transpiler.cpp
+    src/transpiler/Transpiler.cpp
 )
 
 set(VARIABLE
     src/variables/Object.cpp
     src/variables/Integer.cpp
+    src/variables/Long.cpp
     src/variables/Double.cpp
     src/variables/String.cpp
     src/variables/Boolean.cpp
@@ -33,11 +34,14 @@ set(VARIABLE
     src/variables/Array.cpp
 )
 
-set(LIBRARIES
+set( LIBRARIES
     src/libraries/LibraryRegistry.cpp
     src/libraries/Library.cpp
     src/libraries/MathLibrary.cpp
     src/libraries/RandomLibrary.cpp
+    src/libraries/FileLibrary.cpp
+    src/libraries/TimeLibrary.cpp
+    src/libraries/StringLibrary.cpp
 )
 
 #add execute file
