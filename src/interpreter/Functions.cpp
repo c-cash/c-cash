@@ -357,7 +357,7 @@ namespace interpreter {
             if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
             return v;
     }
-
+  
     Object* Functions::findVariable(string name, Scope &scope) {
         if (scope.varTab.unordered_map::find(name) == scope.varTab.end()) {
             if (scope.parent != nullptr) return findVariable(name, *scope.parent);

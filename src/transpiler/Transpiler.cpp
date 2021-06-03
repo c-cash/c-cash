@@ -315,5 +315,4 @@ namespace transpiler {
         replace(s, "\n", "\\n");
         replace(s, "\t", "\\t");
     }
-
 }

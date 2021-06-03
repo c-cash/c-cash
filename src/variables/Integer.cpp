@@ -23,6 +23,7 @@ namespace variable {
         else if (otherType == "Long") return new Long(value + static_cast<Long*>(other)->value);
         else if (otherType == "Double") return new Double(1.0 * value + static_cast<Double*>(other)->value);
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
+        else if (otherType == "Long")
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
 

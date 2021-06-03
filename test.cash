@@ -1,3 +1,4 @@
+
 include("time"); # time -> Scope includes
 include("math");
 include("file");
@@ -19,4 +20,5 @@ func main() { # Scope main <- includes
     long b = nanotime();
     long c = b-a;
     write(c/1000000000.0, "s\n");
+
 }

@@ -23,8 +23,7 @@ namespace library {
             }
             return new String(s);
         };
-        // (F)charat
-        
+        // (F)charat  
         s.functions["charAt"] = [](vector<Object*> &args) -> Object* {
             if (args.size() != 2) throw runtime_error("charAt function takes exactly two arguments");
             if(args[0]->getType() == "String" && (args[1]->getType() == "Integer" || args[1]->getType() == "Long")){
