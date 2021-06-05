@@ -75,6 +75,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 14. przypisywanie do tablic funkcji i zmiennych
 15. linie w errorach
 16. optymalizacja 
+17. typ long                                                                 (done)
 
 
 -------odległe wersje byle żeby nie zapomnieć(to wszystko na wercję 1.0.0)----------
@@ -89,6 +90,5 @@ ___________WYDANIE NOWEJ WERSJI______________
 9. interfejsy
 10. struct
 11. zmienne globalne
-12. long long
-13. typ dynamic
-14. namespace
+12. typ dynamic
+13. namespace

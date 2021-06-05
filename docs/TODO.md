@@ -49,6 +49,7 @@
 - [ ] sequence of operations ) and (
 - [ ] Negation
 - [ ] line numbers in errors in the interpreter
-- [ ] message about the lack of input files for the interpreter
-- [ ] board repair
+- [x] message about the lack of input files for the interpreter
+- [ ] array repair
 - [ ] assigning functions and changes to arrays
+- [x] long type   

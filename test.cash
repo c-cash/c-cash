@@ -1,27 +1,7 @@
-
-include("time"); # time -> Scope includes
-include("math");
-include("file");
-include("string");
-include("random");
+include("regex");
 
 func main() { # Scope main <- includes
-    long a = nanotime();
-    int i = 0;
-    i++;
-    int d=3, b=2, c=1;
-
-|    loop(1000000){ # Scope loop {vector<string> cache;}
-        if(2==2){
-            int d;
-            int f;
-            int b;
-            int e;
-            int c;
-        }
-   }
-    long b = nanotime();
-    long c = b-a;
-    write(c/1000000000.0, "s\n");
-|
+    string a = "this substance is dangerous and this submarine is going to transport it";
+    string[] words = match(a, "(sub\\S+)"); # this matches every word that starts with sub
+    write(words);
 }

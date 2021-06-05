@@ -33,6 +33,7 @@ You can also define and use variables. To define a variable, write its type foll
 ```clike
 func main() {
     int a;
+    int b, c;
 }
 ```
 To declare the table you must do this
@@ -54,6 +55,7 @@ Or assign it directly after creation
 ```clike
 func main() {
     int a = 4;
+    int b = 2, c = 3;
 }
 ```
 ## Math

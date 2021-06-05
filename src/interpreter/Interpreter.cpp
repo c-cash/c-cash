@@ -85,7 +85,7 @@ namespace interpreter{
                     else {obj = Object::checkAll(var.mType.mName, evaluateStatement(var.mStatements[0], scope));};
                     scope.varTab[var.mName] = obj;
                 }
-
+                return nullptr;
                 break;
             }
             case StatementKind::INCREMENTATION: {
@@ -115,6 +115,12 @@ namespace interpreter{
                 return Functions::evaluateFunctionCall(stmt, scope);
                 break;
             }
+            case StatementKind::MULTIPLE_ARRAY_DECLARATION: {
+                for (Statement &s : stmt.mStatements) {
+                    Functions::evaluateArrayDeclaration(s, scope);
+                }
+                break;
+            }
             case StatementKind::ARRAY_DECLARATION: {
                 return Functions::evaluateArrayDeclaration(stmt, scope);
                 break;
@@ -138,7 +144,7 @@ namespace interpreter{
                 break;
             }
             default:
-                throw runtime_error("Unexpected error");
+                return nullptr;
                 break;
         }
         return nullptr;

@@ -42,6 +42,7 @@ set( LIBRARIES
     src/libraries/FileLibrary.cpp
     src/libraries/TimeLibrary.cpp
     src/libraries/StringLibrary.cpp
+    src/libraries/RegexLibrary.cpp
 )
 
 #add execute file

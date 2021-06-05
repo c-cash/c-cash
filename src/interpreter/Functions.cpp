@@ -96,7 +96,7 @@ namespace interpreter {
             // check if correct
             if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'if' must have an expression");
             // check logic
-            bool e = static_cast<bool>(stoi(evaluateLogic(stmt.mStatements[0], scope)->getValueString()));
+            bool e = static_cast<Boolean*>(evaluateLogic(stmt.mStatements[0], scope))->value;
             scope.previousResult = e;
             if (!e) return nullptr;
             // create scope for variables
@@ -130,7 +130,7 @@ namespace interpreter {
             // check if correct
             if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'elif' must have an expression");
             // check logic
-            bool e = (bool) stoi(evaluateLogic(stmt.mStatements[0], scope)->getValueString());
+            bool e = static_cast<Boolean*>(evaluateLogic(stmt.mStatements[0], scope))->value;
             scope.previousResult = e;
             if (!e) return nullptr;
             // create scope for variables
