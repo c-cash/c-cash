@@ -8,17 +8,20 @@ include("random");
 func main() { # Scope main <- includes
     long a = nanotime();
     int i = 0;
-    loop(1000000){ # Scope loop {vector<string> cache;}
+    i++;
+    int d=3, b=2, c=1;
+
+|    loop(1000000){ # Scope loop {vector<string> cache;}
         if(2==2){
-            int b;
-            int c;
             int d;
-            int e;
             int f;
+            int b;
+            int e;
+            int c;
         }
    }
     long b = nanotime();
     long c = b-a;
     write(c/1000000000.0, "s\n");
-
+|
 }

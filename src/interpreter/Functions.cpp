@@ -96,7 +96,7 @@ namespace interpreter {
             // check if correct
             if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'if' must have an expression");
             // check logic
-            bool e = (bool) stoi(evaluateLogic(stmt.mStatements[0], scope)->getValueString());
+            bool e = static_cast<bool>(stoi(evaluateLogic(stmt.mStatements[0], scope)->getValueString()));
             scope.previousResult = e;
             if (!e) return nullptr;
             // create scope for variables
@@ -330,32 +330,31 @@ namespace interpreter {
 
     Object* Functions::evaluateVariableCall(Statement &stmt, Scope &scope) {
         Object* special = Functions::specialVariable(stmt, scope);
-            if (special != nullptr) return special;
-            if (stmt.mStatements.size() >= 1) { // assign to existing variable
-                 if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
-                    // this is a function inside of object
-                    Object* v = findVariable(stmt.mName, scope);
-                    if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
-                    map<string, objectF> funcs = v->getFunctions();
-                    if (funcs.find(stmt.mStatements[0].mName) == funcs.end()) throw runtime_error("class " + stmt.mName + " does not have a member " + stmt.mStatements[0].mName);
-                    // collect arguments
-                    vector<Object*> args;
-                    for (Statement &s : stmt.mStatements[0].mStatements) {
-                        args.emplace_back(Interpreter::evaluateStatement(s, scope));
-                    }
-                    return funcs[stmt.mStatements[0].mName](v, args);
-                }
-                else {
-                    Object* v = findVariable(stmt.mName, scope);
-                    v->assign(Object::checkAll(v->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope)));
-                };
+        if (special != nullptr) return special;
+        if (stmt.mStatements.size() >= 1) { // assign to existing variable
+            if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
+                // this is a function inside of object
                 Object* v = findVariable(stmt.mName, scope);
                 if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
-                return v;
+                map<string, objectF> funcs = v->getFunctions();
+                if (funcs.find(stmt.mStatements[0].mName) == funcs.end()) throw runtime_error("class " + stmt.mName + " does not have a member " + stmt.mStatements[0].mName);
+                // collect arguments
+                vector<Object*> args;
+                for (Statement &s : stmt.mStatements[0].mStatements) {
+                    args.emplace_back(Interpreter::evaluateStatement(s, scope));
+                }
+                return funcs[stmt.mStatements[0].mName](v, args);
+            } else {
+                Object* v = findVariable(stmt.mName, scope);
+                v->assign(Object::checkAll(v->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope)));
             }
             Object* v = findVariable(stmt.mName, scope);
             if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
             return v;
+        }
+        Object* v = findVariable(stmt.mName, scope);
+        if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+        return v;
     }
   
     Object* Functions::findVariable(string name, Scope &scope) {

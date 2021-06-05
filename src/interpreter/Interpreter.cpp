@@ -70,21 +70,28 @@ namespace interpreter{
     
     Object* Interpreter::evaluateStatement(Statement &stmt, Scope &scope) {
         switch (stmt.mKind) {
-            case StatementKind::VARIABLE_DECLARATION: {
+            case StatementKind::MULTIPLE_VARIABLE_DECLARATION: {
                 // declare variable and return null
-
-                if (std::find(begin(scope.varCache), end(scope.varCache), stmt.mName.c_str()) == end(scope.varCache)) {
-                    if (Functions::findVariable(stmt.mName, scope) != nullptr){
-                        throw runtime_error("variable '" + stmt.mName + "' is already defined"); 
+                for (Statement &var : stmt.mStatements){
+                    if (!std::binary_search(begin(scope.varCache), end(scope.varCache), var.mName.c_str())) {
+                        if (Functions::findVariable(var.mName, scope) != nullptr){
+                            throw runtime_error("variable '" + var.mName + "' is already defined"); 
+                        }
+                        scope.varCache.emplace_back(var.mName.c_str());
                     }
-                    scope.varCache.emplace_back(stmt.mName.c_str());
+
+                    Object* obj;
+                    if (var.mStatements.size() == 0) {obj = Object::getDefault(var.mType.mName);} // return default value for type
+                    else {obj = Object::checkAll(var.mType.mName, evaluateStatement(var.mStatements[0], scope));};
+                    scope.varTab[var.mName] = obj;
                 }
 
-                Object* obj;
-                if (stmt.mStatements.size() == 0) {obj = Object::getDefault(stmt.mType.mName);} // return default value for type
-                else {obj = Object::checkAll(stmt.mType.mName, evaluateStatement(stmt.mStatements[0], scope));};
-                scope.varTab[stmt.mName] = obj;
-                return nullptr;
+                break;
+            }
+            case StatementKind::INCREMENTATION: {
+                break;
+            }
+            case StatementKind::DECREMENTATION: {
                 break;
             }
             case StatementKind::LITERAL: {
@@ -131,9 +138,10 @@ namespace interpreter{
                 break;
             }
             default:
-                return nullptr;
+                throw runtime_error("Unexpected error");
                 break;
         }
+        return nullptr;
     }
 
     void Interpreter::addBuiltin(string name, builtinF f) {

@@ -23,7 +23,6 @@ namespace variable {
         else if (otherType == "Long") return new Long(value + static_cast<Long*>(other)->value);
         else if (otherType == "Double") return new Double(1.0 * value + static_cast<Double*>(other)->value);
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
-        else if (otherType == "Long")
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
 
@@ -61,6 +60,16 @@ namespace variable {
         else if (otherType == "Double") return new Double(std::fmod(1.0 * value, static_cast<Double*>(other)->value));
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
+    //INCREMENTATION
+    /*
+    Object* Integer::incrementation(Object* other) {
+        return new Integer(++value);
+    }
+    //DEINCREMATATION
+    Object* Integer::decrementation(Object* other) {
+        return new Integer(--value);
+    }
+    */
 
     bool Integer::equal(Object* other) {
         string otherT = other->getType();
@@ -70,31 +79,31 @@ namespace variable {
     bool Integer::less(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer" || otherT == "Long") return value < stoi(other->getValueString());
-        else if (otherT == "Double") return value < stod(other->getValueString());
+        else if (otherT == "Double") return value < static_cast<Integer*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Integer::greater(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer" || otherT == "Long") return value > stoi(other->getValueString());
-        else if (otherT == "Double") return value > stod(other->getValueString());
+        else if (otherT == "Double") return value > static_cast<Integer*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Integer::lesseq(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer" || otherT == "Long") return value <= stoi(other->getValueString());
-        else if (otherT == "Double") return value <= stod(other->getValueString());
+        else if (otherT == "Double") return value <= static_cast<Integer*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Integer::greatereq(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer" || otherT == "Long") return value >= stoi(other->getValueString());
-        else if (otherT == "Double") return value >= stod(other->getValueString());
+        else if (otherT == "Double") return value >= static_cast<Integer*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Integer::noteq(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer" || otherT == "Long") return value != stoi(other->getValueString());
-        else if (otherT == "Double") return value != stod(other->getValueString());
+        else if (otherT == "Double") return value != static_cast<Integer*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
 

@@ -33,7 +33,7 @@
 
 ## Version 0.3.0
 - [x] support for Gamblerch numbers, operator
-- [ ] declaration of many new ones in one line
+- [x] declaration of many new ones in one line
 - [ ] include files
 - [ ] system () function
 - [ ] lib:
@@ -52,4 +52,3 @@
 - [ ] message about the lack of input files for the interpreter
 - [ ] board repair
 - [ ] assigning functions and changes to arrays
-- [ ] lines in errors
