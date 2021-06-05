@@ -278,7 +278,8 @@ namespace parsesaver {
         cout << "-D --> shows a tree of program\n";
         cout << "-E <name> --> makes name.ccc file with ccash code compiled to program tree saved in binary\n";
         cout << "-E --> makes c.ccc file with ccash code compiled to program tree saved in binary\n";
-        cout << "You can see documentation on: <website>\n";
+        cout << "-T --> transpils .cash file to cpp\n";
+        cout << "You can see documentation on: http://ccash.info\n";
     }
 
 }

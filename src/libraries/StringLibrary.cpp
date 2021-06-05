@@ -29,7 +29,7 @@ namespace library {
             if(args[0]->getType() == "String" && (args[1]->getType() == "Integer" || args[1]->getType() == "Long")){
                 return new String(to_string((args[0]->getValueString())[stoi(args[1]->getValueString())]));
             }
-            throw runtime_error("charAt needs two arhs string and integer or long");
+            throw runtime_error("charAt needs two args string and integer or long");
         }; 
         // (F)replace
         s.functions["replace"] = [](vector<Object*> &args) -> Object* {

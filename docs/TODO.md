@@ -33,15 +33,16 @@
 
 ## Version 0.3.0
 - [x] support for Gamblerch numbers, operator
-- [ ] declaration of many new ones in one line
+- [x] declaration of many new ones in one line
 - [ ] include files
 - [ ] system () function
 - [ ] lib:
     - [x] random numbers <random>
-    - [ ] opening, editing, creating, deleting files etc ...) <file>
+    - [x] opening, editing, creating, deleting files etc ...) <file>
     - [ ] conversion of offers <conversion>
     - [ ] algorithms <algorithms>
-    - [ ] <string> support
+    - [x] <string> support
+    - [x] <time>
 - [ ] I try to catch and throw
 - [ ] char as a character
 - [ ] real and false
@@ -51,4 +52,3 @@
 - [ ] message about the lack of input files for the interpreter
 - [ ] board repair
 - [ ] assigning functions and changes to arrays
-- [ ] lines in errors

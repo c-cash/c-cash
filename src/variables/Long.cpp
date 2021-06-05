@@ -18,8 +18,8 @@ namespace variable {
     // ADDITION
     Object* Long::add (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value + stoll(other->getValueString()));
-        else if (otherType == "Double") return new Double(1.0 * value + stod(other->getValueString()));
+        if (otherType == "Integer" || otherType == "Long") return new Long(value + static_cast<Long*>(other)->value);
+        else if (otherType == "Double") return new Double(1.0 * value + static_cast<Double*>(other)->value);
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
@@ -27,14 +27,14 @@ namespace variable {
     // SUBTRACTION
     Object* Long::subtract (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value - stoll(other->getValueString()));
+        if (otherType == "Integer" || otherType == "Long") return new Long(value - static_cast<Long*>(other)->value);
         else if (otherType == "Double") return new Double(1.0 * value - stod(other->getValueString()));
         throw runtime_error("Cannot subtract " + this->getType() + " and " + other->getType());
     }
     // MULTIPLICATION
     Object* Long::multiply (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value * stoll(other->getValueString()));
+        if (otherType == "Integer" || otherType == "Long") return new Long(value * static_cast<Long*>(other)->value);
         else if (otherType == "Double") return new Double(1.0 * value * stod(other->getValueString()));
         else if (otherType == "String") 
             return new String([&]()->string {string t=other->getValueString();string r; for (int i=0; i<value; i++) r+=t; return r;}());
@@ -43,15 +43,15 @@ namespace variable {
     // DIVISION
     Object* Long::divide (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value / stoll(other->getValueString()));
-        else if (otherType == "Double") return new Double(1.0 * value / stod(other->getValueString()));
+        if (otherType == "Integer" || otherType == "Long") return new Long(value / static_cast<Long*>(other)->value);
+        else if (otherType == "Double") return new Double(1.0 * value / static_cast<Double*>(other)->value);
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
     }
     // MODULO
     Object* Long::modulo (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value % stoll(other->getValueString()));
-        else if (otherType == "Double") return new Double(std::fmod(1.0 * value, stod(other->getValueString())));
+        if (otherType == "Integer" || otherType == "Long") return new Long(value % static_cast<Long*>(other)->value);
+        else if (otherType == "Double") return new Double(std::fmod(1.0 * value, static_cast<Double*>(other)->value));
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
 

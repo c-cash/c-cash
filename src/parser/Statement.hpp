@@ -7,8 +7,9 @@
 namespace parser {
     using namespace std;
 
-    enum class StatementKind {
+    enum struct StatementKind {
         VARIABLE_DECLARATION,
+        MULTIPLE_VARIABLE_DECLARATION,
         FUNCTION_CALL,
         LITERAL,
         OPERATOR_CALL,
@@ -16,14 +17,18 @@ namespace parser {
         VARIABLE_CALL,
         LOGIC_CALL,
         ARRAY_DECLARATION,
+        MULTIPLE_ARRAY_DECLARATION,
         ARRAY,
         ARRAY_ELEMENT,
         ARRAY_CALL,
-        NAMESPACE
+        NAMESPACE,
+        INCREMENTATION,
+        DECREMENTATION
     };
 
     static const char* sStatementKindStrings[] = {
         "VARIABLE_DECLARATION",
+        "MULTIPLE_VARIABLE_DECLARATION",
         "FUNCTION_CALL",
         "LITTERAL",
         "OPERATOR_CALL",
@@ -31,10 +36,13 @@ namespace parser {
         "VARIABLE_CALL",
         "LOGIC_CALL",
         "ARRAY_DECLARATION",
+        "MULTIPLE_ARRAY_DECLARATION",
         "ARRAY",
         "ARRAY_ELEMENT",
         "ARRAY_CALL",
-        "NAMESPACE"
+        "NAMESPACE",
+        "INCREMENTATION",
+        "DECREMENTATION,"
     };
 
     class Statement {

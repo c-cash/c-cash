@@ -7,11 +7,11 @@ namespace parser {
 		vector<Token>::iterator parseStart = mCurrentToken;
 		optional<Type> possibleType = expectType();
 
-        if(possibleType.has_value()){ //Value
+        if(possibleType.has_value()) { //Value
             optional<Token> possibleName = expectIdentifier();
-            if(possibleName.has_value()){ //Name
+            if(possibleName.has_value()) { //Name
                 optional<Token> possibleOperator = expectOperator("("); 
-                if(possibleOperator.has_value()){ //Function or varible
+                if(possibleOperator.has_value()) { //Function or varible
 				    FunctionDefinition func;
                     optional<Type> possibleParamType;
                     bool ifArray;
@@ -388,20 +388,15 @@ namespace parser {
 
             statementVar.mStatements.push_back(operatorStatement);
         } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
-            Statement operatorStatement;
             char opt = mCurrentToken->mText[0];
-            operatorStatement.mName =  opt;
-            operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+            if(opt == '+' ) statementVar.mKind = StatementKind::INCREMENTATION;
+            else statementVar.mKind = StatementKind::DECREMENTATION;
+
             ++mCurrentToken;
             optional<Statement> initialValue = expectExpressionFunc();
-            Statement one;
-            one.mName = "1";
-            one.mKind = StatementKind::LITERAL;
-            one.mType =  Type("signed int", INT32);
+            
             if(!initialValue.has_value()) {
-                operatorStatement.mStatements.push_back(statementVar);
-                operatorStatement.mStatements.push_back(one);
-                statementVar.mStatements.push_back(operatorStatement);
+               // statementVar.mStatements.push_back(statementVar);
             } else {
                 throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
             }
@@ -452,29 +447,30 @@ namespace parser {
             } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
                 Statement operatorStatement;
                 char opt = mCurrentToken->mText[0];
-                operatorStatement.mName =  opt;
-                operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+                
+                if(opt == '+') statementVar.mKind = StatementKind::INCREMENTATION;
+                else statementVar.mKind = StatementKind::DECREMENTATION;
                 ++mCurrentToken;
                 optional<Statement> initialValue = expectExpressionFunc();
                 Statement one;
                 one.mName = "1";
                 one.mKind = StatementKind::LITERAL;
                 one.mType =  Type("signed int", INT32);
-            if(!initialValue.has_value()) {
-                Statement array = statementVar;
-                Statement arrName;
-                arrName.mName = array.mName;
-                arrName.mKind = StatementKind::ARRAY_CALL;
-                arrName.mType.mName = "func";
-                array.mName = "";
-                array.mStatements.push_back(arrName);
-                operatorStatement.mStatements.push_back(array);
-                operatorStatement.mStatements.push_back(one);
-                statementVar.mStatements.push_back(operatorStatement);
+                if(!initialValue.has_value()) {
+                    Statement array = statementVar;
+                    Statement arrName;
+                    arrName.mName = array.mName;
+                    arrName.mKind = StatementKind::ARRAY_CALL;
+                    arrName.mType.mName = "func";
+                    array.mName = "";
+                    array.mStatements.push_back(arrName);
+                    operatorStatement.mStatements.push_back(array);
+                    operatorStatement.mStatements.push_back(one);
+                    statementVar.mStatements.push_back(operatorStatement);
+                } else {
+                    throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
+                }
             } else {
-                throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
-            }
-        } else {
                 string name = statementVar.mName;
                 statementVar.mName = "";
                 statementVar.mType.mName = "func";
@@ -484,7 +480,7 @@ namespace parser {
                 s.mName = possibleVaribleName->mText;
                 statementVar.mStatements.push_back(s);
             }
-        }
+       }
 
         return statementVar;
     }
@@ -501,38 +497,50 @@ namespace parser {
         } else {
             if(expectOperator("[").has_value() && expectOperator("]").has_value()){
                 //Run table init function
-                statement.mKind = StatementKind::ARRAY_DECLARATION;
+                statement.mKind = StatementKind::MULTIPLE_ARRAY_DECLARATION;
                 statement.mType = possibleType.value();
             } else {
-                statement.mKind = StatementKind::VARIABLE_DECLARATION;
+                statement.mKind = StatementKind::MULTIPLE_VARIABLE_DECLARATION;
                 statement.mType = possibleType.value();
             }
         }
 
-        optional<Token> possibleVaribleName = expectIdentifier();
-        statement.mName = possibleVaribleName->mText;
-        if(expectOperator("=").has_value()) {
-            if (statement.mKind == StatementKind::ARRAY_DECLARATION) {
-                optional<Statement> check = expectArrayDeclaration();
-                if(!check.has_value()) {
+        while (!expectOperator(";").has_value()) {
+            Statement var;
+            optional<Token> possibleVaribleName = expectIdentifier();
+            if(statement.mKind == StatementKind::MULTIPLE_ARRAY_DECLARATION) {
+                var.mKind = StatementKind::ARRAY_DECLARATION;
+            } else {
+                var.mKind = StatementKind::VARIABLE_DECLARATION;
+            }
+            var.mType = statement.mType;
+            var.mName = possibleVaribleName->mText;
+            if(expectOperator("=").has_value()) {
+                if (statement.mKind == StatementKind::ARRAY_DECLARATION) {
+                    optional<Statement> check = expectArrayDeclaration();
+                    if(!check.has_value()) {
+                        optional<Statement> initialValue = expectExpressionFunc();
+                        if(!initialValue.has_value()) {
+                            throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
+                        }
+                        var.mStatements.push_back(initialValue.value());
+                    } else {
+                        var.mStatements.push_back(check.value());
+                    }
+                } else {
                     optional<Statement> initialValue = expectExpressionFunc();
                     if(!initialValue.has_value()) {
                         throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
                     }
-                    statement.mStatements.push_back(initialValue.value());
-                } else {
-                    statement.mStatements.push_back(check.value());
-                }
-            } else {
-                optional<Statement> initialValue = expectExpressionFunc();
-                if(!initialValue.has_value()) {
-                    throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
-                }
 
-                statement.mStatements.push_back(initialValue.value());
+                    var.mStatements.push_back(initialValue.value());
+                }
             }
+            statement.mStatements.push_back(var);
+            if(expectOperator(";").has_value()) break;
+            if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate declarations in line ") + to_string(mCurrentToken->mLine));
         }
-
+        mCurrentToken--;
         return statement;
     }
 

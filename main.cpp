@@ -17,10 +17,27 @@ using namespace parsesaver;
 using namespace transpiler;
 
 int main (int argc, char **argv) {
-    try{
-        vector<string> args(argv, argv + argc);
+    if(argc == 0){throw runtime_error("arguments must be given, type -H to get help..."); return 0;}
 
+    try{
+
+        vector<string> args(argv, argv + argc);
         // run from code
+
+        if(args[1].length() > 4) {
+            if(!(args[1].substr(args[1].length() - 5) == ".cash") && !(args[1].substr(args[1].length() - 4) == ".ccc")) {
+                throw runtime_error("The first argument should be .cash or .ccc file");
+            }
+        } else {
+            vector<string>::iterator helpIterator = find(begin(args), end(args), "-H");
+            if (helpIterator != end(args)) {
+                ParseSaver saver;
+                saver.writeHelp();
+                return 0;
+            }
+            throw runtime_error("The first argument should be .cash or .ccc file");
+        }
+
         ifstream file(args[1]);
         string line, allCode="";
         bool isParsed = false;

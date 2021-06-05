@@ -18,37 +18,37 @@ namespace variable {
     // ADDITION
     Object* Double::add (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Double(value + stod(other->getValueString()));
-        else if (otherType == "Double") return new Double(value + stod(other->getValueString()));
+        if (otherType == "Integer") return new Double(value + static_cast<Double*>(other)->value);
+        else if (otherType == "Double") return new Double(value + static_cast<Double*>(other)->value);
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
     // SUBTRACTION
     Object* Double::subtract (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Double(value - stod(other->getValueString()));
-        else if (otherType == "Double") return new Double(value - stod(other->getValueString()));
+        if (otherType == "Integer") return new Double(value - static_cast<Double*>(other)->value);
+        else if (otherType == "Double") return new Double(value - static_cast<Double*>(other)->value);
         throw runtime_error("Cannot subtract " + this->getType() + " and " + other->getType());
     }
     // MULTIPLICATION
     Object* Double::multiply (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Double(value * stod(other->getValueString()));
-        else if (otherType == "Double") return new Double(value * stod(other->getValueString()));
+        if (otherType == "Integer") return new Double(value * static_cast<Double*>(other)->value);
+        else if (otherType == "Double") return new Double(value * static_cast<Double*>(other)->value);
         throw runtime_error("Cannot multiply " + this->getType() + " and " + other->getType());
     }
     // DIVISION
     Object* Double::divide (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Double(value / stod(other->getValueString()));
-        else if (otherType == "Double") return new Double(value / stod(other->getValueString()));
+        if (otherType == "Integer") return new Double(value / static_cast<Double*>(other)->value);
+        else if (otherType == "Double") return new Double(value / static_cast<Double*>(other)->value);
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
     }
     // DIVISION
     Object* Double::modulo (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer") return new Double(std::fmod(value, stod(other->getValueString())));
-        else if (otherType == "Double") return new Double(std::fmod(value, stod(other->getValueString())));
+        if (otherType == "Integer") return new Double(std::fmod(value, static_cast<Double*>(other)->value));
+        else if (otherType == "Double") return new Double(std::fmod(value, static_cast<Double*>(other)->value));
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
 
@@ -60,31 +60,31 @@ namespace variable {
     bool Double::less(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer") return value < stoi(other->getValueString());
-        else if (otherT == "Double") return value < stod(other->getValueString());
+        else if (otherT == "Double") return value < static_cast<Double*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Double::greater(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer") return value > stoi(other->getValueString());
-        else if (otherT == "Double") return value > stod(other->getValueString());
+        else if (otherT == "Double") return value > static_cast<Double*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Double::lesseq(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer") return value <= stoi(other->getValueString());
-        else if (otherT == "Double") return value <= stod(other->getValueString());
+        else if (otherT == "Double") return value <= static_cast<Double*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Double::greatereq(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer") return value >= stoi(other->getValueString());
-        else if (otherT == "Double") return value >= stod(other->getValueString());
+        else if (otherT == "Double") return value >= static_cast<Double*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
     bool Double::noteq(Object* other) {
         string otherT = other->getType();
         if (otherT == "Integer") return value != stoi(other->getValueString());
-        else if (otherT == "Double") return value != stod(other->getValueString());
+        else if (otherT == "Double") return value != static_cast<Double*>(other)->value;
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());
     }
 
