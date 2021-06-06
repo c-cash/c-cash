@@ -28,6 +28,14 @@ namespace variable {
     Object* SpecialObject::modulo (Object* other) {
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
+    //INCREMENTATION
+    void SpecialObject::incrementation() {
+        throw runtime_error("Cannot use incrementation on " + this->getType());
+    }
+    //DEINCREMATATION
+    void SpecialObject::decrementation() {
+        throw runtime_error("Cannot use decrementation on " + this->getType());
+    }
 
     bool SpecialObject::equal(Object* other) {
         throw runtime_error("cannot compare " + this->getType() + " and " + other->getType());

@@ -16,8 +16,8 @@ namespace variable {
             virtual Object* divide (Object* other) = 0;
             virtual Object* multiply (Object* other) = 0;
             virtual Object* modulo (Object* other) = 0;
-            //virtual Object* incrementation(Object* other) = 0;
-            //virtual Object* decrementation(Object* other) = 0;
+            virtual void incrementation() = 0;
+            virtual void decrementation() = 0;
 
             virtual bool equal(Object* other) = 0;
             virtual bool less(Object* other) = 0;

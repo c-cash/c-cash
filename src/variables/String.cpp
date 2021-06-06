@@ -28,6 +28,14 @@ namespace variable {
     Object* String::modulo (Object* other) {
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
+    //INCREMENTATION
+    void String::incrementation() {
+        throw runtime_error("Cannot use incrementation on " + this->getType());
+    }
+    //DEINCREMATATION
+    void String::decrementation() {
+        throw runtime_error("Cannot use decrementation on " + this->getType());
+    }
 
     bool String::equal(Object* other) {
         if (other->getType() == "String")

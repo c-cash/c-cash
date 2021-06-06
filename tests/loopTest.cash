@@ -23,11 +23,11 @@ func main() {
         write("d");
     }
 
-    loop(int i = 10, i > 0, i = i - 1) {
+    loop(int i = 10; i > 0; i = i - 1) {
         write(i);
     }
 
-    loop(int i = 0, i < 10, i = i + 2) {
+    loop(int i = 0; i < 10; i = i + 2) {
         write(i);
     }
 }

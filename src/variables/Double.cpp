@@ -51,6 +51,14 @@ namespace variable {
         else if (otherType == "Double") return new Double(std::fmod(value, static_cast<Double*>(other)->value));
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
+    //INCREMENTATION
+    void Double::incrementation() {
+        ++value;
+    }
+    //DEINCREMATATION
+    void Double::decrementation() {
+        --value;
+    }
 
     bool Double::equal(Object* other) {
         string otherT = other->getType();

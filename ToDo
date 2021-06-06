@@ -64,18 +64,19 @@ ___________WYDANIE NOWEJ WERSJI______________
     - algorytmy <algorithms>
     - obsługa stringów <string>                                                (done)
     - czas                                                                     (done)
+    - regex                                                                    (done)
 6. try i catch i throw (antis, infuś, olix)
 7. char jako znak (antis, infuś, olix)
-8. true oraz false (olix, antis, infuś)
+8. true oraz false (olix, antis, infuś)                                        (done)
 9. kolejność działań z ) i ( (infuś, antis)
 10. negacja (antis, infuś)
 11. numery linii w errorach w interpreterze (antis, infuś, olix)
 12. komunikat o braku plików wejściowych dla interpretera (infuś, antis)       (done)
-13. naprawa tablic (olix)
+13. naprawa tablic (olix)                                                      (done)
 14. przypisywanie do tablic funkcji i zmiennych
-15. linie w errorach
-16. optymalizacja 
-17. typ long                                                                 (done)
+15. optymalizacja (antis, olix)
+16. typ long (olix)                                                                   (done)
+17. przyśpieszona inkrementacja (antis)
 
 
 -------odległe wersje byle żeby nie zapomnieć(to wszystko na wercję 1.0.0)----------

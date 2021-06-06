@@ -73,11 +73,13 @@ namespace interpreter{
             case StatementKind::MULTIPLE_VARIABLE_DECLARATION: {
                 // declare variable and return null
                 for (Statement &var : stmt.mStatements){
-                    if (!std::binary_search(begin(scope.varCache), end(scope.varCache), var.mName.c_str())) {
+                    vector<const char*>* cache = Functions::getNearestCache(scope);
+                    bool hasCache = cache != nullptr;
+                    if (!hasCache || !binary_search(cache->cbegin(), cache->cend(), stmt.mName.c_str())) {
                         if (Functions::findVariable(var.mName, scope) != nullptr){
                             throw runtime_error("variable '" + var.mName + "' is already defined"); 
                         }
-                        scope.varCache.emplace_back(var.mName.c_str());
+                        if (hasCache) scope.varCache->emplace_back(var.mName.c_str());
                     }
 
                     Object* obj;
@@ -89,9 +91,11 @@ namespace interpreter{
                 break;
             }
             case StatementKind::INCREMENTATION: {
+                Functions::findVariable(stmt.mName, scope)->incrementation();
                 break;
             }
             case StatementKind::DECREMENTATION: {
+                Functions::findVariable(stmt.mName, scope)->decrementation();
                 break;
             }
             case StatementKind::LITERAL: {

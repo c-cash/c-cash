@@ -17,6 +17,8 @@ namespace variable {
             Object* multiply (Object* other);
             Object* divide (Object* other);
             Object* modulo (Object* other);
+            void incrementation();
+            void decrementation();
 
             bool equal (Object* other);
             bool less (Object* other);

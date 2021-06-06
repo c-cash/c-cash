@@ -25,6 +25,14 @@ namespace variable {
     Object* Boolean::modulo (Object* other) {
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
+    //INCREMENTATION
+    void Boolean::incrementation() {
+        throw runtime_error("Cannot use incrementation on " + this->getType());
+    }
+    //DEINCREMATATION
+    void Boolean::decrementation() {
+        throw runtime_error("Cannot use decrementation on " + this->getType());
+    }
 
     bool Boolean::equal(Object* other) {
         string otherT = other->getType();

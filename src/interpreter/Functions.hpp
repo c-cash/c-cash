@@ -32,7 +32,7 @@ namespace interpreter {
             unordered_map<string, variable::Object*> varTab;
             unordered_map<string, builtinF> functions;
             unordered_map<string, Scope*> namespaces;
-            vector<const char*> varCache;
+            vector<const char*>* varCache {nullptr};
 
             Scope* parent {nullptr};
             Scope* nsparent {nullptr};
@@ -60,6 +60,7 @@ namespace interpreter {
             static void includeLibrary(FunctionDefinition &func, Scope &scope);
 
             static variable::Object* findVariable(string name, Scope &scope);
+            static vector<const char*>* getNearestCache(Scope &scope);
             static builtinF findFunction(string name, Scope &scope);
             static Scope* findNamespace(string name, Scope &scope);
 

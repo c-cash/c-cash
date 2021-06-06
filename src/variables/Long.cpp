@@ -23,7 +23,6 @@ namespace variable {
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
-
     // SUBTRACTION
     Object* Long::subtract (Object* other) {
         string otherType = other->getType();
@@ -53,6 +52,14 @@ namespace variable {
         if (otherType == "Integer" || otherType == "Long") return new Long(value % static_cast<Long*>(other)->value);
         else if (otherType == "Double") return new Double(std::fmod(1.0 * value, static_cast<Double*>(other)->value));
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
+    }
+    //INCREMENTATION
+    void Long::incrementation() {
+        ++value;
+    }
+    //DEINCREMATATION
+    void Long::decrementation() {
+        --value;
     }
 
     bool Long::equal(Object* other) {
