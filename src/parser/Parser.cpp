@@ -861,7 +861,7 @@ namespace parser {
         addParametr.mStatements.clear();
         addParametr.mStatements.push_back(parameter.value());
 
-        if(mCurrentToken->mText == ",") ++mCurrentToken;
+        if(mCurrentToken->mText == ";") ++mCurrentToken;
 
         while (!expectOperator(")").has_value()) {
             if(mCurrentToken->mText == "and"){
@@ -891,7 +891,7 @@ namespace parser {
                 if(!logicParam.has_value()) {
                     throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine));
                 }
-                while (!expectOperator(",").has_value()) {
+                while (!expectOperator(";").has_value()) {
                     if(mCurrentToken->mText == "and"){
                         ++mCurrentToken;
                         Statement andStatement;

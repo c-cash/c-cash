@@ -22,8 +22,9 @@ namespace parser {
             void parse(vector<Token> &tokens);
             void DebugPrint() const;
             map<string, FunctionDefinition> mFunction;
-        private:
             vector<Token>::iterator mCurrentToken;
+
+        private:
             vector<Token>::iterator mEndToken;
             map<string, Type> mTypes;
 

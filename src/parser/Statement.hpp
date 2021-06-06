@@ -4,6 +4,8 @@
 #include <vector>
 #include "Type.hpp"
 
+//#include "Parser.hpp"
+
 namespace parser {
     using namespace std;
 
@@ -51,6 +53,7 @@ namespace parser {
             Type mType{Type("func", FUNC)};
             vector<Statement> mStatements;
             StatementKind mKind{StatementKind::FUNCTION_CALL};
+            //unsigned int line {mCurrentToken->mLine};
 
             void DebugPrint(size_t indent);
     };

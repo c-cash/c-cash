@@ -187,6 +187,7 @@ namespace interpreter {
             // execute loop
             int count = static_cast<Integer*>(Interpreter::evaluateStatement(params.mStatements[0], scope))->value;
             Scope* s = new Scope(scope);
+            s->varCache = new vector<const char*>();
             for (int i=0; i<count; i++) {
                 s->reset();
                 Object* obj;
@@ -209,6 +210,7 @@ namespace interpreter {
             // check logic statement
             bool e = static_cast<Boolean*>(evaluateLogic(params.mStatements[0],scope))->value;
             Scope* s = new Scope(scope);
+            s->varCache = new vector<const char*>();
             while (e) {
                 s->reset();
                 Object* obj;
@@ -236,6 +238,7 @@ namespace interpreter {
             // check logic statement
             bool e = static_cast<Boolean*>(evaluateLogic(params.mStatements[1], *t))->value;
             Scope* s = new Scope(*t);
+            s->varCache = new vector<const char*>();
             while (e) {
                 s->reset();
                 Object* obj;
@@ -363,6 +366,12 @@ namespace interpreter {
             return nullptr;
         }
         return scope.varTab[name];
+    }
+
+    vector<const char*>* Functions::getNearestCache(Scope &scope) {
+        if (scope.varCache != nullptr) scope.varCache;
+        else if (scope.parent != nullptr) return getNearestCache(*scope.parent);
+        return nullptr;
     }
 
     builtinF Functions::findFunction(string name, Scope &scope) {

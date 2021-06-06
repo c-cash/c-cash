@@ -3,13 +3,11 @@
 #include <iostream>
 #include "Object.hpp"
 
-
 namespace variable {
     using namespace std;
 
     class Integer : public variable::Object {
         public:
-
             Integer(int value);
             Integer();
             Object* add (Object* other);
@@ -17,8 +15,8 @@ namespace variable {
             Object* multiply (Object* other);
             Object* divide (Object* other);
             Object* modulo (Object* other);
-            //Object* incrementation(Object* other);
-            //Object* decrementation(Object* other);
+            void incrementation();
+            void decrementation();
 
             bool equal (Object* other);
             bool less (Object* other);

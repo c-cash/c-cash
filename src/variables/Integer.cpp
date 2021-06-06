@@ -25,7 +25,6 @@ namespace variable {
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
-
     // SUBTRACTION
     Object* Integer::subtract (Object* other) {
         string otherType = other->getType();
@@ -61,15 +60,13 @@ namespace variable {
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
     //INCREMENTATION
-    /*
-    Object* Integer::incrementation(Object* other) {
-        return new Integer(++value);
+    void Integer::incrementation() {
+        ++value;
     }
     //DEINCREMATATION
-    Object* Integer::decrementation(Object* other) {
-        return new Integer(--value);
+    void Integer::decrementation() {
+        --value;
     }
-    */
 
     bool Integer::equal(Object* other) {
         string otherT = other->getType();
@@ -122,8 +119,8 @@ namespace variable {
     string Integer::getType() {return "Integer";}
 
     Object* Integer::check(Object &other) {
-            if (other.getType() == "Integer") return &other;
-            throw runtime_error("variable types does not match");
+        if (other.getType() == "Integer") return &other;
+        throw runtime_error("variable types does not match");
     }
 
     map<string, objectF> Integer::getFunctions() {

@@ -48,6 +48,14 @@ namespace variable {
     Object* Array::modulo (Object* other) {
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
+    //INCREMENTATION
+    void Array::incrementation() {
+        throw runtime_error("Cannot use incrementation on " + this->getType());
+    }
+    //DEINCREMATATION
+    void Array::decrementation() {
+        throw runtime_error("Cannot use decrementation on " + this->getType());
+    }
 
     bool Array::equal(Object* other) {
         Array* arr = convert(other);
