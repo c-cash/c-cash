@@ -369,7 +369,7 @@ namespace interpreter {
     }
 
     vector<const char*>* Functions::getNearestCache(Scope &scope) {
-        if (scope.varCache != nullptr) scope.varCache;
+        if (scope.varCache != nullptr) return scope.varCache;
         else if (scope.parent != nullptr) return getNearestCache(*scope.parent);
         return nullptr;
     }

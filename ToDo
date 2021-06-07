@@ -16,7 +16,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 
 -----------------------0.1.0-----------------------
 
-1. Parametry w funkcji                                 (done)
+1. Parametry w funkcji                  r               (done)
 2. Return w funkcji                                    (done)
 3. Loop                                                (done)
 4. Składnia                                            (done)
@@ -75,7 +75,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 13. naprawa tablic (olix)                                                      (done)
 14. przypisywanie do tablic funkcji i zmiennych
 15. optymalizacja (antis, olix)
-16. typ long (olix)                                                                   (done)
+16. typ long (olix)                                                            (done)
 17. przyśpieszona inkrementacja (antis)
 
 

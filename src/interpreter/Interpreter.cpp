@@ -74,20 +74,17 @@ namespace interpreter{
                 // declare variable and return null
                 for (Statement &var : stmt.mStatements){
                     vector<const char*>* cache = Functions::getNearestCache(scope);
-                    bool hasCache = cache != nullptr;
-                    if (!hasCache || !binary_search(cache->cbegin(), cache->cend(), stmt.mName.c_str())) {
+                    bool hasCache = (cache != nullptr);
+                    if (!hasCache || /*&&*/ find(cache->cbegin(), cache->cend(), stmt.mName.c_str()) != cache->cend()) {
                         if (Functions::findVariable(var.mName, scope) != nullptr){
                             throw runtime_error("variable '" + var.mName + "' is already defined"); 
                         }
                         if (hasCache) scope.varCache->emplace_back(var.mName.c_str());
                     }
 
-                    Object* obj;
-                    if (var.mStatements.size() == 0) {obj = Object::getDefault(var.mType.mName);} // return default value for type
-                    else {obj = Object::checkAll(var.mType.mName, evaluateStatement(var.mStatements[0], scope));};
-                    scope.varTab[var.mName] = obj;
+                    if (var.mStatements.size() == 0) {scope.varTab[var.mName] = Object::getDefault(var.mType.mName);} // return default value for type
+                    else {scope.varTab[var.mName] = Object::checkAll(var.mType.mName, evaluateStatement(var.mStatements[0], scope));};
                 }
-                return nullptr;
                 break;
             }
             case StatementKind::INCREMENTATION: {

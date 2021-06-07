@@ -200,7 +200,7 @@ namespace parser {
     bool Parser::isDeclaration() {
         vector<Token>::iterator startToken;
         startToken = mCurrentToken;
-        while (!expectOperator(",").has_value()) {
+        while (!expectOperator(";").has_value()) {
             if(expectOperator(")").has_value()) {mCurrentToken = startToken; return false;}
             ++mCurrentToken;
         }
@@ -540,7 +540,7 @@ namespace parser {
             if(expectOperator(";").has_value()) break;
             if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate declarations in line ") + to_string(mCurrentToken->mLine));
         }
-        mCurrentToken--;
+        --mCurrentToken;
         return statement;
     }
 
@@ -844,7 +844,7 @@ namespace parser {
         if(!parameter.has_value()) {
             mCurrentToken = startToken;
             if(!isDeclaration()){
-                parameter = expectExpressionFunc ();
+                parameter = expectExpressionFunc();
             }
             if(!parameter.has_value()) {
                 mCurrentToken = startToken;

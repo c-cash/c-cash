@@ -1,21 +1,23 @@
 include("time");
 
 func main() {
+
     long tOne = nanotime();
 
-    int i;
-
-    loop(int j=0; j<3; j+=1) {
-        i = 0;
-    }
-
+    int a = (2 + 2) * 2;
+    write(a, "\n");
+|
+    int i=0;
     loop(1000000){
-        if(2 == 2){
+        #if(2 == 2){
             int a, b, c, d, e;
-        }
+        #}
     }
 
     long tTwo = nanotime();
     long res = tTwo - tOne;
     write(res / 1000000000.0, " s\n");
+|
 }
+
+#Błąd operacji matematycznych interperter

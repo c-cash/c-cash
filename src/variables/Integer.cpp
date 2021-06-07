@@ -8,6 +8,8 @@
 #include <cmath>
 #include <map>
 
+#include <memory>
+
 namespace variable {
     using namespace std;
 
