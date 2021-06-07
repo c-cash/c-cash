@@ -72,7 +72,7 @@ namespace parser {
                 {"-", OperatorEntry{"-", 1}}, 
                 {"*", OperatorEntry{"*", 10}}, 
                 {"/", OperatorEntry{"/", 10}},
-                {"%", OperatorEntry{"%", 10}} 
+                {"%", OperatorEntry{"%", 10}}, 
             };
 
             map<string, OperatorEntry> sLogics {
