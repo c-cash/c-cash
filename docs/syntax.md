@@ -58,6 +58,12 @@ func main() {
     int b = 2, c = 3;
 }
 ```
+You can also use the digit separator if you like.
+```clike
+func main() {
+    int a = 1_000_000;
+}
+```
 ## Math
 You can use math expressions in many places. Currently supported operators are:
 - `+` - add

@@ -183,6 +183,11 @@ namespace parser {
                         currentToken.mText.append(1, currCh);
                     }
                     break;
+                case '_':
+                    if(currentToken.mType != INTEGER_LITERAL && currentToken.mType != DOUBLE_LITERAL) {
+                        currentToken.mText.append(1, currCh);
+                    }
+                    break;
                 case ' ':
                 case '\t':
                     if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){

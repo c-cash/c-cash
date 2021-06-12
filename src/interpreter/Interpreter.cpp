@@ -180,5 +180,10 @@ namespace interpreter{
             if (args.size() != 1) throw runtime_error("'typeof' function takes exactly one argument");
             return new String(args[0]->getType());
         });
+        // system function
+        addBuiltin("system", [](vector<Object*> &args)->Object*{
+            if (args.size() != 1) throw runtime_error("'system' function takes exactly one argument");
+            return new Integer(system(args[0]->getValueString().c_str()));
+        });
     }
 }

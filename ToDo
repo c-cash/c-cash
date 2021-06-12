@@ -16,7 +16,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 
 -----------------------0.1.0-----------------------
 
-1. Parametry w funkcji                  r               (done)
+1. Parametry w funkcji                                 (done)
 2. Return w funkcji                                    (done)
 3. Loop                                                (done)
 4. Składnia                                            (done)
@@ -55,8 +55,8 @@ ___________WYDANIE NOWEJ WERSJI______________
 
 1. obsługa liczb ujemnych, operator - (infuś & antis)                          (done)
 2. deklaracja wielu zmiennych w jednej linii (infuś)                           (done)
-3. includowanie plików (olix)
-4. funkcja system() (olix)
+3. includowanie plików (olix)                                                  (done)
+4. funkcja system() (olix)                                                     (done)
 5. libki: (infuś, antis, olix)
     - liczby losowe <random>                                                   (done)
     - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>    (done)
@@ -66,17 +66,18 @@ ___________WYDANIE NOWEJ WERSJI______________
     - czas                                                                     (done)
     - regex                                                                    (done)
 6. try i catch i throw (antis, infuś, olix)
-7. char jako znak (antis, infuś, olix)
+7. char jako znak (antis, infuś, olix)  
 8. true oraz false (olix, antis, infuś)                                        (done)
 9. kolejność działań z ) i ( (infuś, antis)
-10. negacja (antis, infuś)
+10. negacja (antis, infuś, olix)
 11. numery linii w errorach w interpreterze (antis, infuś, olix)
 12. komunikat o braku plików wejściowych dla interpretera (infuś, antis)       (done)
 13. naprawa tablic (olix)                                                      (done)
 14. przypisywanie do tablic funkcji i zmiennych
-15. optymalizacja (antis, olix)
+15. optymalizacja (antis, olix)                                                 
 16. typ long (olix)                                                            (done)
-17. przyśpieszona inkrementacja (antis)
+17. przyśpieszona inkrementacja (antis)                                        (done)
+18. _ jako separator w liczbach                                                (done)
 
 
 -------odległe wersje byle żeby nie zapomnieć(to wszystko na wercję 1.0.0)----------
