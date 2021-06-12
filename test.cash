@@ -4,7 +4,7 @@ func main() {
 
     long tOne = nanotime();
 
-    int a = (2 + 2) * 2;
+    int a = 10_000_000;
     write(a, "\n");
 |
     int i=0;
