@@ -20,6 +20,6 @@ int main(){
         allCode += line;
     }
 
-    if(allCode == "251.2145.2") return 0; 
+    if(allCode == "251.21410000005.2") return 0; 
     return 1;
 }

@@ -1,10 +1,13 @@
 #include "Functions.hpp"
 #include "Interpreter.hpp"
+#include "../parser/Parser.hpp"
+#include "../parser/Tokenizer.hpp"
 #include "../variables/Object.hpp"
 
 #include <stdexcept>
 #include <algorithm>
 #include <string>
+#include <fstream>
 
 #include "../variables/Double.hpp"
 #include "../variables/Integer.hpp"
@@ -274,6 +277,35 @@ namespace interpreter {
                     throw runtime_error("invalid arguments for include");
                     // include globally
                     string name = s.mStatements[0].mName;
+
+                    // if this is a .cash file
+                    if (name.substr(name.size()-5, name.size()) == ".cash") {
+                        //Read file
+                        ifstream file(name);
+                        string line, allCode="";
+                        bool isParsed = false, isFirst = true;
+                        while (getline(file, line)){
+                            if (isFirst && line == "#!/parsed") {
+                                isParsed = true;
+                                break;
+                            }
+                            allCode += line + '\n';
+                            isFirst = false;
+                        }
+                        //Tokenize
+                        parser::Tokenaizer tokenizer;
+                        parser::Parser parser;
+                        vector<Token> tokens = tokenizer.parse(allCode);
+                        //Parse
+                        parser.parse(tokens);
+                        for (pair<string, parser::FunctionDefinition> d : parser.mFunction) {
+                            if (d.first != "*" && Interpreter::definitions.find(d.first) != Interpreter::definitions.end()) throw runtime_error("refefinition of function '" + d.first + "' in file '" + name + "'");
+                            else if (d.first != "*") Interpreter::definitions[d.first] = d.second;
+                            else Functions::includeLibrary(d.second, *Interpreter::includes);
+                        }
+                        return;
+                    }
+
                     if (library::libraries.find(name) == library::libraries.end()) throw runtime_error("cannot find library '" + name + "'");
                     library::libraries[name]()->linkGlobally(*Interpreter::includes);
             } else if (s.mName == "nsinclude") {
@@ -405,6 +437,8 @@ namespace interpreter {
     }
 
     void Scope::reset() {
+        for (auto &o : this->varTab) delete o.second;
+        for (auto &o : this->namespaces) delete o.second;
         this->varTab.clear();
         this->functions.clear();
         this->namespaces.clear();

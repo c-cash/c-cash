@@ -4,7 +4,8 @@ func main() {
     double c = 1.2;
     int d = 1.5;
     int e = 2 + 2;
-    double f = c + e;
+    int f = 1_000_000;
+    double g = c + e;
 
-    write(a, b, c, d, e, f);
+    write(a, b, c, d, e, f, g);
 }

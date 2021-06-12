@@ -3,6 +3,9 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <chrono>
+
+#include <sys/resource.h>
 
 #include "src/parser/Tokenizer.hpp"
 #include "src/parser/Parser.hpp"
@@ -16,9 +19,20 @@ using namespace interpreter;
 using namespace parsesaver;
 using namespace transpiler;
 
-int main (int argc, char **argv) {
-    if(argc == 0){throw runtime_error("arguments must be given, type -H to get help..."); return 0;}
+long long getNanotime() {
+    return (unsigned long long) std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
+struct timetracker {
+    unsigned long long temptime;
+    unsigned long long tokenizationtime;
+    unsigned long long parsetime;
+    unsigned long long executiontime;
+};
+
+int main (int argc, char **argv) {
+    if(argc == 0){throw runtime_error("arguments must be given, type -H to get help..."); return 1;}
+    
     try{
 
         vector<string> args(argv, argv + argc);
@@ -40,8 +54,7 @@ int main (int argc, char **argv) {
 
         ifstream file(args[1]);
         string line, allCode="";
-        bool isParsed = false;
-        bool isFirst = true;
+        bool isParsed = false, isFirst = true;
         while (getline(file, line)){
             if (isFirst && line == "#!/parsed") {
                 isParsed = true;
@@ -54,23 +67,27 @@ int main (int argc, char **argv) {
         Parser parser;
         Tokenaizer tokenaizer;
         vector<Token> tokens;
+        bool isDebug = find(begin(args), end(args), "-D") != end(args);
+
+        struct timetracker* timer = isDebug ? new struct timetracker() : nullptr;
         
         if (isParsed) {
             ParseSaver saver;
             parser.mFunction = saver.load(args[1]);
         } else {
+            if (isDebug) timer->temptime = getNanotime();
             tokens = tokenaizer.parse(allCode);
-
-            //If debug mode
-            vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
-            if (debugIterator != end(args)) {
+            if (isDebug) timer->tokenizationtime = getNanotime() - timer->temptime;
+            if (isDebug) {
                 // there is -D in argv
                 for (Token &t : tokens) {
                     t.DebugPrint();
                 }
             }
 
+            if (isDebug) timer->temptime = getNanotime();
             parser.parse(tokens);
+            if (isDebug) timer->parsetime = getNanotime() - timer->temptime;
         }
         // debug print
         vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
@@ -111,8 +128,27 @@ int main (int argc, char **argv) {
                 t.transpile(args[index+1]+".cpp", functions);
             } else {
                 Interpreter::addDefaultBuiltins();
+                if (isDebug) timer->temptime = getNanotime();
                 Interpreter::interpret(functions);
+                if (isDebug) timer->executiontime = getNanotime() - timer->temptime;
             }
+        }
+
+        // measure memory usage
+        if(isDebug){
+            int who = RUSAGE_SELF;
+            struct rusage usage;
+            getrusage(who, &usage);
+            long memusage = usage.ru_maxrss;
+
+            unsigned long long totaltime = timer->tokenizationtime + timer->parsetime + timer->executiontime;
+
+            cout << "---< STATISTICS >---\n";
+            cout << "TOKENIZATION TIME: " << timer->tokenizationtime/1000000.f << "ms (" << timer->tokenizationtime/1000000000.f << "s)\n";
+            cout << "PARSE TIME: " << timer->parsetime/1000000.f << "ms (" << timer->parsetime/1000000000.f << "s)\n";
+            cout << "EXECUTION TIME: " << timer->executiontime/1000000.f << "ms (" << timer->executiontime/1000000000.f << "s)\n";
+            cout << "TOTAL TIME: " << totaltime/1000000.f << "ms (" << totaltime/1000000000.f << "s)\n";
+            cout << "\nMEMORY USAGE: " << memusage << "Kb (" << memusage/1024.f << "Mb)\n";
         }
     } catch(exception& err) {
         cerr << "Error " << err.what() << endl; 
