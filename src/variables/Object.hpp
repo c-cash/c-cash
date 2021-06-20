@@ -11,7 +11,6 @@ namespace variable {
     class Object {
         public:
             Object();
-            ~Object() {};
             virtual Object* add (Object* other) = 0;
             virtual Object* subtract (Object* other) = 0;
             virtual Object* divide (Object* other) = 0;

@@ -38,7 +38,7 @@ namespace parser {
                         if(possibleVaribleName.has_value()){
                             param.mName = possibleVaribleName->mText;
                         }
-                        func.mParameters.push_back(param);
+                        func.mParameters.emplace_back(param);
 
                         if(expectOperator(")").has_value()) break;
                         if(!expectOperator(",").has_value()) {
@@ -87,7 +87,7 @@ namespace parser {
         mFunction[includes.mName] = includes;
     }
 
-    //Set typess
+    //Set types
 	Parser::Parser() {
 		mTypes["func"] = Type("func", FUNC);
         mTypes["int"] = Type("signed int", INT32);
@@ -216,10 +216,11 @@ namespace parser {
         Statement statement;
         statement.mKind = StatementKind::ARRAY;
         statement.mType.mName = "arr";
+        statement.mLine = mCurrentToken->mLine;
         
         while (!expectOperator("]").has_value()) {
             optional<Statement> stmt = expectExpressionFunc();
-            statement.mStatements.push_back(stmt.value());
+            statement.mStatements.emplace_back(stmt.value());
             if(expectOperator("]").has_value()) { break; }
             if(!expectOperator(",").has_value()) { throw runtime_error(string("Expected ',' to separate values in array in line ") + to_string(mCurrentToken->mLine)); }
             
@@ -236,9 +237,9 @@ namespace parser {
         
         while (!expectOperator("}").has_value()){
             specialStatement = false;
-            if(mCurrentToken->mText == "if" || mCurrentToken->mText == "elif" || mCurrentToken->mText == "else" || mCurrentToken->mText == "loop") { specialStatement = true; }
+            if(mCurrentToken->mText == "if" || mCurrentToken->mText == "elif" || mCurrentToken->mText == "else" || mCurrentToken->mText == "loop" || mCurrentToken->mText == "try" || mCurrentToken->mText == "catch") { specialStatement = true; }
             optional<Statement> statement = expectStatement();
-            if(statement.has_value()) { statements.push_back(statement.value()); }
+            if(statement.has_value()) { statements.emplace_back(statement.value()); }
 
             if(specialStatement == false) {
                 //Check ';' char at the end of line 
@@ -261,6 +262,7 @@ namespace parser {
             doubleLiteralStatement.mKind = StatementKind::LITERAL;
             doubleLiteralStatement.mName = mCurrentToken->mText;
             doubleLiteralStatement.mType =  Type("double", DOUBLE);
+            doubleLiteralStatement.mLine = mCurrentToken->mLine;
             result = doubleLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == INTEGER_LITERAL){
@@ -268,6 +270,7 @@ namespace parser {
             integerLiteralStatement.mKind = StatementKind::LITERAL;
             integerLiteralStatement.mName = mCurrentToken->mText;
             integerLiteralStatement.mType =  Type("signed int", INT32);
+            integerLiteralStatement.mLine = mCurrentToken->mLine;
             result = integerLiteralStatement;
             ++mCurrentToken;
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == STRING_LITERAL){
@@ -275,6 +278,7 @@ namespace parser {
             stringLiteralStatement.mKind = StatementKind::LITERAL;
             stringLiteralStatement.mName = mCurrentToken->mText;
             stringLiteralStatement.mType =  Type("string", UINT8);
+            stringLiteralStatement.mLine = mCurrentToken->mLine;
             result = stringLiteralStatement;
             ++mCurrentToken; 
         } else if (expectOperator("(").has_value()) {
@@ -335,11 +339,19 @@ namespace parser {
                 variableCallStatement.mKind = StatementKind::VARIABLE_CALL;
                 variableCallStatement.mName = mCurrentToken->mText;
                 variableCallStatement.mType =  Type("string", UINT8);
+                variableCallStatement.mLine = mCurrentToken->mLine;
                 result = variableCallStatement;
                 ++mCurrentToken; 
             }
         } else if (expectOperator("(").has_value()) {
-            result = expectExpression();
+            Statement brackets;
+            brackets.mKind = StatementKind::OPERATOR_CALL;
+            brackets.mName = "()";
+            brackets.mType =  Type("func", FUNC);
+            brackets.mStatements.push_back(expectExpressionFunc().value());
+            brackets.mLine = mCurrentToken->mLine;
+            result = brackets;
+
             if (!expectOperator(")").has_value()) {
                 throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
             }
@@ -352,7 +364,7 @@ namespace parser {
                 result = expectFunctionCall(); 
             } 
         }
-
+        result->mLine = mCurrentToken->mLine;
         return result;
     }
 
@@ -361,6 +373,7 @@ namespace parser {
         Statement statementVar;
 
         statementVar.mKind = StatementKind::VARIABLE_CALL;
+        statementVar.mLine = mCurrentToken->mLine;
 
         optional<Token> possibleVaribleName = expectIdentifier();
         statementVar.mName = possibleVaribleName->mText;
@@ -372,21 +385,22 @@ namespace parser {
                 throw runtime_error(string("Expected value to right of '=' in variable call in line ") + to_string(mCurrentToken->mLine));
             }
 
-            statementVar.mStatements.push_back(initialValue.value());
+            statementVar.mStatements.emplace_back(initialValue.value());
         } else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value() || expectAssignmentOperator("%=").has_value()) {
             Statement operatorStatement;
             char opt = mCurrentToken->mText[0];
             operatorStatement.mName =  opt;
             operatorStatement.mKind = StatementKind::OPERATOR_CALL;
+            operatorStatement.mLine = mCurrentToken->mLine;
             ++mCurrentToken;
             optional<Statement> initialValue = expectExpressionFunc();
             if(!initialValue.has_value()) {
                 throw runtime_error(string("Expected value to right of '=' in variable call in line ") + to_string(mCurrentToken->mLine));
             }
-            operatorStatement.mStatements.push_back(statementVar);
-            operatorStatement.mStatements.push_back(initialValue.value());
+            operatorStatement.mStatements.emplace_back(statementVar);
+            operatorStatement.mStatements.emplace_back(initialValue.value());
 
-            statementVar.mStatements.push_back(operatorStatement);
+            statementVar.mStatements.emplace_back(operatorStatement);
         } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
             char opt = mCurrentToken->mText[0];
             if(opt == '+' ) statementVar.mKind = StatementKind::INCREMENTATION;
@@ -396,7 +410,7 @@ namespace parser {
             optional<Statement> initialValue = expectExpressionFunc();
             
             if(!initialValue.has_value()) {
-               // statementVar.mStatements.push_back(statementVar);
+               // statementVar.mStatements.emplace_back(statementVar);
             } else {
                 throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
             }
@@ -405,12 +419,12 @@ namespace parser {
 
             optional<Statement> varcall = expectVariableCall();
             if (varcall.has_value()) { // this is variable call :D
-                statementVar.mStatements.push_back(varcall.value());
+                statementVar.mStatements.emplace_back(varcall.value());
             } else {
                 mCurrentToken = startToken;
                 optional<Statement> funccall = expectFunctionCall();
                 if (funccall.has_value()) { // this is function call
-                    statementVar.mStatements.push_back(funccall.value());
+                    statementVar.mStatements.emplace_back(funccall.value());
                 } else {
                     throw runtime_error(string("Expected variable or function call after '.' in line ") + to_string(mCurrentToken->mLine));
                 }
@@ -419,12 +433,13 @@ namespace parser {
             vector<Token>::iterator startToken = mCurrentToken;
 
             statementVar.mKind = StatementKind::ARRAY_ELEMENT;
-            statementVar.mStatements.push_back(expectExpressionFunc().value());
+            statementVar.mStatements.emplace_back(expectExpressionFunc().value());
             if(!expectOperator("]").has_value())  throw runtime_error(string("You have to close square bracket in line ") + to_string(mCurrentToken->mLine));
             if(expectOperator("=").has_value()){
-                statementVar.mStatements.push_back(expectExpressionFunc().value());
+                statementVar.mStatements.emplace_back(expectExpressionFunc().value());
             }  else if(expectAssignmentOperator("+=").has_value() || expectAssignmentOperator("-=").has_value() || expectAssignmentOperator("*=").has_value() || expectAssignmentOperator("/=").has_value() || expectAssignmentOperator("%=").has_value()) {
                 Statement operatorStatement;
+                operatorStatement.mLine = mCurrentToken->mLine;
                 char opt = mCurrentToken->mText[0];
                 operatorStatement.mName =  opt;
                 operatorStatement.mKind = StatementKind::OPERATOR_CALL;
@@ -438,14 +453,17 @@ namespace parser {
                 arrName.mName = array.mName;
                 arrName.mKind = StatementKind::ARRAY_CALL;
                 arrName.mType.mName = "func";
+                arrName.mLine = mCurrentToken->mLine;
                 array.mName = "";
-                array.mStatements.push_back(arrName);
-                operatorStatement.mStatements.push_back(array);
-                operatorStatement.mStatements.push_back(initialValue.value());
+                array.mLine = mCurrentToken->mLine;
+                array.mStatements.emplace_back(arrName);
+                operatorStatement.mStatements.emplace_back(array);
+                operatorStatement.mStatements.emplace_back(initialValue.value());
 
-                statementVar.mStatements.push_back(operatorStatement);
+                statementVar.mStatements.emplace_back(operatorStatement);
             } else if(expectIncDecOperator("++").has_value() || expectIncDecOperator("--").has_value()) {
                 Statement operatorStatement;
+                operatorStatement.mLine = mCurrentToken->mLine;
                 char opt = mCurrentToken->mText[0];
                 
                 if(opt == '+') statementVar.mKind = StatementKind::INCREMENTATION;
@@ -456,17 +474,20 @@ namespace parser {
                 one.mName = "1";
                 one.mKind = StatementKind::LITERAL;
                 one.mType =  Type("signed int", INT32);
+                one.mLine = mCurrentToken->mLine;
                 if(!initialValue.has_value()) {
                     Statement array = statementVar;
                     Statement arrName;
                     arrName.mName = array.mName;
                     arrName.mKind = StatementKind::ARRAY_CALL;
                     arrName.mType.mName = "func";
+                    arrName.mLine = mCurrentToken->mLine;
                     array.mName = "";
-                    array.mStatements.push_back(arrName);
-                    operatorStatement.mStatements.push_back(array);
-                    operatorStatement.mStatements.push_back(one);
-                    statementVar.mStatements.push_back(operatorStatement);
+                    array.mStatements.emplace_back(arrName);
+                    array.mLine = mCurrentToken->mLine;
+                    operatorStatement.mStatements.emplace_back(array);
+                    operatorStatement.mStatements.emplace_back(one);
+                    statementVar.mStatements.emplace_back(operatorStatement);
                 } else {
                     throw runtime_error(string("You can't make operations after incrementarion/decrementation in line ") + to_string(mCurrentToken->mLine));
                 }
@@ -478,10 +499,12 @@ namespace parser {
                 s.mKind = StatementKind::ARRAY_CALL;
                 s.mType.mName = "func";
                 s.mName = possibleVaribleName->mText;
-                statementVar.mStatements.push_back(s);
+                s.mLine = mCurrentToken->mLine;
+                statementVar.mStatements.emplace_back(s);
             }
        }
 
+        statementVar.mLine = mCurrentToken->mLine;
         return statementVar;
     }
 
@@ -499,14 +522,17 @@ namespace parser {
                 //Run table init function
                 statement.mKind = StatementKind::MULTIPLE_ARRAY_DECLARATION;
                 statement.mType = possibleType.value();
+                statement.mLine = mCurrentToken->mLine;
             } else {
                 statement.mKind = StatementKind::MULTIPLE_VARIABLE_DECLARATION;
                 statement.mType = possibleType.value();
+                statement.mLine = mCurrentToken->mLine;
             }
         }
 
         while (!expectOperator(";").has_value()) {
             Statement var;
+            var.mLine = mCurrentToken->mLine;
             optional<Token> possibleVaribleName = expectIdentifier();
             if(statement.mKind == StatementKind::MULTIPLE_ARRAY_DECLARATION) {
                 var.mKind = StatementKind::ARRAY_DECLARATION;
@@ -523,9 +549,9 @@ namespace parser {
                         if(!initialValue.has_value()) {
                             throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
                         }
-                        var.mStatements.push_back(initialValue.value());
+                        var.mStatements.emplace_back(initialValue.value());
                     } else {
-                        var.mStatements.push_back(check.value());
+                        var.mStatements.emplace_back(check.value());
                     }
                 } else {
                     optional<Statement> initialValue = expectExpressionFunc();
@@ -533,14 +559,15 @@ namespace parser {
                         throw runtime_error(string("Expected initial value to right of '=' in variable declaration in line ") + to_string(mCurrentToken->mLine));
                     }
 
-                    var.mStatements.push_back(initialValue.value());
+                    var.mStatements.emplace_back(initialValue.value());
                 }
             }
-            statement.mStatements.push_back(var);
+            statement.mStatements.emplace_back(var);
             if(expectOperator(";").has_value()) break;
             if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate declarations in line ") + to_string(mCurrentToken->mLine));
         }
         --mCurrentToken;
+        statement.mLine = mCurrentToken->mLine;
         return statement;
     }
 
@@ -563,6 +590,7 @@ namespace parser {
         Statement functionCall;
         functionCall.mKind = StatementKind::FUNCTION_CALL;
         functionCall.mName = possibleFunctionName->mText;
+        functionCall.mLine = mCurrentToken->mLine;
 
         while (!expectOperator(")").has_value()){
             startToken  = mCurrentToken;
@@ -577,23 +605,26 @@ namespace parser {
                         if(mCurrentToken->mText == "and"){
                             ++mCurrentToken;
                             Statement andStatement;
-                            andStatement.mStatements.push_back(parameter.value());
+                            andStatement.mStatements.emplace_back(parameter.value());
                             andStatement.mName = "and";
                             andStatement.mKind = StatementKind::LOGIC_CALL;
-                            andStatement.mStatements.push_back(expectLogicExpression().value());
+                            andStatement.mLine = mCurrentToken->mLine;
+                            andStatement.mStatements.emplace_back(expectLogicExpression().value());
 
                             parameter = andStatement;
                         } else if(mCurrentToken->mText == "or"){
                             ++mCurrentToken;
                             Statement orStatement;
-                            orStatement.mStatements.push_back(parameter.value());
-                            orStatement.mStatements.push_back(expectLogicExpression().value());
                             orStatement.mName = "or";
+                            orStatement.mKind = StatementKind::LOGIC_CALL;
+                            orStatement.mLine = mCurrentToken->mLine;
+                            orStatement.mStatements.emplace_back(parameter.value());
+                            orStatement.mStatements.emplace_back(expectLogicExpression().value());
                             parameter = orStatement;
                         }
 
                         if(expectOperator(")").has_value()) {
-                            functionCall.mStatements.push_back(parameter.value());
+                            functionCall.mStatements.emplace_back(parameter.value());
                             return functionCall;
                         }
                         if(expectOperator(",").has_value()) {
@@ -612,7 +643,7 @@ namespace parser {
             if(!parameter.has_value()) {
                 throw runtime_error("Expected expression as parameter.");
             }
-            functionCall.mStatements.push_back(parameter.value());
+            functionCall.mStatements.emplace_back(parameter.value());
             if(expectOperator(")").has_value()) break;
             if(!expectOperator(",").has_value()) throw runtime_error(string("Expected ',' to separate parameter in line ") + to_string(mCurrentToken->mLine));
         }
@@ -628,6 +659,8 @@ namespace parser {
             result = parseIfStatement();
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "loop")) {
             result = parseLoopStatement();
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "try")) {
+            result = parseTryStatement();
         } else {
             result = expectExpression();
 
@@ -655,15 +688,17 @@ namespace parser {
         Statement namespaceAlias;
 		namespaceAlias.mKind = StatementKind::NAMESPACE;
 		namespaceAlias.mName = mCurrentToken->mText;
+        namespaceAlias.mLine = mCurrentToken->mLine;
         mCurrentToken++;
         mCurrentToken++;
-		namespaceAlias.mStatements.push_back(expectFunctionCall().value());
+		namespaceAlias.mStatements.emplace_back(expectFunctionCall().value());
         return namespaceAlias;
     }
 
     //Check expression    
     optional<Statement> Parser::expectExpression() {
         optional<Statement> lhs = expectOneValue();
+        lhs->mLine = mCurrentToken->mLine;
 		if(!lhs.has_value()) { return nullopt; }
 
         while (true){
@@ -681,19 +716,20 @@ namespace parser {
             }
 
 			Statement * rightmostStatement = findRightmostStatement(&lhs.value(), rhsPrecedence);
+            Statement operationCall;
             if(rightmostStatement) {
-				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
-				operationCall.mStatements.push_back(rhs.value());
+				operationCall.mStatements.emplace_back(rightmostStatement->mStatements.at(1));
+				operationCall.mStatements.emplace_back(rhs.value());
+                operationCall.mLine = mCurrentToken->mLine;
 				rightmostStatement->mStatements[1] = operationCall;
             } else {
-				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mStatements.push_back(lhs.value());
-				operationCall.mStatements.push_back(rhs.value());
+				operationCall.mStatements.emplace_back(lhs.value());
+				operationCall.mStatements.emplace_back(rhs.value());
+                operationCall.mLine = mCurrentToken->mLine;
 				lhs = operationCall;
 			}
 		}
@@ -704,6 +740,7 @@ namespace parser {
     //Check expresion on func functions 
     optional<Statement> Parser::expectExpressionFunc() {
         optional<Statement> lhs = expectOneValueFunc();
+        lhs->mLine = mCurrentToken->mLine;
 		if(!lhs.has_value()) { 
             return expectArrayDeclaration();
         }
@@ -716,28 +753,30 @@ namespace parser {
                 --mCurrentToken;
                 return lhs;
             }
-            optional<Statement> rhs = expectOneValueFunc();
 
+            optional<Statement> rhs = expectOneValueFunc();
             if(!rhs.has_value()) {
                 --mCurrentToken;
                 return lhs;
-            }
+            } 
 
-			Statement * rightmostStatement = findRightmostStatement(&lhs.value(), rhsPrecedence);
-            
+            Statement * rightmostStatement = findRightmostStatement(&lhs.value(), rhsPrecedence); //nullptr
+
             if(rightmostStatement) {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mStatements.push_back(rightmostStatement->mStatements.at(1));
-				operationCall.mStatements.push_back(rhs.value());
+				operationCall.mStatements.emplace_back(rightmostStatement->mStatements.at(1));
+				operationCall.mStatements.emplace_back(rhs.value());
+                operationCall.mLine = mCurrentToken->mLine;
 				rightmostStatement->mStatements[1] = operationCall;
             } else {
 				Statement operationCall;
 				operationCall.mKind = StatementKind::OPERATOR_CALL;
 				operationCall.mName = op->mText;
-				operationCall.mStatements.push_back(lhs.value());
-				operationCall.mStatements.push_back(rhs.value());
+				operationCall.mStatements.emplace_back(lhs.value());
+				operationCall.mStatements.emplace_back(rhs.value());
+                operationCall.mLine = mCurrentToken->mLine;
 				lhs = operationCall;
 			}
 		}
@@ -746,6 +785,7 @@ namespace parser {
 
     //Find right statement
     Statement * Parser::findRightmostStatement(Statement *lhs, size_t rhsPrecedence) {
+        //if(mCurrentToken->mText == ")") { return nullptr; }
 		if(lhs->mKind != StatementKind::OPERATOR_CALL) { return nullptr; }
 		if(operatorPrecedence(lhs->mName) >= rhsPrecedence) { return nullptr; }
         
@@ -786,22 +826,23 @@ namespace parser {
                 if(mCurrentToken->mText == "and"){
                     ++mCurrentToken;
                     Statement andStatement;
-                    andStatement.mStatements.push_back(back_parameter.value());
+                    andStatement.mStatements.emplace_back(back_parameter.value());
                     andStatement.mName = "and";
                     andStatement.mKind = StatementKind::LOGIC_CALL;
-                    andStatement.mStatements.push_back(expectLogicExpression().value());
-                    
+                    andStatement.mStatements.emplace_back(expectLogicExpression().value());
+                    andStatement.mLine = mCurrentToken->mLine;
                     back_parameter = andStatement;
                 } else if(mCurrentToken->mText == "or"){
                     ++mCurrentToken;
                     Statement orStatement;
-                    orStatement.mStatements.push_back(back_parameter.value());
-                    orStatement.mStatements.push_back(expectLogicExpression().value());
+                    orStatement.mStatements.emplace_back(back_parameter.value());
+                    orStatement.mStatements.emplace_back(expectLogicExpression().value());
                     orStatement.mName = "or";
+                    orStatement.mName = mCurrentToken->mLine;
                     back_parameter = orStatement;
                 }
             }
-            ifS.mStatements.push_back(back_parameter.value());
+            ifS.mStatements.emplace_back(back_parameter.value());
         }
 
         optional<vector<Statement>> statements = parseFunctionBody();
@@ -813,20 +854,78 @@ namespace parser {
     }
 
     optional<Statement> Parser::expectLogicExpression() {
-        optional<Statement> lhs = expectExpressionFunc();
-        if(!lhs.has_value()) { return nullopt;}
-        optional<Token> log = expectLogic();
-        if(!log.has_value()) { return nullopt; }
-        optional<Statement> rhs = expectExpressionFunc();
-        if(!rhs.has_value()) {mCurrentToken--; return nullopt;}
-
         Statement result;
-        result.mKind = StatementKind::LOGIC_CALL;
-        result.mName = log->mText;
-        result.mStatements.push_back(lhs.value());
-        result.mStatements.push_back(rhs.value());
+        optional<Statement> back_parameter; 
+        optional<Statement> lhs;
+        if (expectOperator("(").has_value()) {
 
-        return result;
+            back_parameter = expectLogicExpression();
+            if(!back_parameter.has_value()) {
+                throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine));
+            }
+
+            while (!expectOperator(")").has_value()) {
+                if(mCurrentToken->mText == "and"){
+                    ++mCurrentToken;
+                    Statement andStatement;
+                    andStatement.mStatements.emplace_back(back_parameter.value());
+                    andStatement.mName = "and";
+                    andStatement.mKind = StatementKind::LOGIC_CALL;
+                    andStatement.mStatements.emplace_back(expectLogicExpression().value());
+                    andStatement.mLine = mCurrentToken->mLine;
+                    back_parameter = andStatement;
+                } else if(mCurrentToken->mText == "or"){
+                    ++mCurrentToken;
+                    Statement orStatement;
+                    orStatement.mStatements.emplace_back(back_parameter.value());
+                    orStatement.mStatements.emplace_back(expectLogicExpression().value());
+                    orStatement.mName = "or";
+                    orStatement.mLine = mCurrentToken->mLine;
+                    back_parameter = orStatement;
+                }
+            }
+            --mCurrentToken;
+
+            Statement brackets;
+            brackets.mKind = StatementKind::LOGIC_CALL;
+            brackets.mName = "()";
+            brackets.mType =  Type("func", FUNC);
+            brackets.mLine = mCurrentToken->mLine;
+            brackets.mStatements.emplace_back(back_parameter.value());
+
+            lhs = brackets;
+            if (!expectOperator(")").has_value()) {
+                throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
+            }
+
+            result = lhs.value();
+
+            return result;
+        } else if(expectLogic("!").has_value()) {
+            Statement negation;
+            negation.mKind = StatementKind::LOGIC_CALL;
+            negation.mName = "!";
+            negation.mType =  Type("func", FUNC);
+            negation.mLine = mCurrentToken->mLine;
+            negation.mStatements.emplace_back(expectLogicExpression().value());
+            return negation;
+        } else {
+            lhs = expectExpressionFunc();
+            if(!lhs.has_value()) { return nullopt;}
+
+            optional<Token> log = expectLogic();
+            if(!log.has_value()) { return lhs; }
+
+            optional<Statement> rhs = expectExpressionFunc();
+            if(!rhs.has_value()) {mCurrentToken--; return nullopt;}
+
+            result.mKind = StatementKind::LOGIC_CALL;
+            result.mName = log->mText;
+            result.mStatements.push_back(lhs.value());
+            result.mStatements.push_back(rhs.value());
+
+            return result;
+        }
     }
 
     //Parse loops
@@ -859,7 +958,6 @@ namespace parser {
         addParametr.mType.mType = FUNC_PARAM;
         addParametr.mType.mName = "func_param";
         addParametr.mStatements.clear();
-        addParametr.mStatements.push_back(parameter.value());
 
         if(mCurrentToken->mText == ";") ++mCurrentToken;
 
@@ -867,22 +965,22 @@ namespace parser {
             if(mCurrentToken->mText == "and"){
                 ++mCurrentToken;
                 Statement andStatement;
-                andStatement.mStatements.push_back(parameter.value());
+                andStatement.mStatements.emplace_back(parameter.value());
                 andStatement.mName = "and";
                 andStatement.mKind = StatementKind::LOGIC_CALL;
-                andStatement.mStatements.push_back(expectLogicExpression().value());
+                andStatement.mStatements.emplace_back(expectLogicExpression().value());
                 andStatement.mType.mType = FUNC_PARAM;
-                
-                addParametr.mStatements.push_back(andStatement);
+                andStatement.mLine = mCurrentToken->mLine;
+                addParametr.mStatements.emplace_back(andStatement);
             } else if(mCurrentToken->mText == "or"){
                 ++mCurrentToken;
                 Statement orStatement;
-                orStatement.mStatements.push_back(parameter.value());
-                orStatement.mStatements.push_back(expectLogicExpression().value());
+                orStatement.mStatements.emplace_back(parameter.value());
+                orStatement.mStatements.emplace_back(expectLogicExpression().value());
                 orStatement.mName = "or";
                 orStatement.mType.mType = FUNC_PARAM;
-
-                addParametr.mStatements.push_back(orStatement);
+                orStatement.mLine = mCurrentToken->mLine;
+                addParametr.mStatements.emplace_back(orStatement);
             } else {
                 optional<Statement> temParam;
                 startToken = mCurrentToken;
@@ -895,32 +993,33 @@ namespace parser {
                     if(mCurrentToken->mText == "and"){
                         ++mCurrentToken;
                         Statement andStatement;
-                        andStatement.mStatements.push_back(logicParam.value());
+                        andStatement.mStatements.emplace_back(logicParam.value());
                         andStatement.mName = "and";
                         andStatement.mKind = StatementKind::LOGIC_CALL;
-                        andStatement.mStatements.push_back(expectLogicExpression().value());
-                        
+                        andStatement.mStatements.emplace_back(expectLogicExpression().value());
+                        andStatement.mLine = mCurrentToken->mLine;
                         logicParam = andStatement;
                     } else if(mCurrentToken->mText == "or"){
                         ++mCurrentToken;
                         Statement orStatement;
-                        orStatement.mStatements.push_back(logicParam.value());
-                        orStatement.mStatements.push_back(expectLogicExpression().value());
+                        orStatement.mStatements.emplace_back(logicParam.value());
+                        orStatement.mStatements.emplace_back(expectLogicExpression().value());
                         orStatement.mName = "or";
+                        orStatement.mLine = mCurrentToken->mLine;
                         logicParam = orStatement;
                     }
 
                     if(expectOperator(")").has_value()) break;
                 }
                 optional<Statement> mathParam = expectVariableCall();
-                addParametr.mStatements.push_back(logicParam.value()); addParametr.mStatements.push_back(mathParam.value());
+                addParametr.mStatements.emplace_back(logicParam.value()); addParametr.mStatements.emplace_back(mathParam.value());
 
                 ++mCurrentToken;
                 break;
             }
         }
 
-        loopS.mStatements.push_back(addParametr);
+        loopS.mStatements.emplace_back(addParametr);
 
         optional<vector<Statement>> statements = parseFunctionBody();
         if(!statements.has_value()){
@@ -928,5 +1027,57 @@ namespace parser {
         }
         loopS.mStatements.insert(loopS.mStatements.end(), statements->begin(), statements->end());
         return loopS;
+    }
+
+    optional<Statement> Parser::parseTryStatement(){
+        bool catchExist=false;
+        Statement res;
+        res.mName = "TRY";
+        res.mLine = mCurrentToken->mLine;
+        
+        //Parse try statements
+        ++mCurrentToken;
+        Statement tryCmd;
+        tryCmd.mName = "TRYCMD";
+        optional<vector<Statement>> statements = parseFunctionBody();
+        if(!statements.has_value()){
+            throw runtime_error(string("Bad expression in try statement body in line ") + to_string(mCurrentToken->mLine));
+        }
+        tryCmd.mStatements.insert(tryCmd.mStatements.end(), statements->begin(), statements->end());
+        res.mStatements.emplace_back(tryCmd);
+        //delete &tryCmd;
+        
+        //Parse catch
+        if(expectIdentifier("catch").has_value()) {
+            catchExist = true;
+            Statement catchCmd;
+            catchCmd.mName = "CATCHCMD";
+            statements = parseFunctionBody();
+            if(!statements.has_value()){
+                throw runtime_error(string("Bad expression in catch statement body in line ") + to_string(mCurrentToken->mLine));
+            }
+            catchCmd.mStatements.insert(catchCmd.mStatements.end(), statements->begin(), statements->end());
+            res.mStatements.emplace_back(catchCmd);
+            //delete &catchCmd; delete &statements;
+        }
+
+        //Parse finally
+        if(expectIdentifier("finally").has_value()) { 
+            Statement finallyCmd;
+            finallyCmd.mName = "FINALLYCMD";
+            statements = parseFunctionBody();
+            if(!statements.has_value()){
+                throw runtime_error(string("Bad expression in finally statement body in line ") + to_string(mCurrentToken->mLine));
+            }
+            finallyCmd.mStatements.insert(finallyCmd.mStatements.end(), statements->begin(), statements->end());
+            res.mStatements.emplace_back(finallyCmd);
+            //delete &catchCmd; delete &statements;
+        } else {
+            if(catchExist == false) {
+                throw runtime_error(string("Try can't exist without catch or finally - line: ") + to_string(mCurrentToken->mLine));
+            }
+        }
+
+        return res;
     }
 }

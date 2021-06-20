@@ -109,7 +109,6 @@ namespace variable {
         vector<Object*> objects;
         for (Object* o : arr->value) objects.emplace_back(Object::checkAll(expected, o));
         return new Array(objects);
-        //return nullptr;
     }
 
     Object* Array::getDefault(string type) {

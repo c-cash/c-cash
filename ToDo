@@ -60,28 +60,28 @@ ___________WYDANIE NOWEJ WERSJI______________
 5. libki: (infuś, antis, olix)
     - liczby losowe <random>                                                   (done)
     - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>    (done)
-    - konwersja zmiennych <convert>
+    - konwersja zmiennych <convert> (olix)
     - algorytmy <algorithms>
     - obsługa stringów <string>                                                (done)
     - czas                                                                     (done)
     - regex                                                                    (done)
-6. try i catch i throw (antis, infuś, olix)
-7. char jako znak (antis, infuś, olix)  
+6. try i catch i throw (antis, infuś, olix)                                    (done)
+7. char jako znak (antis, infuś, olix)                                         (done)
 8. true oraz false (olix, antis, infuś)                                        (done)
-9. kolejność działań z ) i ( (infuś, antis)
-10. negacja (antis, infuś, olix)
-11. numery linii w errorach w interpreterze (antis, infuś, olix)
+9. kolejność działań z ) i ( (infuś, antis)                                    (done)
+10. negacja (antis, infuś, olix)                                               (done)
+11. numery linii w errorach w interpreterze (antis, infuś, olix)               (done)
 12. komunikat o braku plików wejściowych dla interpretera (infuś, antis)       (done)
 13. naprawa tablic (olix)                                                      (done)
-14. przypisywanie do tablic funkcji i zmiennych
+14. przypisywanie do tablic funkcji i zmiennych (infuś)                        (done)
 15. optymalizacja (antis, olix)                                                 
 16. typ long (olix)                                                            (done)
 17. przyśpieszona inkrementacja (antis)                                        (done)
 18. _ jako separator w liczbach                                                (done)
+19. Typy unsigned w interpreterze (olix)
 
+-------odległe wersje byle żeby nie zapomnieć(to wszystko na wersję 1.0.0)----------
 
-
--------odległe wersje byle żeby nie zapomnieć(to wszystko na wercję 1.0.0)----------
 1. do loop
 2. switch
 3. typ var

@@ -5,7 +5,7 @@
 * [`replace`](#replace) - returns string with replaced part
 * [`substr`](#substr) - returns substring
 * [`split`](#split) - returns an array of strings broken down by key
-
+* [`reverse`](#reverse) - returns reversed string
 !> Use `#` instad of `//` for comments
 
 ## toLower
@@ -42,4 +42,10 @@ substr("I said Hello World!", 7, 18); // this returns "Hello World!"
 This function splits a string according to the given key
 ```clike
 split("What is the best programming language?", " "); // this returns ["What", "is", "the", "best", "programming", "language?"]
+```
+
+## reverse
+This function reverses a string
+```clike
+split("murder"); // this returns "redrum"
 ```

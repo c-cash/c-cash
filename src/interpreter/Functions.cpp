@@ -16,6 +16,7 @@
 #include "../variables/Array.hpp"
 
 #include "../libraries/LibraryRegistry.hpp"
+#include "../errors/interpreterError.hpp"
 
 namespace interpreter {
     using namespace std;
@@ -27,29 +28,32 @@ namespace interpreter {
             case '+':
                 // evaluate and add next two statements
                 return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->add(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
-                break;
             case '-':
                 // evaluate and subtract next two statements
                 return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->subtract(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
-                break;
             case '*':
                 // evaluate and multiply next two statements
                 return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->multiply(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
-                break;
             case '/':
                 // evaluate and divide next two statements
                 return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->divide(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
-                break;
             case '%':
                 // evaluate and use modulo on next two statements
                 return Interpreter::evaluateStatement(stmt.mStatements[0], scope)->modulo(Interpreter::evaluateStatement(stmt.mStatements[1], scope));
-                break;
+            case '(': 
+                //If () brackets
+                return evaluateMath(stmt.mStatements[0], scope);
             default:
                 return nullptr;
         }
     }
 
     Object* Functions::evaluateLogic(Statement &stmt, Scope &scope) {
+        if (stmt.mKind == StatementKind::VARIABLE_CALL) {
+            if (stmt.mName == "true") return new Boolean(true);
+            else if (stmt.mName == "false") return new Boolean(false);
+            throw runtime_error("logic expression needed in line " + to_string(stmt.mLine));
+        }
         if (stmt.mName == "==")
             return new Boolean(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->equal(Interpreter::evaluateStatement(stmt.mStatements[1], scope)));
         else if (stmt.mName == "<") 
@@ -67,18 +71,18 @@ namespace interpreter {
             return new Boolean((stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()) == 1) &&  (stoi(Interpreter::evaluateStatement(stmt.mStatements[1], scope)->getValueString()) == 1));
         else if (stmt.mName == "or")
             return new Boolean((stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()) == 1) ||  (stoi(Interpreter::evaluateStatement(stmt.mStatements[1], scope)->getValueString()) == 1));
-        
+        else if(stmt.mName == "()")
+            return evaluateLogic(stmt.mStatements[0], scope);
+        else if (stmt.mName == "!")
+            return new Boolean(!static_cast<Boolean*>(Interpreter::evaluateStatement(stmt.mStatements[0], scope))->value);
         return nullptr;
     }
 
     Object* Functions::specialVariable(Statement &stmt, Scope &scope) {
-        if (stmt.mName == "break") {
-            return new SpecialObject(SpecialType::BREAK, nullptr);
-        } else if (stmt.mName == "continue") {
-            return new SpecialObject(SpecialType::CONTINUE, nullptr);
-        } 
-        else if (stmt.mName == "true") return new variable::Boolean(true);
-        else if (stmt.mName == "false") return new variable::Boolean(false);
+        if (stmt.mName == "break") { return new SpecialObject(SpecialType::BREAK, nullptr);
+        } else if (stmt.mName == "continue") { return new SpecialObject(SpecialType::CONTINUE, nullptr);
+        } else if (stmt.mName == "true") { return new variable::Boolean(true); 
+        } else if (stmt.mName == "false") { return new variable::Boolean(false); }
         return nullptr;
     }
 
@@ -93,11 +97,36 @@ namespace interpreter {
             return evaluateLoop(stmt, scope);
         }
 
+        // try / catch
+        if (stmt.mName == "TRY") {
+            if (stmt.mStatements[0].mName != "TRYCMD") throw runtime_error("unexpected error(5)");
+            try {
+                for (Statement &s : stmt.mStatements[0].mStatements) Interpreter::evaluateStatement(s, scope);
+            } catch (runtime_error &err) {
+                if (stmt.mStatements.size() <= 1) throw err;
+                else if (stmt.mStatements[1].mName != "CATCHCMD") {
+                    if (stmt.mStatements[1].mName == "FINALLYCMD") {
+                        for (Statement &s : stmt.mStatements[1].mStatements) Interpreter::evaluateStatement(s, scope);
+                        throw err;
+                    }
+                    throw runtime_error("expected catch instead of " + stmt.mStatements[1].mName + " in line " + to_string(stmt.mStatements[1].mLine));
+                };
+                for (Statement &s : stmt.mStatements[1].mStatements) Interpreter::evaluateStatement(s, scope);
+            }
+            if (stmt.mStatements.size() == 2 && stmt.mStatements[1].mName == "FINALLYCMD") {
+                for (Statement &s : stmt.mStatements[1].mStatements) Interpreter::evaluateStatement(s, scope);
+            }
+            if (stmt.mStatements.size() <= 2) return nullptr;
+            else if (stmt.mStatements[2].mName != "FINALLYCMD") throw runtime_error("expected try-catch-finally or try-finally in line " + to_string(stmt.mLine));
+            else for (Statement &s : stmt.mStatements[2].mStatements) Interpreter::evaluateStatement(s, scope);
+            return nullptr;
+        }
+
         // IF / ELSE / ELIF
         if (stmt.mName == "IF") {
             scope.isPreviousIf = true;
             // check if correct
-            if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'if' must have an expression");
+            if (stmt.mStatements[0].mKind != StatementKind::VARIABLE_CALL && stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::EXPECTED_EXPRESSION, {"if"}));
             // check logic
             bool e = static_cast<Boolean*>(evaluateLogic(stmt.mStatements[0], scope))->value;
             scope.previousResult = e;
@@ -131,7 +160,7 @@ namespace interpreter {
             if (!scope.isPreviousIf || scope.previousResult) return nullptr;
             scope.isPreviousIf = true;
             // check if correct
-            if (stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error("'elif' must have an expression");
+            if (stmt.mStatements[0].mKind != StatementKind::VARIABLE_CALL && stmt.mStatements[0].mKind != StatementKind::LOGIC_CALL) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::EXPECTED_EXPRESSION, {"elif"}));
             // check logic
             bool e = static_cast<Boolean*>(evaluateLogic(stmt.mStatements[0], scope))->value;
             scope.previousResult = e;
@@ -171,7 +200,7 @@ namespace interpreter {
         // TODO: implement namespaced builtins
 
         // check if function exists and if not then throw error
-        if (Interpreter::definitions.find(stmt.mName) == Interpreter::definitions.end()) throw runtime_error("Cannot find function '" + stmt.mName + "'");
+        if (Interpreter::definitions.find(stmt.mName) == Interpreter::definitions.end()) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_FUNCTION, {stmt.mName, to_string(stmt.mLine)})/*"Cannot find function '" + stmt.mName + "'"*/);
 
         // run function
         return Interpreter::evaluateFunction(Interpreter::definitions[stmt.mName], args);
@@ -183,7 +212,7 @@ namespace interpreter {
     }
 
     Object* Functions::evaluateLoop(Statement &stmt, Scope &scope) {
-        if (stmt.mStatements[0].mKind != StatementKind::FUNCTION_CALL) throw runtime_error("Loop must have an expression");
+        if (stmt.mStatements[0].mKind != StatementKind::FUNCTION_CALL) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::EXPECTED_EXPRESSION, {"loop"}));
         Statement &params = stmt.mStatements[0];
         // LOOP WITH INTEGER
         if (params.mStatements.size() == 1 && params.mStatements[0].mKind != StatementKind::LOGIC_CALL) {
@@ -270,11 +299,11 @@ namespace interpreter {
         for (Statement &s : func.mStatements) {
             // check if it is include
             if (s.mKind != StatementKind::FUNCTION_CALL || (s.mName != "include" && s.mName != "nsinclude"))
-                throw runtime_error("you can only use 'include' outside of scope");
+                throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::OUTSIDE_SCOPE, {"include", to_string(s.mLine)}));
             
             if (s.mName == "include") {
                 if (s.mStatements.size() != 1 || s.mStatements[0].mKind != StatementKind::LITERAL || s.mStatements[0].mType.mName != "string")
-                    throw runtime_error("invalid arguments for include");
+                    throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::INVALID_ARGUMENTS, {"include", to_string(s.mLine)}));
                     // include globally
                     string name = s.mStatements[0].mName;
 
@@ -306,20 +335,20 @@ namespace interpreter {
                         return;
                     }
 
-                    if (library::libraries.find(name) == library::libraries.end()) throw runtime_error("cannot find library '" + name + "'");
+                    if (library::libraries.find(name) == library::libraries.end()) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_LIBRARY, {name, to_string(s.mLine)}));
                     library::libraries[name]()->linkGlobally(*Interpreter::includes);
             } else if (s.mName == "nsinclude") {
-                if (s.mStatements[0].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function");
+                if (s.mStatements[0].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function in line " + to_string(s.mLine));
                 string nsname;
                 string libname;
                 if (s.mStatements.size() == 1) { // library name
                     nsname = s.mStatements[0].mName;
                     libname = s.mStatements[0].mName;
                 } else if (s.mStatements.size() == 2) { // custom name
-                    if (s.mStatements[1].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function");
+                    if (s.mStatements[1].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function in line " + to_string(s.mLine));
                     nsname = s.mStatements[0].mName;
                     libname = s.mStatements[1].mName;
-                } else {throw runtime_error("invalid argument count for 'include' function");}
+                } else {throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::INVALID_ARGUMENT_COUNT_LINE, {"include", "2", to_string(s.mStatements.size()), to_string(s.mLine)}));}
                 // include this library into namespace
                 if(library::libraries.find(libname) == library::libraries.end()) throw runtime_error("cannot find library '" + libname + "'");
                 Scope* ns = new Scope(*Interpreter::includes);
@@ -334,7 +363,9 @@ namespace interpreter {
         if (stmt.mKind == StatementKind::ARRAY && (stmt.mStatements.size() == 0 || stmt.mStatements[0].mStatements.size() == 0)) scope.varTab[stmt.mName] = Array::getDefault(stmt.mType.mName);
         else if (stmt.mStatements.size() > 1) throw runtime_error("unexpected error (1)");
         else {
-            scope.varTab[stmt.mName] = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+            Object* temp = Array::checkAll(stmt.mType.mName, Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+            scope.memoryClean.emplace_back(temp);
+            scope.varTab[stmt.mName] = temp;
         }
         return nullptr;
     }
@@ -370,7 +401,7 @@ namespace interpreter {
             if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
                 // this is a function inside of object
                 Object* v = findVariable(stmt.mName, scope);
-                if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+                if (v == nullptr) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_VARIABLE, {stmt.mName, to_string(stmt.mLine)}));
                 map<string, objectF> funcs = v->getFunctions();
                 if (funcs.find(stmt.mStatements[0].mName) == funcs.end()) throw runtime_error("class " + stmt.mName + " does not have a member " + stmt.mStatements[0].mName);
                 // collect arguments
@@ -381,14 +412,16 @@ namespace interpreter {
                 return funcs[stmt.mStatements[0].mName](v, args);
             } else {
                 Object* v = findVariable(stmt.mName, scope);
-                v->assign(Object::checkAll(v->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope)));
+                Object* temp = Object::checkAll(v->getType(), Interpreter::evaluateStatement(stmt.mStatements[0], scope));
+                v->assign(temp);
+                scope.memoryClean.emplace_back(temp);
             }
             Object* v = findVariable(stmt.mName, scope);
-            if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+            if (v == nullptr) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_VARIABLE, {stmt.mName, to_string(stmt.mLine)}));
             return v;
         }
         Object* v = findVariable(stmt.mName, scope);
-        if (v == nullptr) throw runtime_error("cannot find variable '" + stmt.mName + "'");
+        if (v == nullptr) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_VARIABLE, {stmt.mName, to_string(stmt.mLine)}));
         return v;
     }
   
@@ -409,7 +442,7 @@ namespace interpreter {
     builtinF Functions::findFunction(string name, Scope &scope) {
         if (scope.nsparent != nullptr) {
             builtinF f = findFunction(name, *scope.nsparent); 
-            if (f==nullptr) {throw runtime_error("cannot find function '" + name + "'");}
+            if (f==nullptr) {throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_FUNCTION, {name}));}
             return f;
         }
         if (scope.functions.find(name) == scope.functions.end()) {
@@ -439,6 +472,8 @@ namespace interpreter {
     void Scope::reset() {
         for (auto &o : this->varTab) delete o.second;
         for (auto &o : this->namespaces) delete o.second;
+        for(auto &o : this->memoryClean) delete o;
+        this->memoryClean.clear();
         this->varTab.clear();
         this->functions.clear();
         this->namespaces.clear();
