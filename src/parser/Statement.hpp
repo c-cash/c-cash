@@ -53,7 +53,7 @@ namespace parser {
             Type mType{Type("func", FUNC)};
             vector<Statement> mStatements;
             StatementKind mKind{StatementKind::FUNCTION_CALL};
-            //unsigned int line {mCurrentToken->mLine};
+            size_t mLine {0};
 
             void DebugPrint(size_t indent);
     };

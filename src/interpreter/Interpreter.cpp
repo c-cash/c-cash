@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "../libraries/MathLibrary.hpp"
+#include "../errors/interpreterError.hpp"
 
 namespace interpreter{
     using namespace std;
@@ -27,7 +28,7 @@ namespace interpreter{
     void Interpreter::interpret(map<string, FunctionDefinition> &mFunctions) {
         definitions = mFunctions;
         // if program does not have a main function then throw an error
-        if (definitions.find("main") == definitions.end()) throw runtime_error("Program must have a 'main' function");
+        if (definitions.find("main") == definitions.end()) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_MAIN, {})/*"Program must have a 'main' function"*/);
 
         // include builtin libraries
         Functions::includeLibrary(definitions["*"], *includes);
@@ -40,7 +41,7 @@ namespace interpreter{
         Scope* fScope = new Scope(*includes); // create new scope for the function
         
         if (func.mParameters.size() != args.size())
-            throw runtime_error("Function " + func.mName + " needs exactly " + to_string(func.mParameters.size()) + " parameters but got " + to_string(args.size()));
+            throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::INVALID_ARGUMENT_COUNT, {func.mName, to_string(func.mParameters.size()), to_string(args.size())})/*"Function " + func.mName + " needs exactly " + to_string(func.mParameters.size()) + " parameters but got " + to_string(args.size())*/);
         
         // create variables from args
         for (int i=0; i<func.mParameters.size(); i++) {
@@ -50,7 +51,7 @@ namespace interpreter{
                     Array::convert(args[i]);
                 }
             } catch (exception e) {
-                throw runtime_error("argument " + d.mName + " is type of array but got " + args[i]->getType());
+                throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::EXPECTED_ARRAY, {d.mName, args[i]->getType()})/*"argument " + d.mName + " is type of array but got " + args[i]->getType()*/);
             }
             fScope->varTab[d.mName] = Object::checkAll(d.mType.mName, args[i]); // assign parameter to the variable
         }
@@ -77,13 +78,13 @@ namespace interpreter{
                     bool hasCache = (cache != nullptr);
                     if (!hasCache || /*&&*/ find(cache->cbegin(), cache->cend(), stmt.mName.c_str()) != cache->cend()) {
                         if (Functions::findVariable(var.mName, scope) != nullptr){
-                            throw runtime_error("variable '" + var.mName + "' is already defined"); 
+                            throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::VARIABLE_ALREADY_DEFINED, {var.mName, to_string(stmt.mLine)})/*"variable '" + var.mName + "' is already defined"*/); 
                         }
                         if (hasCache) scope.varCache->emplace_back(var.mName.c_str());
                     }
 
                     if (var.mStatements.size() == 0) {scope.varTab[var.mName] = Object::getDefault(var.mType.mName);} // return default value for type
-                    else {scope.varTab[var.mName] = Object::checkAll(var.mType.mName, evaluateStatement(var.mStatements[0], scope));};
+                    else {scope.varTab[var.mName] = Object::checkAll(var.mType.mName, evaluateStatement(var.mStatements[0], scope));}
                 }
                 break;
             }

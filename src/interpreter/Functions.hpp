@@ -12,18 +12,11 @@
 #include <string>
 #include <vector>
 
-
-
 namespace interpreter {
     using namespace std;
     using namespace parser;
     using namespace variable;
-/*
-    template <typename T, std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, std::string> || std::is_same_v<T, bool>, bool> = true>
-    struct findVarStruct {
-        T data;
-    };
-*/
+
     typedef variable::Object*(*builtinF)(std::vector<variable::Object*> &args);
     typedef variable::Object*(*objectF)(variable::Object* t, std::vector<variable::Object*> &args);
 
@@ -33,6 +26,7 @@ namespace interpreter {
             unordered_map<string, builtinF> functions;
             unordered_map<string, Scope*> namespaces;
             vector<const char*>* varCache {nullptr};
+            vector<variable::Object*> memoryClean;
 
             Scope* parent {nullptr};
             Scope* nsparent {nullptr};

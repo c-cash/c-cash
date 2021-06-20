@@ -1,5 +1,6 @@
+include("algorithms");
+
 func main() {
-    int b = 1;
-    int[] a = [b];
-    write(a[0]);
+    int[] a = [2, 4, 6, 10, 22, 32];
+    write(binarySearch(a, 10), "\n");
 }

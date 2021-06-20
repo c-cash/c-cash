@@ -4,7 +4,6 @@
 #include "Type.hpp"
 #include "FunctionDefinition.hpp"
 #include "Statement.hpp"
-#include "Type.hpp"
 
 #include <optional>
 #include <string>
@@ -18,13 +17,13 @@ namespace parser {
     class Parser {
         public:
             Parser();
-        
+
             void parse(vector<Token> &tokens);
             void DebugPrint() const;
             map<string, FunctionDefinition> mFunction;
-            vector<Token>::iterator mCurrentToken;
 
         private:
+            std::vector<parser::Token>::iterator mCurrentToken;
             vector<Token>::iterator mEndToken;
             map<string, Type> mTypes;
 
@@ -56,6 +55,7 @@ namespace parser {
             optional<Statement> parseLoopStatement();
             optional<vector<Statement>> parseFunctionBody();
             optional<Statement> parseIfStatement();
+            optional<Statement> parseTryStatement();
 
             size_t operatorPrecedence(const string &operatorName);
             size_t logicPrecedence(const string &operatorName);
@@ -72,18 +72,21 @@ namespace parser {
                 {"-", OperatorEntry{"-", 1}}, 
                 {"*", OperatorEntry{"*", 10}}, 
                 {"/", OperatorEntry{"/", 10}},
-                {"%", OperatorEntry{"%", 10}}, 
+                {"%", OperatorEntry{"%", 10}},
+                {"()", OperatorEntry{"()", 100}}
             };
 
             map<string, OperatorEntry> sLogics {
-                {"<", OperatorEntry{"<", 10}}, 
-                {">", OperatorEntry{">", 10}}, 
-                {"==", OperatorEntry{"==", 10}}, 
-                {"!=", OperatorEntry{"!=", 10}},
-                {"<=", OperatorEntry{"<=", 10}}, 
-                {">=", OperatorEntry{">=", 10}}, 
-                {"and", OperatorEntry{"and", 10}}, 
-                {"or", OperatorEntry{"or", 10}} 
+                {"<", OperatorEntry{"<", 1}}, 
+                {">", OperatorEntry{">", 1}}, 
+                {"==", OperatorEntry{"==", 1}}, 
+                {"!=", OperatorEntry{"!=", 1}},
+                {"<=", OperatorEntry{"<=", 1}}, 
+                {">=", OperatorEntry{">=", 1}}, 
+                {"and", OperatorEntry{"and", 1}}, 
+                {"or", OperatorEntry{"or", 1}},
+                {"()", OperatorEntry{"()", 1}},
+                {"!", OperatorEntry{"!", 1}}
             };
     };
 }

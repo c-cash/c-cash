@@ -32,6 +32,7 @@ set(VARIABLE
     src/variables/Boolean.cpp
     src/variables/SpecialObject.cpp
     src/variables/Array.cpp
+    src/variables/Char.cpp
 )
 
 set( LIBRARIES
@@ -43,6 +44,7 @@ set( LIBRARIES
     src/libraries/TimeLibrary.cpp
     src/libraries/StringLibrary.cpp
     src/libraries/RegexLibrary.cpp
+    src/libraries/AlgorithmsLibrary.cpp
 )
 
 #add execute file

@@ -2,6 +2,8 @@
 #include "StringLibrary.hpp"
 #include "../variables/Integer.hpp"
 
+#include <algorithm>
+
 namespace library {
 
     void StringLibrary::linkGlobally(Scope &s) {
@@ -67,6 +69,14 @@ namespace library {
             parts.emplace_back(new String(s.substr(b, position)));
 
             return new Array(parts);
+        };
+        // (F)reverse
+        s.functions["reverse"] = [](vector<Object*> &args) -> Object* {
+            if (args.size() != 1) throw runtime_error("reverse function takes exactly one argument");
+            string s = args[0]->getValueString();
+            
+            reverse(s.begin(), s.end());
+            return new String(s);
         };
         
     }
