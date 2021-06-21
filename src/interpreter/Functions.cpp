@@ -217,7 +217,7 @@ namespace interpreter {
         // LOOP WITH INTEGER
         if (params.mStatements.size() == 1 && params.mStatements[0].mKind != StatementKind::LOGIC_CALL) {
             // execute loop
-            int count = static_cast<Integer*>(Interpreter::evaluateStatement(params.mStatements[0], scope))->value;
+            uint count = static_cast<Integer*>(Interpreter::evaluateStatement(params.mStatements[0], scope))->getSignedValue();
             Scope* s = new Scope(scope);
             s->varCache = new vector<const char*>();
             for (int i=0; i<count; i++) {
@@ -341,6 +341,10 @@ namespace interpreter {
                 if (s.mStatements[0].mKind != StatementKind::LITERAL) throw runtime_error("you need to provide string into include function in line " + to_string(s.mLine));
                 string nsname;
                 string libname;
+                if (libname.substr(libname.size()-5, libname.size()) == ".cash") { // include from ccash file
+                    throw runtime_error("including other .cash file as namespaced library is not yet available");
+                }
+
                 if (s.mStatements.size() == 1) { // library name
                     nsname = s.mStatements[0].mName;
                     libname = s.mStatements[0].mName;

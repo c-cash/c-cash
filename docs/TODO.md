@@ -34,22 +34,25 @@
 ## Version 0.3.0
 - [x] support for Gamblerch numbers, operator
 - [x] declaration of many new ones in one line
-- [ ] include files
-- [ ] system () function
-- [ ] lib:
+- [x] include files
+- [x] system() function
+- [x] lib:
     - [x] random numbers <random>
-    - [x] opening, editing, creating, deleting files etc ...) <file>
-    - [ ] conversion of offers <conversion>
-    - [ ] algorithms <algorithms>
+    - [x] opening, editing, creating, deleting files etc... <file>
+    - [x] conversion of offers <conversion>
+    - [x] algorithms <algorithms>
     - [x] <string> support
     - [x] <time>
-- [ ] I try to catch and throw
-- [ ] char as a character
-- [ ] real and false
-- [ ] sequence of operations ) and (
-- [ ] Negation
-- [ ] line numbers in errors in the interpreter
+- [x] I try to catch and throw
+- [x] char as a character
+- [x] true and false
+- [x] sequence of operations with ) and (
+- [x] Negation
+- [x] line numbers in errors in the interpreter
 - [x] message about the lack of input files for the interpreter
-- [ ] array repair
-- [ ] assigning functions and changes to arrays
-- [x] long type   
+- [x] array repair
+- [x] assigning functions and changes to arrays
+- [x] long type  
+- [x] fastened increment
+- [x] _ as a separator in numbers
+- [x] unsigned types 

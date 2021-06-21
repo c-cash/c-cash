@@ -4,6 +4,7 @@
 #include "Object.hpp"
 #include "Integer.hpp"
 #include "String.hpp"
+#include <string>
 
 #include <iostream>
 #include <map>
@@ -20,7 +21,7 @@ namespace variable {
     Object* Char::add (Object* other) {
         string otherType = other->getType();
         if (otherType == "Char") return new Char(value + static_cast<Char*>(other)->value);
-        else if (otherType == "Integer") return new Integer(value + static_cast<Integer*>(other)->value);
+        else if (otherType == "Integer") return new Char(value + static_cast<Integer*>(other)->value);
         else if (otherType == "Long") return new Long(value + static_cast<Long*>(other)->value);
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
@@ -29,7 +30,7 @@ namespace variable {
     Object* Char::subtract (Object* other) {
         string otherType = other->getType();
         if (otherType == "Char") return new Char(value - static_cast<Char*>(other)->value);
-        else if (otherType == "Integer") return new Integer(value - static_cast<Integer*>(other)->value);
+        else if (otherType == "Integer") return new Char(value - static_cast<Integer*>(other)->value);
         else if (otherType == "Long") return new Long(value - static_cast<Long*>(other)->value);
         throw runtime_error("Cannot subtract " + this->getType() + " and " + other->getType());
     }
@@ -37,7 +38,7 @@ namespace variable {
     Object* Char::multiply (Object* other) {
         string otherType = other->getType();
         if (otherType == "Char") return new Char(value * static_cast<Char*>(other)->value);
-        else if (otherType == "Integer") return new Integer(value * static_cast<Integer*>(other)->value);
+        else if (otherType == "Integer") return new Char(value * static_cast<Integer*>(other)->value);
         else if (otherType == "Long") return new Long(value * static_cast<Long*>(other)->value);
         else if (otherType == "String") 
             return new String([&]()->string {string t=other->getValueString();string r; for (int i=0; i<value; i++) r+=t; return r;}());
@@ -47,7 +48,7 @@ namespace variable {
     Object* Char::divide (Object* other) {
         string otherType = other->getType();
         if (otherType == "Char") return new Char(value / static_cast<Char*>(other)->value);
-        else if (otherType == "Integer") return new Integer(value / static_cast<Integer*>(other)->value);
+        else if (otherType == "Integer") return new Char(value / static_cast<Integer*>(other)->value);
         else if (otherType == "Long") return new Long(value / static_cast<Long*>(other)->value);
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
     }
@@ -55,7 +56,7 @@ namespace variable {
     Object* Char::modulo (Object* other) {
         string otherType = other->getType();
         if (otherType == "Char") return new Char(value % static_cast<Char*>(other)->value);
-        else if (otherType == "Integer") return new Integer(value % static_cast<Integer*>(other)->value);
+        else if (otherType == "Integer") return new Char(value % static_cast<Integer*>(other)->value);
         else if (otherType == "Long") return new Long(value % static_cast<Long*>(other)->value);
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
@@ -113,7 +114,7 @@ namespace variable {
         this->value = v;
     }
 
-    string Char::toString() {return to_string(value); }
+    string Char::toString() { string s; s+=value; return s; }
     string Char::getValueString() {return to_string((int) value);}
 
     string Char::getType() {return "Char";}

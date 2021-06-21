@@ -25,6 +25,8 @@ Variables can hold only specified type of data:
 - `char` - one character
 - `uchar` - unsigned character
 - `double` - decimal number
+- `long` - long number
+- `ulong` - unsigned long number
 - `string` - text
 - `bool` - true/false
 
@@ -36,7 +38,7 @@ func main() {
     int b, c;
 }
 ```
-To declare the table you must do this
+To declare the array you must do this
 ```clike
 func main(){
     int[] a = [2, 4, 2];
@@ -145,12 +147,24 @@ loop(a < 5) {
     a++;
 }
 // for loop
-loop(int i=0, i<5, i++) {
+loop(int i=0; i<5; i++) {
     write(i);
 }
 // n loop
 loop(5) {
     write("n loop");
+}
+```
+
+### try/catch/finally
+You can use try statement to catch the error while code execution
+```clike
+try {
+    thisFunctionDoesNotExist();
+} catch {
+    throw("We have error");
+} finally {
+    write("finally");
 }
 ```
 

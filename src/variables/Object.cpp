@@ -44,25 +44,31 @@ namespace variable {
             if (valT.substr(0,5)=="Array") return val;
 
             if ((expected == "signed int"||expected=="Integer") && valT == "Integer") return val;
+            else if ((expected == "unsigned int") && valT == "Integer") {static_cast<Integer*>(val)->ui = true; return val;}
             else if ((expected == "double"||expected=="Double") && valT == "Double") return val;
             else if ((expected == "string"||expected=="String") && valT == "String") return val;
             else if ((expected == "bool"||expected=="Boolean") && valT == "Boolean") return val;
             else if ((expected == "long"||expected=="Long") && valT == "Long") return val;
-            else if (expected == "char" && valT == "Char") return val;
+            else if ((expected == "ulong") && valT == "Long") {static_cast<Long*>(val)->ul = true; return val;}
+            else if (expected == "signed char" && valT == "Char") return val;
             
             // other cases
 
             // CHAR TO INT
             else if ((expected == "signed int"||expected=="Integer") && valT == "Char") return new Integer((int)static_cast<Char*>(val)->value);
             // STRING TO CHAR
-            else if (expected == "char" && valT == "String") {
+            else if (expected == "signed char" && valT == "String") {
                 String* temp = static_cast<String*>(val);
                 if (temp->value.size() != 1) throw runtime_error("Cannot assign string to char");
                 return new Char(temp->value[0]);
             }
+            // CHAR TO STRING
+            else if (expected == "string" && valT == "Char") 
+                {string t; t=static_cast<Char*>(val)->value; return new String(t);}
 
             // LONG
-            else if ((expected == "long"||expected=="Long") && valT == "Integer") return new Long(stoll(val->getValueString()));
+            else if ((expected == "ulong"||expected == "long"||expected=="Long") && valT == "Integer")
+                {bool t{false}; if (expected == "ulong") t=true; return new Long(stoll(val->getValueString()), t);}
 
             // BOOLEAN
             else if ((expected == "bool"||expected=="boolean") && valT == "Integer") return new Boolean(stoi(val->getValueString()));

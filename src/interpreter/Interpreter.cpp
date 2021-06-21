@@ -186,5 +186,10 @@ namespace interpreter{
             if (args.size() != 1) throw runtime_error("'system' function takes exactly one argument");
             return new Integer(system(args[0]->getValueString().c_str()));
         });
+        // throw function
+        addBuiltin("throw", [](vector<Object*> &args)->Object*{
+            if (args.size() != 1) throw runtime_error("'throw' function takes exactly one argument");
+            throw runtime_error(args[0]->getValueString());
+        });
     }
 }

@@ -30,4 +30,8 @@ func main() {
     loop(int i = 0; i < 10; i = i + 2) {
         write(i);
     }
+
+    loop(uint i = 0; i < 5; i++) {
+        write("b");
+    }
 }

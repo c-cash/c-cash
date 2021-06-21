@@ -60,13 +60,13 @@ func main() {
     int n = arr.size();
 
     #array before sorting
-    loop(int i=0, i<n, i++) {
+    loop(int i=0; i<n; i++) {
         write(arr[i], " ");
     }
     write("\n");
 
-    loop(int i=0, i<n-1, i++) {
-        loop(int j=0, j<n-i-1, j++) {
+    loop(int i=0; i<n-1; i++) {
+        loop(int j=0; j<n-i-1; j++) {
             if(arr[j] > arr[j+1]) {
                 int a = arr[j];
                 arr[j] = arr[j+1];
@@ -76,7 +76,7 @@ func main() {
     }
     
     #array after sorting
-    loop(int i=0, i<n, i++) {
+    loop(int i=0; i<n; i++) {
         write(arr[i], " ");
     }
     write("\n");

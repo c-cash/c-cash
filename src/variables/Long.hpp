@@ -9,7 +9,7 @@ namespace variable {
 
     class Long : public variable::Object {
         public:
-
+            Long(unsigned long long value, bool ul);
             Long(long long value);
             Long();
             Object* add (Object* other);
@@ -33,10 +33,13 @@ namespace variable {
             string toString();
             string getValueString();
 
+            unsigned long long getSignedValue();
+
             map<string, objectF> getFunctions();
 
             static Object* check(Object &other);
             
-            long long value;
+            unsigned long long value;
+            bool ul {false};
     };
 }
