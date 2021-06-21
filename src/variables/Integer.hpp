@@ -9,7 +9,8 @@ namespace variable {
 
     class Integer : public variable::Object {
         public:
-            Integer(int value);
+            Integer(uint value, bool ui);
+            Integer(uint value);
             Integer();
             Object* add (Object* other);
             Object* subtract (Object* other);
@@ -32,10 +33,13 @@ namespace variable {
             string toString();
             string getValueString();
 
+            int getSignedValue();
+
             map<string, objectF> getFunctions();
 
             static Object* check(Object &other);
             
-            int value;
+            uint value;
+            bool ui {false};
     };
 }

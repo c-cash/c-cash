@@ -14,6 +14,7 @@ namespace variable {
     Object* String::add (Object* other) {
         string otherType = other->getType();
         if (otherType == "String") return new String(value + other->getValueString());
+        else if (otherType == "Char") return new String(value + other->toString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
     }
     Object* String::subtract (Object* other) {

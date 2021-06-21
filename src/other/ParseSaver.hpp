@@ -24,7 +24,7 @@ namespace parsesaver {
             void saveStatement(parser::Statement &stmt);
 
             char toBinaryType(parser::Statement &stmt);
-            char toBinaryType(parser::BUILTIN_TYPE type);
+            char toBinaryType(string type);
             char toBinarySubtype(parser::Statement &stmt);
             string getStatementName(parser::Statement &stmt);
             string getVariableName(string name, bool minimize);

@@ -98,6 +98,7 @@ namespace parser {
         mTypes["string"] = Type("string", STRING);
         mTypes["bool"] = Type("bool", BOOL);
         mTypes["long"] = Type("long", INT64);
+        mTypes["ulong"] = Type("ulong", UINT64);
     }
 
     //prints parser logs
@@ -591,11 +592,10 @@ namespace parser {
         functionCall.mKind = StatementKind::FUNCTION_CALL;
         functionCall.mName = possibleFunctionName->mText;
         functionCall.mLine = mCurrentToken->mLine;
-
         while (!expectOperator(")").has_value()){
             startToken  = mCurrentToken;
             optional<Statement> parameter = expectLogicExpression();
-            if(parameter.has_value()) {
+            if(parameter->mKind == StatementKind::LOGIC_CALL) {
                 startToken = mCurrentToken;
                 if(expectOperator(")").has_value() || expectOperator(",").has_value()) {
                     mCurrentToken = startToken; 
@@ -862,45 +862,45 @@ namespace parser {
             back_parameter = expectLogicExpression();
             if(!back_parameter.has_value()) {
                 throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine));
-            }
-
-            while (!expectOperator(")").has_value()) {
-                if(mCurrentToken->mText == "and"){
-                    ++mCurrentToken;
-                    Statement andStatement;
-                    andStatement.mStatements.emplace_back(back_parameter.value());
-                    andStatement.mName = "and";
-                    andStatement.mKind = StatementKind::LOGIC_CALL;
-                    andStatement.mStatements.emplace_back(expectLogicExpression().value());
-                    andStatement.mLine = mCurrentToken->mLine;
-                    back_parameter = andStatement;
-                } else if(mCurrentToken->mText == "or"){
-                    ++mCurrentToken;
-                    Statement orStatement;
-                    orStatement.mStatements.emplace_back(back_parameter.value());
-                    orStatement.mStatements.emplace_back(expectLogicExpression().value());
-                    orStatement.mName = "or";
-                    orStatement.mLine = mCurrentToken->mLine;
-                    back_parameter = orStatement;
+            } else if(back_parameter->mKind == StatementKind::LOGIC_CALL) {
+                while (!expectOperator(")").has_value()) {
+                    if(mCurrentToken->mText == "and"){
+                        ++mCurrentToken;
+                        Statement andStatement;
+                        andStatement.mStatements.emplace_back(back_parameter.value());
+                        andStatement.mName = "and";
+                        andStatement.mKind = StatementKind::LOGIC_CALL;
+                        andStatement.mStatements.emplace_back(expectLogicExpression().value());
+                        andStatement.mLine = mCurrentToken->mLine;
+                        back_parameter = andStatement;
+                    } else if(mCurrentToken->mText == "or"){
+                        ++mCurrentToken;
+                        Statement orStatement;
+                        orStatement.mStatements.emplace_back(back_parameter.value());
+                        orStatement.mStatements.emplace_back(expectLogicExpression().value());
+                        orStatement.mName = "or";
+                        orStatement.mLine = mCurrentToken->mLine;
+                        back_parameter = orStatement;
+                    }
                 }
+                --mCurrentToken;
+
+                Statement brackets;
+                brackets.mKind = StatementKind::LOGIC_CALL;
+                brackets.mName = "()";
+                brackets.mType =  Type("func", FUNC);
+                brackets.mLine = mCurrentToken->mLine;
+                brackets.mStatements.emplace_back(back_parameter.value());
+
+                lhs = brackets;
+                if (!expectOperator(")").has_value()) {
+                    throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
+                }
+
+                result = lhs.value();
+
+                return result;
             }
-            --mCurrentToken;
-
-            Statement brackets;
-            brackets.mKind = StatementKind::LOGIC_CALL;
-            brackets.mName = "()";
-            brackets.mType =  Type("func", FUNC);
-            brackets.mLine = mCurrentToken->mLine;
-            brackets.mStatements.emplace_back(back_parameter.value());
-
-            lhs = brackets;
-            if (!expectOperator(")").has_value()) {
-                throw runtime_error(string("Unbalanced '(' in parenthesized expression in line ") + to_string(mCurrentToken->mLine));
-            }
-
-            result = lhs.value();
-
-            return result;
         } else if(expectLogic("!").has_value()) {
             Statement negation;
             negation.mKind = StatementKind::LOGIC_CALL;
@@ -909,57 +909,62 @@ namespace parser {
             negation.mLine = mCurrentToken->mLine;
             negation.mStatements.emplace_back(expectLogicExpression().value());
             return negation;
-        } else {
-            lhs = expectExpressionFunc();
-            if(!lhs.has_value()) { return nullopt;}
+        } 
 
-            optional<Token> log = expectLogic();
-            if(!log.has_value()) { return lhs; }
-
-            optional<Statement> rhs = expectExpressionFunc();
-            if(!rhs.has_value()) {mCurrentToken--; return nullopt;}
-
-            result.mKind = StatementKind::LOGIC_CALL;
-            result.mName = log->mText;
-            result.mStatements.push_back(lhs.value());
-            result.mStatements.push_back(rhs.value());
-
-            return result;
+        lhs = expectExpressionFunc();
+        if(!lhs.has_value()) { return nullopt;}
+        optional<Token> log = expectLogic();
+        
+        if(!log.has_value()) { 
+            if(lhs->mName == "true" || lhs->mName == "false") {lhs->mKind = StatementKind::LOGIC_CALL;}
+            return lhs; 
         }
+        optional<Statement> rhs = expectExpressionFunc();
+        if(!rhs.has_value()) {mCurrentToken--; return nullopt;}
+        result.mKind = StatementKind::LOGIC_CALL;
+        result.mName = log->mText;
+        result.mStatements.push_back(lhs.value());
+        result.mStatements.push_back(rhs.value());
+        return result;
     }
 
     //Parse loops
     optional<Statement> Parser::parseLoopStatement() {
         Statement loopS;
         optional<Statement> parameter;
-        Statement addParametr;
+        Statement addParametr;     
 
         loopS.mName = "LOOP";
+
+        addParametr.mType.mType = FUNC_PARAM;
+        addParametr.mType.mName = "func_param";
+        addParametr.mStatements.clear();
 
         ++mCurrentToken; ++mCurrentToken;
         vector<Token>::iterator startToken  = mCurrentToken;
 
         parameter = expectLogicExpression();
-        if(!parameter.has_value()) {
+        
+        if(parameter->mKind != StatementKind::LOGIC_CALL) { 
             mCurrentToken = startToken;
-            if(!isDeclaration()){
+            if(!isDeclaration()){                                                                                                    
                 parameter = expectExpressionFunc();
-            }
-            if(!parameter.has_value()) {
-                mCurrentToken = startToken;
-                parameter = expectVariableDeclaration();
+            } else {
+                parameter = expectVariableDeclaration();  
                 if(!parameter.has_value()) {
                     throw runtime_error(string("Bad argument in loop in line ") + to_string(mCurrentToken->mLine));
                 }
-            }
+            }  
         }
 
         if(!parameter.has_value()) { throw runtime_error(string("Expected logic expression as parameter in line ") + to_string(mCurrentToken->mLine)); }
-        addParametr.mType.mType = FUNC_PARAM;
-        addParametr.mType.mName = "func_param";
-        addParametr.mStatements.clear();
-
         if(mCurrentToken->mText == ";") ++mCurrentToken;
+
+        startToken = mCurrentToken;
+        if(expectOperator(")").has_value()) {
+            mCurrentToken = startToken;
+        }
+        addParametr.mStatements.emplace_back(parameter.value());
 
         while (!expectOperator(")").has_value()) {
             if(mCurrentToken->mText == "and"){

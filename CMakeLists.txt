@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 project(c-cash VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -45,6 +45,7 @@ set( LIBRARIES
     src/libraries/StringLibrary.cpp
     src/libraries/RegexLibrary.cpp
     src/libraries/AlgorithmsLibrary.cpp
+    src/libraries/ConvertLibrary.cpp
 )
 
 #add execute file
@@ -76,6 +77,22 @@ set_target_properties(${PROJECT_NAME}-inter PROPERTIES
                         CXX_STANDARD_REQUIRED ON 
 )
 set_target_properties(${PROJECT_NAME}-parser PROPERTIES
+                        CXX_STANDARD 17
+                        CXX_STANDARD_REQUIRED ON 
+)
+set_target_properties(${PROJECT_NAME}-other PROPERTIES
+                        CXX_STANDARD 17
+                        CXX_STANDARD_REQUIRED ON 
+)
+set_target_properties(${PROJECT_NAME}-transpiler PROPERTIES
+                        CXX_STANDARD 17
+                        CXX_STANDARD_REQUIRED ON 
+)
+set_target_properties(${PROJECT_NAME}-variable PROPERTIES
+                        CXX_STANDARD 17
+                        CXX_STANDARD_REQUIRED ON 
+)
+set_target_properties(${PROJECT_NAME}-libs PROPERTIES
                         CXX_STANDARD 17
                         CXX_STANDARD_REQUIRED ON 
 )

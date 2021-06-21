@@ -10,6 +10,14 @@
 namespace variable {
     using namespace std;
 
+    Long::Long(unsigned long long value, bool ul) {
+        if (ul) {
+            this->ul = true;
+            this->value = value;
+        } else {
+            this->value = value;
+        }
+    }
     Long::Long(long long value) {
         this->value = value;
     }
@@ -18,7 +26,7 @@ namespace variable {
     // ADDITION
     Object* Long::add (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value + static_cast<Long*>(other)->value);
+        if (otherType == "Integer" || otherType == "Long") return new Long(value + static_cast<Long*>(other)->value, this->ul);
         else if (otherType == "Double") return new Double(1.0 * value + static_cast<Double*>(other)->value);
         else if (otherType == "String") return new String(to_string(value) + other->getValueString());
         throw runtime_error("Cannot add " + this->getType() + " and " + other->getType());
@@ -26,14 +34,14 @@ namespace variable {
     // SUBTRACTION
     Object* Long::subtract (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value - static_cast<Long*>(other)->value);
+        if (otherType == "Integer" || otherType == "Long") return new Long(value - static_cast<Long*>(other)->value, this->ul);
         else if (otherType == "Double") return new Double(1.0 * value - stod(other->getValueString()));
         throw runtime_error("Cannot subtract " + this->getType() + " and " + other->getType());
     }
     // MULTIPLICATION
     Object* Long::multiply (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value * static_cast<Long*>(other)->value);
+        if (otherType == "Integer" || otherType == "Long") return new Long(value * static_cast<Long*>(other)->value, this->ul);
         else if (otherType == "Double") return new Double(1.0 * value * stod(other->getValueString()));
         else if (otherType == "String") 
             return new String([&]()->string {string t=other->getValueString();string r; for (int i=0; i<value; i++) r+=t; return r;}());
@@ -42,14 +50,14 @@ namespace variable {
     // DIVISION
     Object* Long::divide (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value / static_cast<Long*>(other)->value);
+        if (otherType == "Integer" || otherType == "Long") return new Long(value / static_cast<Long*>(other)->value, this->ul);
         else if (otherType == "Double") return new Double(1.0 * value / static_cast<Double*>(other)->value);
         throw runtime_error("Cannot divide " + this->getType() + " and " + other->getType());
     }
     // MODULO
     Object* Long::modulo (Object* other) {
         string otherType = other->getType();
-        if (otherType == "Integer" || otherType == "Long") return new Long(value % static_cast<Long*>(other)->value);
+        if (otherType == "Integer" || otherType == "Long") return new Long(value % static_cast<Long*>(other)->value, this->ul);
         else if (otherType == "Double") return new Double(std::fmod(1.0 * value, static_cast<Double*>(other)->value));
         throw runtime_error("Cannot use modulo on " + this->getType() + " and " + other->getType());
     }
@@ -104,8 +112,10 @@ namespace variable {
         this->value = stoll(from->getValueString());
     }
 
-    string Long::toString() {return to_string(value); }
-    string Long::getValueString() {return to_string(value);}
+    string Long::toString() { if (this->ul) return to_string(value); else return to_string((long long) value); }
+    string Long::getValueString() { if (this->ul) return to_string(value); else return to_string((long long) value); }
+
+    unsigned long long Long::getSignedValue() { if (this->ul) return value; else return (long long) value; }
 
     string Long::getType() {return "Long";}
 

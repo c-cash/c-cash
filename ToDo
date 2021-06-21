@@ -57,11 +57,11 @@ ___________WYDANIE NOWEJ WERSJI______________
 2. deklaracja wielu zmiennych w jednej linii (infuś)                           (done)
 3. includowanie plików (olix)                                                  (done)
 4. funkcja system() (olix)                                                     (done)
-5. libki: (infuś, antis, olix)
+5. libki: (infuś, antis, olix)                                                 (done)
     - liczby losowe <random>                                                   (done)
     - obsługa plików (otwieranie, edycja, tworzenie usuwanie etc...) <file>    (done)
-    - konwersja zmiennych <convert> (olix)
-    - algorytmy <algorithms>
+    - konwersja zmiennych <convert> (olix)                                     (done)
+    - algorytmy <algorithms>                                                   (done)
     - obsługa stringów <string>                                                (done)
     - czas                                                                     (done)
     - regex                                                                    (done)
@@ -74,24 +74,26 @@ ___________WYDANIE NOWEJ WERSJI______________
 12. komunikat o braku plików wejściowych dla interpretera (infuś, antis)       (done)
 13. naprawa tablic (olix)                                                      (done)
 14. przypisywanie do tablic funkcji i zmiennych (infuś)                        (done)
-15. optymalizacja (antis, olix)                                                 
+15. optymalizacja (antis, olix)                                                (done)
 16. typ long (olix)                                                            (done)
 17. przyśpieszona inkrementacja (antis)                                        (done)
 18. _ jako separator w liczbach                                                (done)
 19. Typy unsigned w interpreterze (olix)
 
--------odległe wersje byle żeby nie zapomnieć(to wszystko na wersję 1.0.0)----------
+-----------------------0.4.0-----------------------
+1. klasy
+2. do loop
+3. switch
+4. struct
+5. zmienne globalne
+6. foreach loop
 
-1. do loop
-2. switch
-3. typ var
-4. typ data i metody obsługujące go
-5. referencje
-6. asynchroniczność
-7. const
-8. klasy
-9. interfejsy
-10. struct
-11. zmienne globalne
-12. typ dynamic
-13. namespace
+-------odległe wersje byle żeby nie zapomnieć(to wszystko na wersję 1.0.0)----------
+1. typ var
+2. typ data i metody obsługujące go
+3. referencje
+4. asynchroniczność
+5. const
+6. interfejsy
+7. typ dynamic
+8. namespace

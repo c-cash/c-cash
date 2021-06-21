@@ -10,6 +10,7 @@
 #include "StringLibrary.hpp"
 #include "RegexLibrary.hpp"
 #include "AlgorithmsLibrary.hpp"
+#include "ConvertLibrary.hpp"
 
 typedef library::Library* (*libDef)();
 
@@ -21,6 +22,7 @@ namespace library {
         {"time", library::TimeLibrary::getInstance},
         {"string", library::StringLibrary::getInstance},
         {"regex", library::RegexLibrary::getInstance},
-        {"algorithms", library::AlgorithmsLibrary::getInstance}
+        {"algorithms", library::AlgorithmsLibrary::getInstance},
+        {"convert", library::ConvertLibrary::getInstance}
     };
 }

@@ -20,6 +20,6 @@ int main(){
         allCode += line;
     }
 
-    if(allCode == "4041664") return 0; 
+    if(allCode == "4041664868") return 0; 
     return 1;
 }
