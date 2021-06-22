@@ -110,6 +110,7 @@ For `if` and `loop` statements you will need expressions. Currently supported ar
 - `>=` - greater or equal to
 - `and` - only if both expression (to the left and to the right) return `true`
 - `or` - if either one or both expressions return `true`
+
 ### if/else/elif
 You can use if to execute code only when expression returns `true`.
 Otherwise, if expression returns `false` then else will be executed.
@@ -169,3 +170,9 @@ try {
 ```
 
 !> Two slashes in comments are not necessary for comment and they are only because of syntax highlighting
+
+###  include
+To include libraries or .cash files you must write
+```clike
+include("math", "myFile.cash");
+```

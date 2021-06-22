@@ -1,5 +1,5 @@
 # TODO
-?> Current version is [Version 0.2.0](#version-010-current)
+?> Current version is [Version 0.3.0](#version-030-current)
 ## Version 0.0.1
 - [x] functions
 - [x] variables
@@ -21,7 +21,7 @@
 - [x] recursion
 - [x] fix multiple `and`, `or` expressions
 
-## Version 0.2.0 (current)
+## Version 0.2.0
 - [x] arrays
 - [x] break statement in loop
 - [x] quick assignment operators (`+=`, `-=`, etc...)
@@ -31,7 +31,7 @@
 - [x] fix block comments
 - [x] namespaces (only simple)
 
-## Version 0.3.0
+## Version 0.3.0 (current)
 - [x] support for Gamblerch numbers, operator
 - [x] declaration of many new ones in one line
 - [x] include files
@@ -56,3 +56,6 @@
 - [x] fastened increment
 - [x] _ as a separator in numbers
 - [x] unsigned types 
+
+## Version 0.4.0
+- Coming soon
