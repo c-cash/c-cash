@@ -87,6 +87,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 4. struct
 5. zmienne globalne
 6. foreach loop
+7. Odwołanie do stringa jak do tablicy charów
 
 -------odległe wersje byle żeby nie zapomnieć(to wszystko na wersję 1.0.0)----------
 1. typ var
