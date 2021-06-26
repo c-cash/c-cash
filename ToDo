@@ -80,6 +80,11 @@ ___________WYDANIE NOWEJ WERSJI______________
 18. _ jako separator w liczbach                                                (done)
 19. Typy unsigned w interpreterze (olix)
 
+-----------------------------CLOSED------------------------
+
+___________WYDANIE NOWEJ WERSJI______________
+
+
 -----------------------0.4.0-----------------------
 1. klasy
 2. do loop
@@ -88,6 +93,22 @@ ___________WYDANIE NOWEJ WERSJI______________
 5. zmienne globalne
 6. foreach loop
 7. Odwołanie do stringa jak do tablicy charów
+8. Funkcje do dodania do bibliotek
+    -(string) rmWhite(string) usuwa białe znaki ze stringa
+    -(string) capitalize(string) zmienia pierwszy znak na wielką litere
+    -(string) endsWith(string, value) zwraca czy string kończy się daną sekwencją 
+    -(string) startsWith(string, value) zwraca czy string zaczyna się daną sekwencją 
+    -(string) find(string, value) sprawdza czy dana wartość istnieje w stringu
+    -(string) swapCase(string) Zmienia wielkość liter na przeciwną
+    -(math) PI() zwraca liczbę pi
+    -(math) E() zwraca liczbę eulera
+    -(file) fileExists(path) zwraca bool czy plik istnieje w podanej lokalizacji
+    -(random) shuffle(array) miesza elementy w tablicy
+9. funkcja remove() do usuwania elemntów z tablic
+    
+
+
+
 
 -------odległe wersje byle żeby nie zapomnieć(to wszystko na wersję 1.0.0)----------
 1. typ var
@@ -98,3 +119,4 @@ ___________WYDANIE NOWEJ WERSJI______________
 6. interfejsy
 7. typ dynamic
 8. namespace
+9. biblioteka mySql
