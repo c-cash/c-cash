@@ -6,6 +6,13 @@
 * [`substr`](#substr) - returns substring
 * [`split`](#split) - returns an array of strings broken down by key
 * [`reverse`](#reverse) - returns reversed string
+* [`capitalize`](#capitalize) - returns capitalized string
+* [`swapCase`](#swapCase) - returns string with swaped case
+* [`startsWith`](#startsWith) - returns if string starts with the given phrase 
+* [`endsWith`](#endsWith) - returns if string ends with the given phrase 
+* [`find`](#find) - returns first index of searched string and if it doesn't exist returns -1
+* [`delWhitespace`](#delWhitespace) - returns string with removed all whitespaces
+* [`strip`](#strip) - returns string with removed all whitespaces from beginning and end and with removed double spaces
 !> Use `#` instad of `//` for comments
 
 ## toLower
@@ -47,5 +54,50 @@ split("What is the best programming language?", " "); // this returns ["What", "
 ## reverse
 This function reverses a string
 ```clike
-split("murder"); // this returns "redrum"
+reverse("murder"); // this returns "redrum"
+```
+
+## capitalize
+This function capitalizes a string
+```clike
+capitalize("info"); // this returns "Info"
+```
+
+## swapCase
+This function swaps case in each letter
+```clike
+swapCase("AnTiS"); // this returns "aNtIs"
+```
+
+## startsWith
+This function returns if string starts with the given phrase 
+```clike
+startsWith("Antis", "Ant"); // this returns true
+startsWith("Antis", "Abcd"); // this returns false
+```
+
+## endsWith
+This function returns if string ends with the given phrase 
+```clike
+endsWith("Antis", "tis"); // this returns true
+endsWith("Antis", "xyz"); // this returns false
+```
+
+## find
+This function takes two arguments and returns first index of searched string and if it doesn't exist returns -1
+```clike
+find("info", "nf"); // this returns 1
+find("info", "xyz"); // this returns -1
+```
+
+## delWhitespace
+This function takes one argument and removes all whitespaces from string
+```clike
+delWhitespace(" in f o  "); // this returns "info"
+```
+
+## strip
+This function takes one argument and returns string with removed all whitespaces from beginning and end and with removed double spaces
+```clike
+strip(" info  is    great  "); // this returns "info is great"
 ```

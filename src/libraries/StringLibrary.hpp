@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <cctype>
 #include <algorithm>
 
 #include "Library.hpp"

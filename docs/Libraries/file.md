@@ -4,6 +4,7 @@
 * [`appendFile`](#appendFile) - adds text to the file
 * [`clearFile`](#clearFile) - clears the file
 * [`delFile`](#delFile) - deletes the file
+* [`fileExists`](#fileExists) - checks if the file exists
 
 !> Use `#` instad of `//` for comments
 
@@ -35,4 +36,10 @@ clearFile("C:\Users\Cash\cash.txt"); // this clears the content of cash.txt file
 This function takes path to file and deletes it
 ```clike
 delFile("C:\Users\Cash\cash.txt"); // this deletes cash.txt file
+```
+
+## fileExists
+This function takes path to file and checks if it exists
+```clike
+fileExists("C:\Users\Cash\cash.txt"); // this returns true if cash.txt file exists
 ```

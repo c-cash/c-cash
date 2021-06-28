@@ -18,6 +18,8 @@
 * [`rad`](#rad) - transform degrees to radians
 * [`max`](#max) - transform radians to degrees
 * [`min`](#min) - transform degrees to radians
+* [`PI`](#PI) - returns PI number
+* [`E`](#E) - returns Euler's number
 
 !> Use `#` instad of `//` for comments
 
@@ -135,4 +137,16 @@ max(3, 8) // this is equal to 8
 This function takes one or more numbers and returns smallest of them.
 ```clike
 deg(3, 8) // this is equal to 3
+```
+
+## PI
+This function doesn't takes arguments and returns PI number
+```clike
+PI() // this is equal to 3.141592
+```
+
+## E
+This function doesn't takes arguments and returns Euler's number
+```clike
+E() // this is equal to 2.718281
 ```

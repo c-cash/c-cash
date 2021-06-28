@@ -177,6 +177,18 @@ namespace library {
             if (md <= mi) return {new Double(md)};
             else return {new Integer(mi)};
         };
+        // (F)PI function
+        s.functions["PI"] = [](vector<Object*> &args) -> Object*{
+            vector<Object*> a = args;
+            if (a.size() != 0) throw runtime_error("PI function doesn't takes arguments");
+            return {new Double(3.141592)};
+        };
+        // (F)E function
+        s.functions["E"] = [](vector<Object*> &args) -> Object*{
+            vector<Object*> a = args;
+            if (a.size() != 0) throw runtime_error("E function doesn't takes arguments");
+            return {new Double(2.718281)};
+        };
     }
 
     void MathLibrary::linkNamespaced(string name, Scope &scope) {

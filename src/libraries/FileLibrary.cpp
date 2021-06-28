@@ -73,6 +73,20 @@ namespace library {
             }
             throw runtime_error("delFile function takes only path to file");
         }; 
+        // (F)fileExists
+        s.functions["fileExists"] = [](vector<Object*> &args) -> Object* {
+            if (args.size() != 1) throw runtime_error("fileExists function takes exactly one argument");
+            string t = args[0]->getType();
+            if (t == "String"){
+                if (FILE *file = fopen(args[0]->getValueString().c_str(), "r")) {
+                    fclose(file);
+                    return new Boolean(true);
+                } else {
+                    return new Boolean(false);
+                }   
+            }
+            throw runtime_error("fileExists function takes only path to file");
+        };
     }
 
     void FileLibrary::linkNamespaced(string name, Scope &scope) {
