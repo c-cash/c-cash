@@ -387,15 +387,26 @@ namespace interpreter {
 
     Object* Functions::evaluateArrayElement(Statement &stmt, Scope &scope) {
         if (stmt.mStatements.size() != 2) throw runtime_error("unexpected error (2)");
+        int index = static_cast<Integer*>(Interpreter::evaluateStatement(stmt.mStatements[0], scope))->value;
+
+        Object* arr = nullptr;
+        if (stmt.mStatements[1].mKind == StatementKind::ARRAY_CALL) {
+            arr = Interpreter::evaluateStatement(stmt.mStatements[1], scope);
+            if (index < 0) {
+                index += Array::convert(arr)->value.size();
+            }
+        }
+
         // array assignment
         if (stmt.mStatements[1].mKind != StatementKind::ARRAY_CALL) {
-            Array::assignIndex(stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()), scope.varTab[stmt.mName], 
-            Interpreter::evaluateStatement(stmt.mStatements[1], scope));
+            Object* obj = scope.varTab[stmt.mName];
+            if (obj->getType() == "String")
+                static_cast<String*>(obj)->value[(index < 0 ? index + obj->getValueString().size() : index)] = Object::checkAll("signed char", Interpreter::evaluateStatement(stmt.mStatements[1], scope))->toString()[0];
+            else Array::assignIndex((index < 0 ? index+Array::convert(obj)->value.size() : index), obj, Interpreter::evaluateStatement(stmt.mStatements[1], scope));
         }
         // array call :D
         else {
-            return Array::getIndex(stoi(Interpreter::evaluateStatement(stmt.mStatements[0], scope)->getValueString()), 
-                Interpreter::evaluateStatement(stmt.mStatements[1], scope));
+            return Array::getIndex(index, arr);
         }
         return nullptr;
     }

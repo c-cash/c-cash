@@ -136,7 +136,7 @@ namespace variable {
         return arr;
     }
 
-    Object* Array::assignIndex(size_t index, Object* array, Object* value) {
+    Object* Array::assignIndex(int index, Object* array, Object* value) {
         Array* arr = convert(array);
         if (index < 0 || arr->value.size()-1 < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
         if (value->getType() != arr->type) throw runtime_error("cannot assign " + value->getType() + " to the array of " + arr->type);
@@ -144,7 +144,7 @@ namespace variable {
         return array;
     }
 
-    Object* Array::getIndex(size_t index, Object* array) {
+    Object* Array::getIndex(int index, Object* array) {
         Array* arr = convert(array);
         if (index < 0 || arr->value.size()-1 < index) throw runtime_error("index " + to_string(index) + " is outside of the array size");
         return arr->value[index];
@@ -163,6 +163,17 @@ namespace variable {
             Array* arr = Array::convert(t);
             Array:checkArray(arr->type, arg);
             arr->value.insert(arr->value.end(), arg.begin(), arg.end());
+            return nullptr;
+        };
+
+        functions["remove"] = [](Object* t, vector<Object*> &arg) -> Object*{
+            if (arg.size() != 1) throw runtime_error("'remove' function takes only index");
+            if (arg[0]->getType() != "Integer") throw runtime_error("'remove' function index must be an integer");
+            int index = static_cast<Integer*>(arg[0])->value;
+            Array* arr = Array::convert(t);
+            if (index < 0) index += arr->value.size();
+            if (index > arr->value.size()) throw runtime_error("index is out of range in 'remove' function");
+            arr->value.erase(arr->value.begin() + index);
             return nullptr;
         };
 

@@ -2,6 +2,7 @@
 #include "String.hpp"
 #include "Object.hpp"
 #include "Integer.hpp"
+#include "Char.hpp"
 
 namespace variable {
     using namespace std;
@@ -69,6 +70,14 @@ namespace variable {
     string String::getValueString() {return value;}
 
     string String::getType() {return "String";}
+
+    Array* String::c_arr() {
+        Array* arr = new Array();
+        for (char c : value) {
+            arr->value.emplace_back(new Char(c));
+        }
+        return arr;
+    }
 
     Object* String::check(Object &other) {
             if (other.getType() == "String") return &other;

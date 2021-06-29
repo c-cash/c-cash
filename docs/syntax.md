@@ -66,6 +66,14 @@ func main() {
     int a = 1_000_000;
 }
 ```
+String can be used like char array
+```clike
+func main() {
+    string a = "abc";
+    a[1] = d;
+    write(a[2]);
+}
+```
 ## Math
 You can use math expressions in many places. Currently supported operators are:
 - `+` - add
@@ -87,6 +95,7 @@ Assuming that `a` is a variable, there are also:
 ## Array
 The function you can use on array are:
 - `add()` - add varibles to array
+- `remove()` - remove element from array
 - `size()` - return number of elements
 
 Example code:
@@ -94,8 +103,10 @@ Example code:
 func main(){
     int[] a = [3, 4, 5];
     a.add(2, 4, 5);
+    a.remove(2);
     write(a.size());
     write(a[0]);
+    write(a[-1]); //write last element
 }
 ```
 

@@ -41,8 +41,8 @@ namespace variable {
             static Object* check(Object &other);
             static Object* checkAll(string expected, Object* obj);
             static Array* convert(Object* obj);
-            static Object* assignIndex(size_t index, Object* array, Object* value);
-            static Object* getIndex(size_t index, Object* array);
+            static Object* assignIndex(int index, Object* array, Object* value);
+            static Object* getIndex(int index, Object* array);
             static Object* getDefault(string type);
             static void checkArray(string type, vector<Object*> arr);
 

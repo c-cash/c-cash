@@ -132,7 +132,9 @@ namespace interpreter{
                 break;
             }
             case StatementKind::ARRAY_CALL: {
-                return Array::check(*scope.varTab[stmt.mName]);
+                Object* obj = scope.varTab[stmt.mName];
+                if(obj->getType() == "String") return static_cast<String*>(obj)->c_arr();
+                return Array::check(*obj);
                 break;
             }
             case StatementKind::ARRAY_ELEMENT: {

@@ -1,3 +1,5 @@
-func main() {
-
+func main() { 
+    string infuś = "все любят инфузию";
+    write(infuś, "\n");
+    write("HELOŁ ŁORD");
 }

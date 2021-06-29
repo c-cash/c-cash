@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "Object.hpp"
+#include "Array.hpp"
 
 namespace variable {
     using namespace std;
@@ -31,6 +32,8 @@ namespace variable {
             string getType();
             string toString();
             string getValueString();
+
+            Array* c_arr();
 
             map<string, objectF> getFunctions();
 
