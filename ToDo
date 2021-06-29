@@ -95,7 +95,9 @@ ___________WYDANIE NOWEJ WERSJI______________
 7. Odwołanie do stringa jak do tablicy charów
 8. funkcja remove() do usuwania elemntów z tablic
 9. ternary operator
-10. Funkcje do dodania do bibliotek
+10. indeksowanie ujemne (arr[-1] = ostatni element itd)
+11. Przypisywanie do tablicy
+12. Funkcje do dodania do bibliotek
     -(string) delWhitespace(string) usuwa białe znaki ze stringa                        (done)
     -(string) capitalize(string) zmienia pierwszy znak na wielką litere                 (done)
     -(string) endsWith(string, value) zwraca czy string kończy się daną sekwencją       (done)
@@ -105,10 +107,20 @@ ___________WYDANIE NOWEJ WERSJI______________
     -(math) PI() zwraca liczbę pi                                                       (done)
     -(math) E() zwraca liczbę eulera                                                    (done)
     -(file) fileExists(path) zwraca bool czy plik istnieje w podanej lokalizacji        (done)
-    -(random) shuffle(array) miesza elementy w tablicy
+    -(random) shuffle(array) miesza elementy w tablicy                                  ()
+    -(string) join(string array, separator) zwraca stringa                              ()
+              z tablicy stringów połączonych separatorem                                ()
     -(string) strip(string) usuwa spacje z początku oraz końca tekstu,                  (done)
               oraz usuwa jeśli jest więcej niż 1 spacja z rzędu                         (done)
-
+13. Funkcje do tablic
+    -push(element) dodaje element na koniec tablicy i zwraca jej długość(aktualnie add)
+    -pop() usuwa i zwraca ostatni element tablicy
+    -shift() usuwa i zwraca pierwszy element tablicy
+    -unshift(element) dodaje element na początek tablicy i zwraca jej długość
+    -slice(start_index, end_index) wycina nową tablicę
+    -reverse() odwraca tablicę
+    -fill(value) wypełnia tablice daną wartością
+    -append(array) dodaje tablicę na koniec aktualnej  
 
 
 

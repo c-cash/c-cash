@@ -50,7 +50,10 @@ namespace library {
             if (args[1]->getType() != "Integer" || args[2]->getType() != "Integer") throw runtime_error("substr needs one string and two integers");
             int f = static_cast<Integer*>(args[1])->value;
             int t = static_cast<Integer*>(args[2])->value;
-            return new String(s.substr(f, t));
+            if(t > f)
+                return new String(s.substr(f, t));
+            else
+                return new String(s.substr(t, f));
         };
         // (F)split
         s.functions["split"] = [](vector<Object*> &args) -> Object* {

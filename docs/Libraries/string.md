@@ -42,7 +42,12 @@ replace("I love c++", "++", "$"); // this returns "I love c$"
 ## substr
 This function takes string, start position for substring and end position for substring
 ```clike
-substr("I said Hello World!", 7, 18); // this returns "Hello World!"
+substr("I said Hello World!", 7, 18); // this returns "Hello
+World!"
+
+also work:
+
+substr("I said Hello World!", 18, 7); // this returns "Hello World!"
 ```
 
 ## split
