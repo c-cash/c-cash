@@ -46,7 +46,7 @@ namespace parser {
                 case '7':
                 case '8':
                 case '9':
-                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         if(currentToken.mText != "-"){
                             currentToken.mType = OPERATOR;
                             endToken(currentToken, tokens);
@@ -94,10 +94,11 @@ namespace parser {
                 case '(':
                 case ')':
                 case ';':
+                case '?':
                 case ',':
                 case '[':
                 case ']':
-                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
@@ -192,7 +193,7 @@ namespace parser {
                 case '\t':
                     if(currentToken.mType == STRING_LITERAL || currentToken.mType == COMMENT || currentToken.mType == BLOCK_COMMENT){
                         currentToken.mText.append(1, currCh);
-                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                     } else {
@@ -201,7 +202,7 @@ namespace parser {
                     break;
                 case '\r':
                 case '\n':
-                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                     } else if(currentToken.mType != BLOCK_COMMENT) {
@@ -224,7 +225,7 @@ namespace parser {
                 case '\\':
                     if(currentToken.mType == STRING_LITERAL){
                         currentToken.mType = STRING_ESCAPE_SEQUENCE;
-                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = OPERATOR;
@@ -243,7 +244,7 @@ namespace parser {
                 case '#':
                     if(currentToken.mType == STRING_LITERAL || currentToken.mType == BLOCK_COMMENT){
                         currentToken.mText.append(1, currCh);
-                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = COMMENT;;
@@ -262,7 +263,7 @@ namespace parser {
                         currentToken.mText.append(1, currCh);
                         endToken(currentToken, tokens);
                         currentToken.mType = WHITESPACE;
-                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = BLOCK_COMMENT;
@@ -279,7 +280,7 @@ namespace parser {
                         endToken(currentToken, tokens);
                         currentToken.mType = IDENTIFIER;
                         currentToken.mText.append(1, currCh);
-                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR) {
+                    } else if(currentToken.mType == POTENTIAL_SPECIFIC_OPERATOR || currentToken.mType == POTENTIAL_NAMESPACE_ALIAS) {
                         currentToken.mType = OPERATOR;
                         endToken(currentToken, tokens);
                         currentToken.mType = IDENTIFIER;

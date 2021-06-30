@@ -739,10 +739,18 @@ namespace parser {
 
     //Check expresion on func functions 
     optional<Statement> Parser::expectExpressionFunc() {
-        optional<Statement> lhs = expectOneValueFunc();
-        lhs->mLine = mCurrentToken->mLine;
-		if(!lhs.has_value()) { 
-            return expectArrayDeclaration();
+        vector<Token>::iterator startToken = mCurrentToken;
+        optional<Statement> lhs;
+        if(expectOperator("?").has_value())
+            lhs = expectTernaryOperator();
+
+        if(!lhs.has_value()) { 
+            mCurrentToken = startToken;
+            lhs = expectOneValueFunc();
+            lhs->mLine = mCurrentToken->mLine;
+		    if(!lhs.has_value()) { 
+                return expectArrayDeclaration();
+            }
         }
 
         while (true) {
@@ -1084,5 +1092,27 @@ namespace parser {
         }
 
         return res;
+    }
+
+    optional<Statement> Parser::expectTernaryOperator() {
+        optional<Statement> condition = expectLogicExpression();
+        if(!condition.has_value()) { return nullopt; }
+        if(!expectOperator("?").has_value()) { return nullopt; }
+        optional<Statement> l_value = expectExpressionFunc();
+        if(!l_value.has_value()) { return nullopt; }
+        if(mCurrentToken->mText != ":") { return nullopt; }
+        ++mCurrentToken;
+        optional<Statement> r_value = expectExpressionFunc();
+        if(!r_value.has_value()) { return nullopt; }
+
+        Statement ternary;
+        ternary.mName = "ternary";
+        ternary.mKind = StatementKind::TERNARY;
+        ternary.mLine = mCurrentToken->mLine;
+        ternary.mType.mType = FUNC;
+        ternary.mStatements.emplace_back(condition.value());
+        ternary.mStatements.emplace_back(l_value.value());
+        ternary.mStatements.emplace_back(r_value.value());
+        return ternary;
     }
 }

@@ -1,5 +1,3 @@
 func main() { 
-    string infuś = "все любят инфузию";
-    write(infuś, "\n");
-    write("HELOŁ ŁORD");
+    int x = ?2==2?1:2+1; #? true : false;
 }

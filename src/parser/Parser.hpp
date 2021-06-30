@@ -56,6 +56,7 @@ namespace parser {
             optional<vector<Statement>> parseFunctionBody();
             optional<Statement> parseIfStatement();
             optional<Statement> parseTryStatement();
+            optional<Statement> expectTernaryOperator();
 
             size_t operatorPrecedence(const string &operatorName);
             size_t logicPrecedence(const string &operatorName);
