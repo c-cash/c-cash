@@ -147,6 +147,9 @@ namespace interpreter{
                 return Interpreter::evaluateStatement(stmt.mStatements[0], *s);
                 break;
             }
+            case StatementKind::TERNARY: {
+                return Functions::evaluateTernaryOperator(stmt, scope);
+            }
             default:
                 return nullptr;
                 break;

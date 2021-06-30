@@ -50,6 +50,7 @@ namespace interpreter {
             static variable::Object* evaluateArrayCreation(Statement &stmt, Scope &scope);
             static variable::Object* evaluateArrayElement(Statement &stmt, Scope &scope);
             static variable::Object* evaluateVariableCall(Statement &stmt, Scope &scope); 
+            static variable::Object* evaluateTernaryOperator(Statement &stmt, Scope &scope);
             static variable::Object* specialVariable(Statement &stmt, Scope &scope);
             static void includeLibrary(FunctionDefinition &func, Scope &scope);
 

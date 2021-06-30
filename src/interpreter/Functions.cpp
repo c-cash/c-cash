@@ -441,6 +441,16 @@ namespace interpreter {
         if (v == nullptr) throw runtime_error(error::getInterpreterError(error::InterpreterErrorType::NO_VARIABLE, {stmt.mName, to_string(stmt.mLine)}));
         return v;
     }
+
+    Object* Functions::evaluateTernaryOperator(Statement &stmt, Scope &scope) {
+        // check ternary logic state
+        bool state = static_cast<Boolean*>(Interpreter::evaluateStatement(stmt.mStatements[0], scope))->value;
+
+        // return first or second element based on state
+        if (state) return Interpreter::evaluateStatement(stmt.mStatements[1], scope);
+        else return Interpreter::evaluateStatement(stmt.mStatements[2], scope);
+    }
+
   
     Object* Functions::findVariable(string name, Scope &scope) {
         if (scope.varTab.unordered_map::find(name) == scope.varTab.end()) {

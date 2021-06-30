@@ -94,7 +94,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 6. foreach loop
 7. Odwołanie do stringa jak do tablicy charów                                           (done)
 8. funkcja remove() do usuwania elemntów z tablic                                       (done)
-9. ternary operator -- 4
+9. ternary operator                                                                     (done)
 10. indeksowanie ujemne (arr[-1] = ostatni element itd)                                 (done)
 11. Przypisywanie do tablicy
 12. Funkcje do dodania do bibliotek
