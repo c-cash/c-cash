@@ -1,4 +1,5 @@
-func main() { 
-    int x = ?2==1?1:2+1; # ? LOGIC ? true : false;
-    write(x);
+func main() {
+    int a = 2;
+    int b = a + 3 + 2;
+    a = a + b;
 }

@@ -12,6 +12,7 @@
 #include "src/interpreter/Interpreter.hpp"
 #include "src/other/ParseSaver.hpp"
 #include "src/transpiler/Transpiler.hpp"
+#include "src/compiler/Compiler.hpp"
 
 using namespace std;
 using namespace parser;
@@ -89,12 +90,24 @@ int main (int argc, char **argv) {
             parser.parse(tokens);
             if (isDebug) timer->parsetime = getNanotime() - timer->temptime;
         }
+
         // debug print
         vector<string>::iterator debugIterator = find(begin(args), end(args), "-D");
         if (debugIterator != end(args)) {
             // there is -D in argv
             parser.DebugPrint();
         }
+
+        /*
+        ================< TODO: REMOVE THIS CODE BELOW >================
+        */
+    //    compiler::Compiler c;
+    //    ofstream cfile;
+    //    cfile.open("test.ccbin", ofstream::binary);
+    //    c.compile(parser.mFunction, cfile);
+    //    cfile.close();
+    //    return 0;
+
 
         vector<string>::iterator helpIterator = find(begin(args), end(args), "-H");
         if (helpIterator != end(args)) {

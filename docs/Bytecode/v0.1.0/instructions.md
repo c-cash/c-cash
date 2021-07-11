@@ -23,7 +23,7 @@
 | isub     | 06         | 0000 0110 |                               | value1, value2 → result | subtracts two integers |
 | imul     | 07         | 0000 0111 |                               | value1, value2 → result | multiplies two integers |
 | idiv     | 08         | 0000 1000 |                               | value1, value2 → result | divides two integers |
-| lconst   | 09         | 0000 1001 | value1, value2                | → [value1 < 32 | value2]  | pushes long value onto the stack |
+| lconst   | 09         | 0000 1001 | value1, value2                | → [value1 < 32 \| value2]  | pushes long value onto the stack |
 | lstore   | 0A         | 0000 1010 | index                         | value →                  | stores long value into variable #index |
 | lastore  | 0B         | 0000 1011 |                               | arrayref, index, value → | stores long value into an array |
 | lload    | 0C         | 0000 1100 | index                         | → value                  | loads value from the memory #index |
@@ -32,7 +32,7 @@
 | lsub     | 0F         | 0000 1111 |                               | value1, value2 → result | subtracts two longs |
 | lmul     | 10         | 0001 0000 |                               | value1, value2 → result | multiplies two longs |
 | ldiv     | 11         | 0001 0001 |                               | value1, value2 → result | divides two longs |
-| dconst   | 12         | 0001 0010 | value1, value2                | → [value1 < 32 | value2] | pushes double value onto the stack |
+| dconst   | 12         | 0001 0010 | value1, value2                | → [value1 < 32 \| value2] | pushes double value onto the stack |
 | dstore   | 13         | 0001 0011 | index                         | value →                  | stores double value into variable #index |
 | dastore  | 14         | 0001 0100 |                               | arrayref, index, value → | stores double value into an array |
 | dload    | 15         | 0001 0101 | index                         | → value                  | loads value from the memory #index |
