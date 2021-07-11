@@ -2,4 +2,5 @@
     - [**Syntax**](syntax.md)
     - [**Libraries**](Libraries/README.md)
     - [**Examples**](examples.md)
+    - [**Bytecode**](Bytecode/README.md)
     - [**TODO**](TODO.md)
