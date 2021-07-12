@@ -6,7 +6,7 @@ func main() {
 }
 ```
 translates into bytecode as
-```asm
+```js
 $Main:
     static main 0:
         iconst 5
@@ -31,7 +31,7 @@ func main() {
 }
 ```
 translates into bytecode as
-```asm
+```js
 $Main:
     static add 2:
         iadd

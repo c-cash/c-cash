@@ -6,3 +6,4 @@ From version `N/A` C$ supports it's own bytecode, here you can read about it and
 
 - [`INSTRUCTION SET`](Bytecode/v0.1.0/instructions.md) - list of all bytecode instructions
 - [`EXAMPLES`](Bytecode/v0.1.0/examples.md) - translated programs to show how it works
+- [`COMPILING`](Bytecode/v0.1.0/compiling.md) - how our programs are compiled

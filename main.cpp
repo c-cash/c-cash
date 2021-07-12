@@ -13,6 +13,7 @@
 #include "src/other/ParseSaver.hpp"
 #include "src/transpiler/Transpiler.hpp"
 #include "src/compiler/Compiler.hpp"
+#include "src/vm/VirtualMachine.hpp"
 
 using namespace std;
 using namespace parser;
@@ -40,9 +41,9 @@ int main (int argc, char **argv) {
         // run from code
 
         if(args[1].length() > 4) {
-            if(!(args[1].substr(args[1].length() - 5) == ".cash") && !(args[1].substr(args[1].length() - 4) == ".ccc")) {
-                throw runtime_error("The first argument should be .cash or .ccc file");
-            }
+            //if(!(args[1].substr(args[1].length() - 5) == ".cash") && !(args[1].substr(args[1].length() - 4) == ".ccc")) {
+            //    throw runtime_error("The first argument should be .cash or .ccc file");
+            //}
         } else {
             vector<string>::iterator helpIterator = find(begin(args), end(args), "-H");
             if (helpIterator != end(args)) {
@@ -53,7 +54,24 @@ int main (int argc, char **argv) {
             throw runtime_error("The first argument should be .cash or .ccc file");
         }
 
-        ifstream file(args[1]);
+        bool isVM = find(begin(args), end(args), "-VM") != end(args);
+
+        ifstream file;
+
+        if (isVM) {
+            file.open(args[1], std::fstream::binary);
+        } else {
+            file.open(args[1]);
+        }
+        
+        // run this code on a vm
+        if (isVM) {
+            vm::VirtualMachine machine;
+            map<string, vm::Class*> classes = machine.loadFromFile(file);
+            machine.exectuteProgram(classes);
+            return 0;
+        }
+
         string line, allCode="";
         bool isParsed = false, isFirst = true;
         while (getline(file, line)){
@@ -101,12 +119,12 @@ int main (int argc, char **argv) {
         /*
         ================< TODO: REMOVE THIS CODE BELOW >================
         */
-    //    compiler::Compiler c;
-    //    ofstream cfile;
-    //    cfile.open("test.ccbin", ofstream::binary);
-    //    c.compile(parser.mFunction, cfile);
-    //    cfile.close();
-    //    return 0;
+       compiler::Compiler c;
+       ofstream cfile;
+       cfile.open("test.ccbin", ofstream::binary);
+       c.compile(parser.mFunction, cfile);
+       cfile.close();
+       return 0;
 
 
         vector<string>::iterator helpIterator = find(begin(args), end(args), "-H");

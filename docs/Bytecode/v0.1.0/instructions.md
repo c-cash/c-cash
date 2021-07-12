@@ -2,8 +2,8 @@
 
 | prefix | C$ Type   | Description                            | Accepted values                     |
 | ------ | --------- | -------------------------------------- | ----------------------------------- |
-| `i`    | `int`     | 32 bit signed number                   | -2<sup>31</sup> → 2<sup>31</sup>-1  |
-| `l`    | `long`    | 64 bit signed number                   | -2<sup>63</sup> → 2<sup>63</sup>-1  |
+| `i`    | `int`     | 32 bit signed number                   | -2<<sup>31<</sup> → 2<<sup>31<</sup>-1  |
+| `l`    | `long`    | 64 bit signed number                   | -2<<sup>63<</sup> → 2<<sup>63<</sup>-1  |
 | `d`    | `double`  | 64 bit signed floating point number    | N/A                                 |
 | `c`    | `char`    | ?? bit unsigned number                 | 0 → 65 535                          |
 | `b`    | `boolean` | 1 bit value                            | 0 → 1                               |
@@ -23,7 +23,7 @@
 | isub     | 06         | 0000 0110 |                               | value1, value2 → result | subtracts two integers |
 | imul     | 07         | 0000 0111 |                               | value1, value2 → result | multiplies two integers |
 | idiv     | 08         | 0000 1000 |                               | value1, value2 → result | divides two integers |
-| lconst   | 09         | 0000 1001 | value1, value2                | → [value1 < 32 \| value2]  | pushes long value onto the stack |
+| lconst   | 09         | 0000 1001 | value                         | → value                 | pushes long value onto the stack |
 | lstore   | 0A         | 0000 1010 | index                         | value →                  | stores long value into variable #index |
 | lastore  | 0B         | 0000 1011 |                               | arrayref, index, value → | stores long value into an array |
 | lload    | 0C         | 0000 1100 | index                         | → value                  | loads value from the memory #index |
@@ -32,7 +32,7 @@
 | lsub     | 0F         | 0000 1111 |                               | value1, value2 → result | subtracts two longs |
 | lmul     | 10         | 0001 0000 |                               | value1, value2 → result | multiplies two longs |
 | ldiv     | 11         | 0001 0001 |                               | value1, value2 → result | divides two longs |
-| dconst   | 12         | 0001 0010 | value1, value2                | → [value1 < 32 \| value2] | pushes double value onto the stack |
+| dconst   | 12         | 0001 0010 | value                         | → value                 | pushes double value onto the stack |
 | dstore   | 13         | 0001 0011 | index                         | value →                  | stores double value into variable #index |
 | dastore  | 14         | 0001 0100 |                               | arrayref, index, value → | stores double value into an array |
 | dload    | 15         | 0001 0101 | index                         | → value                  | loads value from the memory #index |
@@ -63,13 +63,13 @@
 | oastore  | 2E         | 0010 1111 |                               | arrayref, index, objectref → | stores objectref into an array |
 | oload    | 2F         | 0011 0000 | index                         | → objectref            | loads objectref from variable #index |
 | oaload   | 30         | 0011 0001 |                               | arrayref, index → objectref | loads objectref from the array |
-| goto     | 31         | 0011 0010 | index1, index2                | [no change]             | jumps to the instruction at [index1 < 32 \| index2] |
-| ifeq     | 32         | 0011 0011 | index1, index2                | value1, value2 →        | if values are equal then jump to the instruction at [index1 < 32 \| index2] |
-| ifge     | 33         | 0011 0100 | index1, index2                | value1, value2 →        | if value1 is greater or equal to value2 then jump to the instruction at [index1 < 32 \| index2] |
-| ifgt     | 34         | 0011 0101 | index1, index2                | value1, value2 →        | if value1 is greater than value2 then jump to the instruction at [index1 < 32 \| index2] |
-| ifne     | 35         | 0011 0110 | index1, index2                | value1, value2 →        | if value1 is not equal to value2 then jump to the instruction at [index1 < 32 \| index2] |
-| ifnull    | 36         | 0011 0111 | index1, index2                | objectref →        | if objectref is null then jump to the instruction at [index1 < 32 \| index2] |
-| ifnotnull | 37         | 0011 1000 | index1, index2                | objectref →        | if objectref is not null then jump to the instruction at [index1 < 32 \| index2] |
+| goto     | 31         | 0011 0010 | index1, index2                | [no change]             | jumps to the instruction at [index1 << 32 \| index2] |
+| ifeq     | 32         | 0011 0011 | index1, index2                | value1, value2 →        | if values are equal then jump to the instruction at [index1 << 32 \| index2] |
+| ifge     | 33         | 0011 0100 | index1, index2                | value1, value2 →        | if value1 is greater or equal to value2 then jump to the instruction at [index1 << 32 \| index2] |
+| ifgt     | 34         | 0011 0101 | index1, index2                | value1, value2 →        | if value1 is greater than value2 then jump to the instruction at [index1 << 32 \| index2] |
+| ifne     | 35         | 0011 0110 | index1, index2                | value1, value2 →        | if value1 is not equal to value2 then jump to the instruction at [index1 << 32 \| index2] |
+| ifnull    | 36         | 0011 0111 | index1, index2                | objectref →        | if objectref is null then jump to the instruction at [index1 << 32 \| index2] |
+| ifnotnull | 37         | 0011 1000 | index1, index2                | objectref →        | if objectref is not null then jump to the instruction at [index1 << 32 \| index2] |
 | instanceof | 38         | 0011 1001 | UTF8                         | objectref → boolean | returns true if objectref is an instance of [UTF8] |
 | throw     | 39         | 0011 1010 |                               | objectref →         | throws an error from the error objectref |
 | return | 3A            | 0011 1011 |                               | → [empty]           | returns void from a method |
@@ -97,3 +97,4 @@
 | arrastore | 50          | 0101 0001 |                               | arrayref, index, value → | stores arrayref into an array |
 | arrload   | 51          | 0101 0010 | index                         | → value                  | loads arrayref from the memory #index |
 | arraload  | 52          | 0101 0011 |                               | arrayref, index → value  | loads arrayref from the array |
+| nop       | FF          | 1111 1111 |                               | [no change]              | this instruction is used only by VM to indicate different parts of the code |

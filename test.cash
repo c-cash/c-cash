@@ -1,5 +1,8 @@
 func main() {
     int a = 2;
-    int b = a + 3 + 2;
-    a = a + b;
+    long b = a + 1;
+    double c = a;
 }
+# iconst 2
+# i2l
+# lstore 0

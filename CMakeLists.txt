@@ -26,6 +26,9 @@ set(TRANSPILER
 set(COMPILER
     src/compiler/Compiler.cpp
 )
+set(VM
+    src/vm/VirtualMachine.cpp
+)
 
 set(VARIABLE
     src/variables/Object.cpp
@@ -61,6 +64,7 @@ add_library(${PROJECT_NAME}-parser STATIC ${PARSER})
 add_library(${PROJECT_NAME}-other STATIC ${OTHER})
 add_library(${PROJECT_NAME}-transpiler STATIC ${TRANSPILER})
 add_library(${PROJECT_NAME}-compiler STATIC ${COMPILER})
+add_library(${PROJECT_NAME}-vm STATIC ${VM})
 add_library(${PROJECT_NAME}-variable STATIC ${VARIABLE})
 add_library(${PROJECT_NAME}-libs STATIC ${LIBRARIES})
 
@@ -70,6 +74,7 @@ target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-parser)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-other)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-transpiler)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-compiler)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-vm)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-variable)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}-libs)
 
