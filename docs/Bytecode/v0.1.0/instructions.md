@@ -73,12 +73,12 @@
 | instanceof | 38         | 0011 1001 | UTF8                         | objectref → boolean | returns true if objectref is an instance of [UTF8] |
 | throw     | 39         | 0011 1010 |                               | objectref →         | throws an error from the error objectref |
 | return | 3A            | 0011 1011 |                               | → [empty]           | returns void from a method |
-| ireturn | 3B            | 0011 1100 |                               | value → [empty]           | returns int from a method |
-| lreturn | 3C            | 0011 1101 |                               | value → [empty]           | returns long from a method |
-| dreturn | 3D            | 0011 1110 |                               | value → [empty]           | returns double from a method |
-| creturn | 3E            | 0011 1111 |                               | value → [empty]           | returns char from a method |
-| breturn | 3F            | 0100 0000 |                               | value → [empty]           | returns boolean from a method |
-| oreturn | 40            | 0100 0001 |                               | objectref → [empty]       | returns objectref from a method |
+| !(deprecated)! ireturn | 3B            | 0011 1100 |                               | value → [empty]           | returns int from a method |
+| !(deprecated)! lreturn | 3C            | 0011 1101 |                               | value → [empty]           | returns long from a method |
+| !(deprecated)! dreturn | 3D            | 0011 1110 |                               | value → [empty]           | returns double from a method |
+| !(deprecated)! creturn | 3E            | 0011 1111 |                               | value → [empty]           | returns char from a method |
+| !(deprecated)! breturn | 3F            | 0100 0000 |                               | value → [empty]           | returns boolean from a method |
+| !(deprecated)! oreturn | 40            | 0100 0001 |                               | objectref → [empty]       | returns objectref from a method |
 | i2l     | 41            | 0100 0010 |                               | value → result            | convert an int to a long |
 | i2d     | 42            | 0100 0011 |                               | value → result            | convert an int to a double |
 | i2c     | 43            | 0100 0100 |                               | value → result            | convert an int to a char |
@@ -103,5 +103,6 @@
 | delete    | 56          | 0101 0111 | index                         | [no change]               | remove variable #index from memory heap |
 | switch    | 57          | 0101 1000 | flags                         | [no change]               | flags^fregister |
 | isflag    | 58          | 0101 1001 | flags                         | [no change]               | flags&fregister > 0 |
+| anystore  | 59          | 0101 1010 |                               | value →                   | store any type that is on top of the stack |
 | NULL      | FD          | 1111 1101 |                               | [no change]               | do nothing |
 | nop       | FF          | 1111 1111 |                               | [no change]               | this instruction is used only by VM to indicate different parts of the code |

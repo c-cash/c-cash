@@ -10,6 +10,7 @@
 
 #include "../parser/Parser.hpp"
 #include "../parser/FunctionDefinition.hpp"
+#include "../parser/ClassDefinition.hpp"
 #include "../parser/Statement.hpp"
 
 typedef std::variant<int, long long, double, char, bool, void*, unsigned long long> dataType;
@@ -19,20 +20,23 @@ namespace compiler {
     using namespace parser;
 
     struct Stack {
+        // head
+        string className;
+        // data
         std::map<string, string> varTypes;
         map<string, uint32_t> numerical_names;
         stack<vector<string>*> scope;
 
         // for later
         stack<vector<streampos>*> breaks;
-
+        stack<unsigned long long> loopbegins;
         //std::map<string, dataType> values;
     };
 
     class Compiler {
         public:
-            void compile(map<string, FunctionDefinition> &mFunctions, ofstream &out);
-            void compileFunction(FunctionDefinition &d);
+            void compile(map<string, FunctionDefinition> &mFunctions, ofstream &out, map<string, ClassDefinition> &cDefinitions);
+            void compileFunction(FunctionDefinition &d, string className, char flags);
             void compileCode(vector<Statement> &statements, Stack &s);
             
             void compileFunctionCall(Statement &stmt, Stack &s);
@@ -51,6 +55,7 @@ namespace compiler {
 
             uint32_t getNumericalName(string name, Stack &s);
             void writeInteger(int n);
+            void writeUTF8(string text);
             void writeLong(long long n);
             void writeULong(unsigned long long n);
             void writeDouble(double n);
@@ -59,6 +64,10 @@ namespace compiler {
             static const char NOP {(char)0xff};
             static const char EOP {(char)0xfe};
             unsigned long long ci; // current instruction
+
+            void getFunctionsMap(map<string, FunctionDefinition> &globalDefs, map<string, ClassDefinition> &cDefinitions);
+            map<string, map<string, bool>*> staticFunctionsMap;
+            map<string, map<string, vector<ParameterDefinition>*>*> functionParamDefs;
 
             uint32_t nextNumericalName = 0;
             ofstream* out;
@@ -170,6 +179,8 @@ namespace compiler {
         SWITCH = (char) 0x57,
         ISFLAG = (char) 0x58,
 
-        null = (char) 0xFD,
+        ANYSTORE = (char) 0x59,
+
+        null = (char) 0xFD
     };
 }

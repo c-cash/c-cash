@@ -26,7 +26,8 @@ namespace parser {
         NAMESPACE,
         INCREMENTATION,
         DECREMENTATION,
-        TERNARY
+        TERNARY,
+        CLASS
     };
 
     static const char* sStatementKindStrings[] = {
@@ -47,6 +48,7 @@ namespace parser {
         "INCREMENTATION",
         "DECREMENTATION,",
         "TERNARY"
+        "CLASS"
     };
 
     class Statement {

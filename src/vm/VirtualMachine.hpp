@@ -8,6 +8,7 @@
 #include "../compiler/Compiler.hpp"
 
 typedef std::variant<int, long long, double, char, bool, void*, unsigned long long> dataType;
+typedef std::variant<int, long long, double, char, bool, void*, unsigned long long, std::string> iDataType;
 typedef std::stack<dataType> VMStack;
 
 namespace vm {
@@ -16,7 +17,7 @@ namespace vm {
 
     struct instruction {
         BytecodeInstructions instruction;
-        vector<dataType> data;
+        vector<iDataType> data;
     };
     struct Method {
         char flags;
@@ -46,6 +47,7 @@ namespace vm {
             static const char EOP {(char)0xfe};
 
             map<int32_t, dataType> heap;
+            map<string, Class*> classMap;
 
             instruction* loadInstruction(char &it, ifstream &in);
     };

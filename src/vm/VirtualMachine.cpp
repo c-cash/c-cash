@@ -197,7 +197,7 @@ namespace vm {
                 }
                 // store a double in a memory heap
                 case BytecodeInstructions::CSTORE: {
-                    heap[getData(char, i, 0)] = stack.top();
+                    heap[getData(int, i, 0)] = stack.top();
                     stack.pop();
                     break;
                 }
@@ -242,7 +242,7 @@ namespace vm {
                 }
                 // store a double in a memory heap
                 case BytecodeInstructions::BSTORE: {
-                    heap[getData(bool, i, 0)] = stack.top();
+                    heap[getData(int, i, 0)] = stack.top();
                     stack.pop();
                     break;
                 }
@@ -396,6 +396,31 @@ namespace vm {
                     heap.erase(getData(int, i, 0));
                     break;
                 }
+
+                case BytecodeInstructions::ANYSTORE: {
+                    heap[getData(int, i, 0)] = stack.top();
+                    stack.pop();
+                    break;
+                }
+
+                // ===< CALLS >===
+                case BytecodeInstructions::CALLSTATIC: {
+                    Class* cls = classMap[getData(string, i, 0)];
+                    Method* mt = cls->methods[getData(string, i, 1)];
+                    VMStack* ns = new VMStack();
+                    for (int i{0}; i<mt->pcount; ++i) // add all arguments to the beggining stack
+                        { ns->push(stack.top()); stack.pop(); }
+                    executeMethod(mt, *ns);
+                    stack.push(ns->top()); // put return value onto the stack
+                    delete ns;
+                    break;
+                }
+
+                // ===< RETURNS >===
+                case BytecodeInstructions::RETURN: {
+                    return; // return :D
+                    break;
+                }
                 
                 case BytecodeInstructions::null: {
                     printStackAndHeap(stack);
@@ -404,6 +429,7 @@ namespace vm {
 
                 default: {
                     throw runtime_error("VM can't find instruction corresponding to the code " + (int)i->instruction);
+                    break;
                 }
             }
         }
@@ -411,6 +437,7 @@ namespace vm {
 
     void VirtualMachine::exectuteProgram(map<string, Class*> &classes) {
         VMStack* s = new VMStack();
+        classMap = classes;
         executeMethod(classes["$Main"]->methods["main"], *s);
     }
 
@@ -540,6 +567,16 @@ namespace vm {
             case BytecodeInstructions::JMPFALSE:
                 i->instruction = BytecodeInstructions::JMPFALSE;
                 i->data.emplace_back(readNext<unsigned long long>(in));
+                break;
+
+            case BytecodeInstructions::ANYSTORE:
+                i->instruction = BytecodeInstructions::BSTORE;
+                i->data.emplace_back(readNext<int>(in));
+                break;
+            case BytecodeInstructions::CALLSTATIC:
+                i->instruction = BytecodeInstructions::CALLSTATIC;
+                i->data.emplace_back(readUTF8(in));
+                i->data.emplace_back(readUTF8(in));
                 break;
 
             default:

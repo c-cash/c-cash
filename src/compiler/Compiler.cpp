@@ -11,27 +11,38 @@ namespace compiler {
         for (string &str : *scope) {
             s.numerical_names.erase(str);
             s.varTypes.erase(str);
+            s.loopbegins.pop();
             // TODO: remove this from heap
         }
     }
 
-    void Compiler::compile(map<string, FunctionDefinition> &mFunctions, ofstream &out) {
+    void Compiler::compile(map<string, FunctionDefinition> &mFunctions, ofstream &out, map<string, ClassDefinition> &cDefinitions) {
         this->out = &out;
         // check if there is a main function
         if (mFunctions.find("main") == mFunctions.end()) throw runtime_error("Code must have a main function");
         // add $Main class to the file
         out << "$Main" << NOP;
         writeInteger(mFunctions.size());
-        //Complie funcions
+        getFunctionsMap(mFunctions, cDefinitions);
+        // Complie funcions
         for (auto &p : mFunctions) {
-            out << (char) 0b0000'0001; // static function
-            compileFunction(p.second);
+            compileFunction(p.second, "$Main", 0b0000'0001);
+        }
+
+        // Compile other classes
+        for (auto &p : cDefinitions) {
+            out << p.first << NOP;
+            writeInteger(p.second.mFunctions.size());
+            for (auto &fp : p.second.mFunctions) {
+                compileFunction(fp, p.first, 0b0000'0000); // TODO: change to static if flag is set
+            }
         }
 
         out << EOP;
     }
 
-    void Compiler::compileFunction(FunctionDefinition &d) {
+    void Compiler::compileFunction(FunctionDefinition &d, string className, char flags) {
+        *out << flags;
         ci = 0; // set current instruction to 0
         // save function name
         writeInteger(d.mName.size());
@@ -40,6 +51,14 @@ namespace compiler {
         writeInteger(d.mParameters.size());
         // Create new stack and compile this function
         Stack s;
+        s.className = className;
+        // create vartypes and names for parameters
+        for (ParameterDefinition &def : d.mParameters) {
+            s.varTypes[def.mName] = def.mType.mName;
+            ++ci;
+            *out << (char)BytecodeInstructions::ANYSTORE;
+            writeInteger(getNumericalName(def.mName, s));
+        }
         // TODO: add simulated parameters
         compileCode(d.mStatements, s);
         *out << (char)BytecodeInstructions::null << NOP;
@@ -93,6 +112,39 @@ namespace compiler {
     void Compiler::compileFunctionCall(Statement &stmt, Stack &s) {
         if (stmt.mName == "IF" || stmt.mName == "LOOP" || stmt.mName == "ELSE" || stmt.mName == "ELIF") 
             {compileSpecialFunctionCall(stmt, s); return; }
+
+        if (stmt.mName == "return") {
+            if (stmt.mStatements.size() == 0) { // void function
+                ++ci;
+                *out << (char)BytecodeInstructions::RETURN;
+            }
+            string rtype = getStatementType(stmt.mStatements[0], s);
+            compileStatement(stmt.mStatements[0], s);
+            ++ci;
+            *out << (char)BytecodeInstructions::RETURN;
+            return;
+        }
+
+        bool isStatic = (*staticFunctionsMap[s.className])[stmt.mName];
+        if (!isStatic) {
+            // TODO: put objectref onto the stack?
+        }
+        // for later usage
+        string cName = "$Main"; // TODO: add other class?
+        // put all arguments onto the stack
+        int i = 0;
+        for (Statement &arg : stmt.mStatements) {
+            compileStatement(arg, s);
+            tryConvertValue(getStatementType(arg, s), (*(*functionParamDefs[cName])[stmt.mName])[i].mType.mName);
+            ++i;
+        }
+
+        if (isStatic) {
+            ++ci;
+            *out << (char)BytecodeInstructions::CALLSTATIC;
+            writeUTF8(cName);
+            writeUTF8(stmt.mName);
+        }
     }
     void Compiler::compileSpecialFunctionCall(Statement &stmt, Stack &s) {
         if (stmt.mName == "IF") {
@@ -188,6 +240,7 @@ namespace compiler {
                 *out << (char)BytecodeInstructions::GOTO;
                 unsigned long long gotoci = ci;
                 streampos gotopos = out->tellp();
+                s.loopbegins.push(ci-1);
                 writeULong(0LL);
 
                 // write all instructions
@@ -218,28 +271,30 @@ namespace compiler {
                 *out << (char)BytecodeInstructions::GOTO;
                 unsigned long long gotoci = ci;
                 streampos gotopos = out->tellp();
+                s.loopbegins.push(ci-1);
                 writeULong(0LL);
 
                 // code inside loop
                 for (int i{1}; i < stmt.mStatements.size(); ++i) {
                     compileStatement(stmt.mStatements[i], s);
                 }
-                popScope(s);
 
                 // code after loop
                 compileStatement(stmt.mStatements[0].mStatements[2], s);
-
-                // check and jump to start
-                compileStatement(stmt.mStatements[0].mStatements[0], s);
-                ++ci;
-                *out << (char)BytecodeInstructions::JMPFALSE;
-                writeULong(gotoci);
 
                 // update goto
                 streampos tmp = out->tellp();
                 out->seekp(gotopos);
                 writeULong(ci);
                 out->seekp(tmp);
+
+                // check and jump to start
+                compileStatement(stmt.mStatements[0].mStatements[1], s);
+                popScope(s);
+                ++ci;
+                *out << (char)BytecodeInstructions::JMPFALSE;
+                writeULong(gotoci);
+
             }
 
             // breaks
@@ -393,6 +448,14 @@ namespace compiler {
             return;
         }
 
+        // CONTINUE
+        if (stmt.mName == "continue") {
+            ++ci;
+            *out << (char)BytecodeInstructions::GOTO;
+            writeULong(s.loopbegins.top());
+            return;
+        }
+
 
         if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("Variable " + stmt.mName + " should be defined before call");
         string t = s.varTypes[stmt.mName];
@@ -454,6 +517,8 @@ namespace compiler {
                 return getStatementType(stmt.mStatements[0], s);
             case StatementKind::LOGIC_CALL:
                 return "bool";
+            case StatementKind::FUNCTION_CALL:
+                return "$$$";
         }
         stmt.DebugPrint(0);
         throw runtime_error("cannot discover type for statement above");
@@ -462,7 +527,8 @@ namespace compiler {
     // tries to convert variable on the top of the stack
     void Compiler::tryConvertValue(string from, string to) {
         if (from == to) return;
-        
+        if (from == "$$$" || to == "$$$") return;
+
         ++ci;
         if (from == "signed int" && to == "long") {*out << (char)BytecodeInstructions::I2L; }
         else if (from == "signed int" && to == "double") {*out << (char)BytecodeInstructions::I2D; }
@@ -492,6 +558,26 @@ namespace compiler {
         return s.numerical_names[name];
     }
 
+    void Compiler::getFunctionsMap(map<string, FunctionDefinition> &globalDefs, map<string, ClassDefinition> &cDefinitions) {
+        staticFunctionsMap["$Main"] = new map<string, bool>();
+        functionParamDefs["$Main"] = new map<string, vector<ParameterDefinition>*>();
+        for (auto &p : globalDefs) {
+            (*staticFunctionsMap["$Main"])[p.first] = true;
+
+            (*functionParamDefs["$Main"])[p.first] = &p.second.mParameters;
+        }
+
+        for (auto &p : cDefinitions) {
+            staticFunctionsMap[p.first] = new map<string, bool>();
+            functionParamDefs[p.first] = new map<string, vector<ParameterDefinition>*>();
+            for (auto &fp : p.second.mFunctions) {
+                (*staticFunctionsMap[p.first])[fp.mName] = true;
+
+                (*functionParamDefs[p.first])[fp.mName] = &fp.mParameters;
+            }
+        }
+    }
+
     void Compiler::writeInteger(int n) {
         static_assert(sizeof(n) == 4, "Field n has to have size 4.");
         out->write(reinterpret_cast<const char *>(&n), sizeof(n));
@@ -507,5 +593,10 @@ namespace compiler {
     void Compiler::writeDouble(double n) {
         static_assert(sizeof(n) == 8, "Field n has to have size 8.");
         out->write(reinterpret_cast<const char *>(&n), sizeof(n));
+    }
+
+    void Compiler::writeUTF8(string text) {
+        writeInteger(text.size());
+        *out << text;
     }
 }

@@ -1,10 +1,12 @@
 func main() {
-    int a = 155;
-    if (a == 1) {
-        a = 2;
-    } elif (a == 155) {
-        a = 3;
-    } else {
-        a = 1;
-    } 
+    int a = 0;
+    
+    antis = wrr();
 }
+
+|
+VARIABLE_CALL func antis (
+        FUNCTION_CALL func wrr (
+        )
+)
+|

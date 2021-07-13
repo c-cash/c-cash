@@ -3,6 +3,7 @@
 #include "Tokenizer.hpp"
 #include "Type.hpp"
 #include "FunctionDefinition.hpp"
+#include "ClassDefinition.hpp"
 #include "Statement.hpp"
 
 #include <optional>
@@ -21,6 +22,7 @@ namespace parser {
             void parse(vector<Token> &tokens);
             void DebugPrint() const;
             map<string, FunctionDefinition> mFunction;
+            map<string, ClassDefinition> mClass;
 
         private:
             std::vector<parser::Token>::iterator mCurrentToken;
@@ -49,11 +51,13 @@ namespace parser {
             optional<Token> expectLogic(const string &name = string());
             bool isDeclaration();
             bool expectFunctionDefinition();
+            bool expectClassDefinition();
             bool nextTokenIsAlias();
 
             optional<Statement> parseNamespaceAlias();
             optional<Statement> parseLoopStatement();
             optional<vector<Statement>> parseFunctionBody();
+            optional<FunctionDefinition> expectMethodDefinition();
             optional<Statement> parseIfStatement();
             optional<Statement> parseTryStatement();
             optional<Statement> expectTernaryOperator();

@@ -13,6 +13,7 @@ set(PARSER
     src/parser/Parser.cpp
     src/parser/Statement.cpp
     src/parser/Tokenaizer.cpp
+    src/parser/ClassDefinition.cpp
 )
 
 set(OTHER

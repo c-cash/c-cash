@@ -3,21 +3,21 @@
 namespace parser {
     using namespace std;
 
-    void FunctionDefinition::DebugPrint() const{
-        cout << mName << (" (\n");
+    void FunctionDefinition::DebugPrint(size_t indent) const{
+        cout << string(indent, '\t') << "\u001B[36m" << "func " << "\u001B[32m" << mName << "\u001B[0m" << " (\n";
 
         for(ParameterDefinition param : mParameters) {
-            param.DebugPrint(1);
+            param.DebugPrint(indent + 1);
         }
 
-        cout << ") {\n";
+        cout << string(indent, '\t') << ") {\n";
         for(Statement statement : mStatements) {
-            statement.DebugPrint(0);
+            statement.DebugPrint(indent);
         }
-        cout << "}" << '\n';
+        cout << string(indent, '\t') << "}" << '\n';
     }
 
     void ParameterDefinition::DebugPrint(size_t indent) const{
-        cout << string(indent, '\t') << mType.mName << " " << mName << '\n';
+        cout << string(indent, '\t') << "\u001B[33m" << mType.mName << " " << "\u001B[32m" << mName << "\u001B[0m" << '\n';
     }
 }

@@ -24,7 +24,7 @@ namespace parser {
             vector<ParameterDefinition> mParameters;
             vector<Statement> mStatements;
 
-            void DebugPrint() const;
+            void DebugPrint(size_t indent) const;
     };
     
 }

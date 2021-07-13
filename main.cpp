@@ -122,7 +122,7 @@ int main (int argc, char **argv) {
        compiler::Compiler c;
        ofstream cfile;
        cfile.open("test.ccbin", ofstream::binary);
-       c.compile(parser.mFunction, cfile);
+       c.compile(parser.mFunction, cfile, parser.mClass);
        cfile.close();
        return 0;
 
