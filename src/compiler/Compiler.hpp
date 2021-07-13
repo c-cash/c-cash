@@ -6,33 +6,27 @@
 #include <vector>
 #include <stack>
 #include <string>
+#include <variant>
 
 #include "../parser/Parser.hpp"
 #include "../parser/FunctionDefinition.hpp"
 #include "../parser/Statement.hpp"
+
+typedef std::variant<int, long long, double, char, bool, void*, unsigned long long> dataType;
 
 namespace compiler {
     using namespace std;
     using namespace parser;
 
     struct Stack {
-        std::stack<long> elements;
         std::map<string, string> varTypes;
-        std::map<string, long> values;
+        map<string, uint32_t> numerical_names;
+        stack<vector<string>*> scope;
 
-        std::pair<long, long> pop2() {
-            pair<long, long> p;
-            p.first = elements.top();
-            elements.pop();
-            p.second = elements.top();
-            elements.pop();
-            return p;
-        }
-        long pop() {
-            long t = elements.top();
-            elements.pop();
-            return t;
-        }
+        // for later
+        stack<vector<streampos>*> breaks;
+
+        //std::map<string, dataType> values;
     };
 
     class Compiler {
@@ -41,26 +35,31 @@ namespace compiler {
             void compileFunction(FunctionDefinition &d);
             void compileCode(vector<Statement> &statements, Stack &s);
             
-
+            void compileFunctionCall(Statement &stmt, Stack &s);
+            void compileSpecialFunctionCall(Statement &stmt, Stack &s);
             void compileStatement(Statement &stmt, Stack &s);
             void compileVariableDeclaration(Statement &stmt, Stack &s);
             void compileLitteral(Statement &stmt, Stack &s);
             void compileMathOperation(Statement &stmt, Stack &s);
+            void compileLogicCall(Statement &stmt, Stack &s);
             void compileVariableCall(Statement &stmt, Stack &s);
             void tryConvertValue(string from, string to);
             
+            void popScope(Stack &s);
+
             string getStatementType(Statement &stmt, Stack &s);
 
             uint32_t getNumericalName(string name, Stack &s);
             void writeInteger(int n);
             void writeLong(long long n);
+            void writeULong(unsigned long long n);
             void writeDouble(double n);
 
         private:
             static const char NOP {(char)0xff};
             static const char EOP {(char)0xfe};
+            unsigned long long ci; // current instruction
 
-            map<string, uint32_t> numerical_names;
             uint32_t nextNumericalName = 0;
             ofstream* out;
     };
@@ -141,8 +140,36 @@ namespace compiler {
 
         I2L = (char) 0x41,
         I2D = (char) 0x42,
+        I2C = (char) 0x43,
+        I2B = (char) 0x44,
+        
+        D2I = (char) 0x45,
+        D2L = (char) 0x46,
+        D2B = (char) 0x47,
 
-        L2I = (char) 0x48
-        // TODO: Add more instructions
+        L2I = (char) 0x48,
+        L2D = (char) 0x49,
+        L2C = (char) 0x4A,
+        L2B = (char) 0x4B,
+
+        C2I = (char) 0x4C,
+        C2L = (char) 0x4D,
+
+        ARRCONST = (char) 0x4E,
+        ARRSTORE = (char) 0x4F,
+        ARRASTORE = (char) 0x50,
+        ARRLOAD = (char) 0x51,
+        ARRALOAD = (char) 0x52,
+
+        JMPTRUE = (char) 0x53,
+        JMPFALSE = (char) 0x54,
+        NOT = (char) 0x55,
+
+        DELETE = (char) 0x56,
+
+        SWITCH = (char) 0x57,
+        ISFLAG = (char) 0x58,
+
+        null = (char) 0xFD,
     };
 }

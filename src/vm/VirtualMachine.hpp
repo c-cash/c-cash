@@ -7,7 +7,7 @@
 #include <stack>
 #include "../compiler/Compiler.hpp"
 
-typedef std::variant<int, long long, double, char, void*> dataType;
+typedef std::variant<int, long long, double, char, bool, void*, unsigned long long> dataType;
 typedef std::stack<dataType> VMStack;
 
 namespace vm {
@@ -33,6 +33,9 @@ namespace vm {
             void exectuteProgram(map<string, Class*>& classes);
             void executeMethod(Method* method, VMStack &stack);
             
+            void printStackAndHeap(VMStack &stack);
+            void printData(dataType &d);
+
             map<string, Class*> loadFromFile(ifstream &in);
 
             string readUTF8(ifstream &in);

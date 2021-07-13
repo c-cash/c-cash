@@ -14,7 +14,9 @@ namespace vm {
     void VirtualMachine::executeMethod(Method* method, VMStack &stack) {
         if (stack.size() != method->pcount) 
             throw runtime_error("bytecode is corrupted or has been modified in a wrong way, please don't touch it again!");
-        for (instruction* i : method->instructions) {
+        size_t i_count = method->instructions.size();
+        for (unsigned long long n{0}; n<i_count; ++n/*instruction* i : method->instructions*/) {
+            instruction* i = method->instructions[n];
             switch(i->instruction) {
                 // ===< INTEGER >===
                 // create new int on a stack
@@ -102,29 +104,29 @@ namespace vm {
                 }
                 // add two longs
                 case BytecodeInstructions::LADD: {
-                    int a = getTop(long long, stack); stack.pop();
-                    int b = getTop(long long, stack); stack.pop();
+                    long long a = getTop(long long, stack); stack.pop();
+                    long long b = getTop(long long, stack); stack.pop();
                     stack.push(a + b);
                     break;
                 }
                 // subtract two longs
                 case BytecodeInstructions::LSUB: {
-                    int a = getTop(long long, stack); stack.pop();
-                    int b = getTop(long long, stack); stack.pop();
+                    long long a = getTop(long long, stack); stack.pop();
+                    long long b = getTop(long long, stack); stack.pop();
                     stack.push(a - b);
                     break;
                 }
                 // multiply two longs
                 case BytecodeInstructions::LMUL: {
-                    int a = getTop(long long, stack); stack.pop();
-                    int b = getTop(long long, stack); stack.pop();
+                    long long a = getTop(long long, stack); stack.pop();
+                    long long b = getTop(long long, stack); stack.pop();
                     stack.push(a * b);
                     break;
                 }
                 // divide two longs
                 case BytecodeInstructions::LDIV: {
-                    int a = getTop(long long, stack); stack.pop();
-                    int b = getTop(long long, stack); stack.pop();
+                    long long a = getTop(long long, stack); stack.pop();
+                    long long b = getTop(long long, stack); stack.pop();
                     stack.push(a / b);
                     break;
                 }
@@ -159,35 +161,154 @@ namespace vm {
                 }
                 // add two doubles
                 case BytecodeInstructions::DADD: {
-                    int a = getTop(double, stack); stack.pop();
-                    int b = getTop(double, stack); stack.pop();
+                    double a = getTop(double, stack); stack.pop();
+                    double b = getTop(double, stack); stack.pop();
                     stack.push(a + b);
                     break;
                 }
                 // subtract two doubles
                 case BytecodeInstructions::DSUB: {
-                    int a = getTop(double, stack); stack.pop();
-                    int b = getTop(double, stack); stack.pop();
+                    double a = getTop(double, stack); stack.pop();
+                    double b = getTop(double, stack); stack.pop();
                     stack.push(a - b);
                     break;
                 }
                 // multiply two doubles
                 case BytecodeInstructions::DMUL: {
-                    int a = getTop(double, stack); stack.pop();
-                    int b = getTop(double, stack); stack.pop();
+                    double a = getTop(double, stack); stack.pop();
+                    double b = getTop(double, stack); stack.pop();
                     stack.push(a * b);
                     break;
                 }
                 // divide two doubles
                 case BytecodeInstructions::DDIV: {
-                    int a = getTop(double, stack); stack.pop();
-                    int b = getTop(double, stack); stack.pop();
+                    double a = getTop(double, stack); stack.pop();
+                    double b = getTop(double, stack); stack.pop();
                     stack.push(a / b);
                     break;
                 }
 
 
+                // ===< CHAR >===
+                // create new double on a stack
+                case BytecodeInstructions::CCONST: {
+                    stack.push(getData(char, i, 0));
+                    break;
+                }
+                // store a double in a memory heap
+                case BytecodeInstructions::CSTORE: {
+                    heap[getData(char, i, 0)] = stack.top();
+                    stack.pop();
+                    break;
+                }
+                // store a double in an array
+                case BytecodeInstructions::CASTORE: {
+                    // TODO: implement
+                    break;
+                }
+                // load value from the memory heap
+                case BytecodeInstructions::CLOAD: {
+                    stack.push(heap[getData(char, i, 0)]);
+                    break;
+                }
+                // load an int from an array
+                case BytecodeInstructions::CALOAD: {
+                    // TODO: implement
+                    break;
+                }
+                // add two doubles
+                case BytecodeInstructions::CADD: {
+                    char a = getTop(char, stack); stack.pop();
+                    char b = getTop(char, stack); stack.pop();
+                    stack.push(a + b);
+                    break;
+                }
+                // subtract two doubles
+                case BytecodeInstructions::CSUB: {
+                    char a = getTop(char, stack); stack.pop();
+                    int b = getTop(char, stack); stack.pop();
+                    stack.push(a - b);
+                    break;
+                }
 
+
+                // 0011 0000 - false
+                // 0011 0001 - true
+                // ===< BOOL >===
+                // create new double on a stack
+                case BytecodeInstructions::BCONST: {
+                    stack.push(getData(bool, i, 0));
+                    break;
+                }
+                // store a double in a memory heap
+                case BytecodeInstructions::BSTORE: {
+                    heap[getData(bool, i, 0)] = stack.top();
+                    stack.pop();
+                    break;
+                }
+                // store a double in an array
+                case BytecodeInstructions::BASTORE: {
+                    // TODO: implement
+                    break;
+                }
+                // load value from the memory heap
+                case BytecodeInstructions::BLOAD: {
+                    stack.push(heap[getData(bool, i, 0)]);
+                    break;
+                }
+                // load an int from an array
+                case BytecodeInstructions::BALOAD: {
+                    // TODO: implement
+                    break;
+                }
+
+                // ===< IFS >===
+                case BytecodeInstructions::IFEQ: {
+                    dataType a = stack.top(); stack.pop();
+                    dataType b = stack.top(); stack.pop();
+                    stack.push(a == b);
+                    break;
+                }
+                case BytecodeInstructions::IFGE: {
+                    dataType a = stack.top(); stack.pop();
+                    dataType b = stack.top(); stack.pop();
+                    stack.push(a >= b);
+                    break;
+                }
+                case BytecodeInstructions::IFGT: {
+                    dataType a = stack.top(); stack.pop();
+                    dataType b = stack.top(); stack.pop();
+                    stack.push(a > b);
+                    break;
+                }
+                case BytecodeInstructions::IFNE: {
+                    dataType a = stack.top(); stack.pop();
+                    dataType b = stack.top(); stack.pop();
+                    stack.push(a != b);
+                    break;
+                }
+
+                // ===< JUMPS >===
+                case BytecodeInstructions::GOTO: {
+                    n = getData(unsigned long long, i, 0) - 1;
+                    break;
+                }
+                case BytecodeInstructions::JMPFALSE: {
+                    bool top = getTop(bool, stack);
+                    if (!top) {
+                        n = getData(unsigned long long, i, 0) - 1;
+                    }
+                    stack.pop();
+                    break;
+                }
+                case BytecodeInstructions::JMPTRUE: {
+                    bool top = getTop(bool, stack);
+                    if (top) {
+                        n = getData(unsigned long long, i, 0) - 1;
+                    }
+                    stack.pop();
+                    break;
+                }
                 // ===< CONVERSIONS >===
                 case BytecodeInstructions::I2L: {
                     int a = getTop(int, stack);
@@ -201,10 +322,83 @@ namespace vm {
                     stack.push((double) a);
                     break;
                 }
-                case BytecodeInstructions::L2I: {
-                    int a = getTop(long long, stack);
+                case BytecodeInstructions::I2C: {
+                    int a = getTop(int, stack);
+                    stack.pop();
+                    stack.push((char) a);
+                    break;
+                }
+                case BytecodeInstructions::I2B: {
+                    int a = getTop(int, stack);
+                    stack.pop();
+                    stack.push(a > 0);
+                    break;
+                }
+
+                case BytecodeInstructions::D2I: {
+                    double a = getTop(double, stack);
+                    stack.pop();
+                    stack.push((int) a);
+                    break;
+                }
+                case BytecodeInstructions::D2L: {
+                    double a = getTop(double, stack);
                     stack.pop();
                     stack.push((long long) a);
+                    break;
+                }
+                case BytecodeInstructions::D2B: {
+                    double a = getTop(int, stack);
+                    stack.pop();
+                    stack.push(a > 0.0);
+                    break;
+                }
+
+                case BytecodeInstructions::L2I: {
+                    long long a = getTop(long long, stack);
+                    stack.pop();
+                    stack.push((int) a);
+                    break;
+                }
+                case BytecodeInstructions::L2D: {
+                    long long a = getTop(long long, stack);
+                    stack.pop();
+                    stack.push((double) a);
+                    break;
+                }
+                case BytecodeInstructions::L2C: {
+                    long long a = getTop(long long, stack);
+                    stack.pop();
+                    stack.push((char) a);
+                    break;
+                }
+                case BytecodeInstructions::L2B: {
+                    long long a = getTop(long long, stack);
+                    stack.pop();
+                    stack.push(a > 0LL);
+                    break;
+                }
+
+                case BytecodeInstructions::C2I: {
+                    char a = getTop(char, stack);
+                    stack.pop();
+                    stack.push((int) a);
+                    break;
+                }
+                case BytecodeInstructions::C2L: {
+                    char a = getTop(char, stack);
+                    stack.pop();
+                    stack.push((long long) a);
+                    break;
+                }
+
+                case BytecodeInstructions::DELETE: {
+                    heap.erase(getData(int, i, 0));
+                    break;
+                }
+                
+                case BytecodeInstructions::null: {
+                    printStackAndHeap(stack);
                     break;
                 }
 
@@ -307,7 +501,46 @@ namespace vm {
                 i->instruction = BytecodeInstructions::DLOAD;
                 i->data.emplace_back(readNext<int>(in));
                 break;
-           
+
+            case BytecodeInstructions::CCONST:
+                i->instruction = BytecodeInstructions::CCONST;
+                i->data.emplace_back(readNext<char>(in));
+                break;
+            case BytecodeInstructions::CSTORE:
+                i->instruction = BytecodeInstructions::CSTORE;
+                i->data.emplace_back(readNext<int>(in));
+                break;
+            case BytecodeInstructions::CLOAD:
+                i->instruction = BytecodeInstructions::CLOAD;
+                i->data.emplace_back(readNext<int>(in));
+                break;
+                
+            case BytecodeInstructions::BCONST:
+                i->instruction = BytecodeInstructions::BCONST;
+                i->data.emplace_back(readNext<bool>(in));
+                break;
+            case BytecodeInstructions::BSTORE:
+                i->instruction = BytecodeInstructions::BSTORE;
+                i->data.emplace_back(readNext<int>(in));
+                break;
+            case BytecodeInstructions::BLOAD:
+                i->instruction = BytecodeInstructions::BLOAD;
+                i->data.emplace_back(readNext<int>(in));
+                break;
+
+
+            case BytecodeInstructions::GOTO:
+                i->instruction = BytecodeInstructions::GOTO;
+                i->data.emplace_back(readNext<unsigned long long>(in));
+                break;
+            case BytecodeInstructions::JMPTRUE:
+                i->instruction = BytecodeInstructions::JMPTRUE;
+                i->data.emplace_back(readNext<unsigned long long>(in));
+                break;
+            case BytecodeInstructions::JMPFALSE:
+                i->instruction = BytecodeInstructions::JMPFALSE;
+                i->data.emplace_back(readNext<unsigned long long>(in));
+                break;
 
             default:
                 i->instruction = (BytecodeInstructions)it;
@@ -328,6 +561,47 @@ namespace vm {
         compileCode(d.mStatements, s);
         *out << NOP;
     */
+
+    void VirtualMachine::printStackAndHeap(VMStack &stack) {
+        cout << "STACK " << stack.size() << ":\n";
+        while (!stack.empty()) {
+            dataType &d = stack.top(); stack.pop();
+            // int, long long, double, char, bool, void*, unsigned long long
+            cout << "| ";
+            printData(d);
+        }
+        cout << "HEAP " << heap.size() << ":\n";
+        for (auto &p : heap) {
+            cout << to_string(p.first) << " | ";
+            printData(p.second);
+        }
+    }
+
+    void VirtualMachine::printData(dataType &d) {
+        switch(d.index()) {
+                case 0:
+                    cout << std::get<int>(d) << "\n";
+                    break;
+                case 1:
+                    cout << std::get<long long>(d) << "\n";
+                    break;
+                case 2:
+                    cout << std::get<double>(d) << "\n";
+                    break;
+                case 3:
+                    cout << std::get<char>(d) << "\n";
+                    break;
+                case 4:
+                    cout << std::get<bool>(d) << "\n";
+                    break;
+                case 5:
+                    printf("%d", *(int*)std::get<void*>(d)); cout << "\n";
+                    break;
+                case 6:
+                    cout << std::get<unsigned long long>(d) << "\n";
+                    break;
+        }
+    }
 
     string VirtualMachine::readUTF8(ifstream &in) {
         int l = readNext<int>(in);

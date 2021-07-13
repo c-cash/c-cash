@@ -1,8 +1,19 @@
 #include <iostream>
 #include "Compiler.hpp"
 
+#define getData(type, i) std::get<type>(i)
+
 namespace compiler {
     using namespace std;
+
+    void Compiler::popScope(Stack &s) {
+        vector<string>* scope = s.scope.top(); s.scope.pop();
+        for (string &str : *scope) {
+            s.numerical_names.erase(str);
+            s.varTypes.erase(str);
+            // TODO: remove this from heap
+        }
+    }
 
     void Compiler::compile(map<string, FunctionDefinition> &mFunctions, ofstream &out) {
         this->out = &out;
@@ -21,6 +32,7 @@ namespace compiler {
     }
 
     void Compiler::compileFunction(FunctionDefinition &d) {
+        ci = 0; // set current instruction to 0
         // save function name
         writeInteger(d.mName.size());
         *out << d.mName;
@@ -30,7 +42,7 @@ namespace compiler {
         Stack s;
         // TODO: add simulated parameters
         compileCode(d.mStatements, s);
-        *out << NOP;
+        *out << (char)BytecodeInstructions::null << NOP;
     }
 
     void Compiler::compileCode(vector<Statement> &statements, Stack &s) {
@@ -65,8 +77,179 @@ namespace compiler {
                 compileLitteral(stmt, s);
                 break;
             }
+            case StatementKind::LOGIC_CALL: {
+                compileLogicCall(stmt, s);
+                break;
+            }
+            case StatementKind::FUNCTION_CALL: {
+                compileFunctionCall(stmt, s);
+                break;
+            }
             default:
                 break;
+        }
+    }
+
+    void Compiler::compileFunctionCall(Statement &stmt, Stack &s) {
+        if (stmt.mName == "IF" || stmt.mName == "LOOP" || stmt.mName == "ELSE" || stmt.mName == "ELIF") 
+            {compileSpecialFunctionCall(stmt, s); return; }
+    }
+    void Compiler::compileSpecialFunctionCall(Statement &stmt, Stack &s) {
+        if (stmt.mName == "IF") {
+            // write instruction
+            compileStatement(stmt.mStatements[0], s);
+
+            // write JMPFALSE and save current cursor position
+            ++ci;
+            *out << (char)BytecodeInstructions::JMPFALSE;
+            streampos startPos = out->tellp();
+            writeULong(0LL);
+
+            // compile rest of the instructions
+            s.scope.push(new vector<string>());
+            for (int i{1}; i < stmt.mStatements.size(); ++i) {
+                compileStatement(stmt.mStatements[i], s);
+            }
+            popScope(s);
+
+            // go back to the jump and write correct position
+            streampos tmp = out->tellp();
+            out->seekp(startPos);
+            writeULong(ci+1);
+            out->seekp(tmp);
+
+            ++ci;
+            *out << (char)BytecodeInstructions::null;
+        } else if (stmt.mName == "ELSE") {
+            // write goto and save current position for later
+            out->seekp(out->tellp()-(streampos)1);
+            *out << (char)BytecodeInstructions::GOTO;
+            unsigned long long gotoci = ci;
+            streampos gotopos = out->tellp();
+            writeULong(0LL);
+
+            // compile rest of the instructions
+            s.scope.push(new vector<string>());
+            for (int i{0}; i < stmt.mStatements.size(); ++i) {
+                compileStatement(stmt.mStatements[i], s);
+            }
+            popScope(s);
+
+            // change goto position
+            streampos tmp = out->tellp();
+            out->seekp(gotopos);
+            writeULong(ci);
+            out->seekp(tmp);
+
+        } else if (stmt.mName == "ELIF") {
+            // write goto and save current position for later
+            out->seekp(out->tellp()-(streampos)1);
+            *out << (char)BytecodeInstructions::GOTO;
+            unsigned long long gotoci = ci;
+            streampos gotopos = out->tellp();
+            writeULong(0LL);
+
+            // COMPILE CHECK
+            // write instruction
+            compileStatement(stmt.mStatements[0], s);
+
+            // write JMPFALSE and save current cursor position
+            ++ci;
+            *out << (char)BytecodeInstructions::JMPFALSE;
+            streampos startPos = out->tellp();
+            writeULong(0LL);
+
+            // compile rest of the instructions
+            s.scope.push(new vector<string>());
+            for (int i{1}; i < stmt.mStatements.size(); ++i) {
+                compileStatement(stmt.mStatements[i], s);
+            }
+            popScope(s);
+
+            // go back to the jump and write correct position
+            streampos tmp = out->tellp();
+            out->seekp(startPos);
+            writeULong(ci+1);
+
+            // change goto position
+            out->seekp(gotopos);
+            writeULong(ci);
+            out->seekp(tmp);
+
+            ++ci;
+            *out << (char)BytecodeInstructions::null;
+
+        } else if (stmt.mName == "LOOP") {
+            s.breaks.push(new vector<streampos>());
+            // while loop
+            if (stmt.mStatements[0].mStatements[0].mKind == StatementKind::LOGIC_CALL) {
+                // write goto and save current position for later
+                ++ci;
+                *out << (char)BytecodeInstructions::GOTO;
+                unsigned long long gotoci = ci;
+                streampos gotopos = out->tellp();
+                writeULong(0LL);
+
+                // write all instructions
+                s.scope.push(new vector<string>());
+                for (int i{1}; i < stmt.mStatements.size(); ++i) {
+                    compileStatement(stmt.mStatements[i], s);
+                }
+                popScope(s);
+
+                // change goto position
+                streampos tmp = out->tellp();
+                out->seekp(gotopos);
+                writeULong(ci);
+                out->seekp(tmp);
+
+                // write check and jump
+                compileStatement(stmt.mStatements[0].mStatements[0], s);
+                ++ci;
+                *out << (char)BytecodeInstructions::JMPFALSE;
+                writeULong(gotoci);
+            } else if (stmt.mStatements[0].mStatements.size() == 3) { // normal for loop
+                s.scope.push(new vector<string>());
+                // code before loop
+                compileStatement(stmt.mStatements[0].mStatements[0], s);
+
+                // goto check
+                ++ci;
+                *out << (char)BytecodeInstructions::GOTO;
+                unsigned long long gotoci = ci;
+                streampos gotopos = out->tellp();
+                writeULong(0LL);
+
+                // code inside loop
+                for (int i{1}; i < stmt.mStatements.size(); ++i) {
+                    compileStatement(stmt.mStatements[i], s);
+                }
+                popScope(s);
+
+                // code after loop
+                compileStatement(stmt.mStatements[0].mStatements[2], s);
+
+                // check and jump to start
+                compileStatement(stmt.mStatements[0].mStatements[0], s);
+                ++ci;
+                *out << (char)BytecodeInstructions::JMPFALSE;
+                writeULong(gotoci);
+
+                // update goto
+                streampos tmp = out->tellp();
+                out->seekp(gotopos);
+                writeULong(ci);
+                out->seekp(tmp);
+            }
+
+            // breaks
+            streampos tmp = out->tellp();
+            for (streampos p : *s.breaks.top()) {
+                out->seekp(p);
+                writeULong(ci);
+            }
+            s.breaks.pop();
+            out->seekp(tmp);
         }
     }
 
@@ -78,120 +261,181 @@ namespace compiler {
         // get right value
         compileStatement(stmt.mStatements[1], s);
         tryConvertValue(getStatementType(stmt.mStatements[1], s), type);
-        
-        // compile operator operation
-        auto t = s.pop2();
-        
+    
+
+        ++ci; // increase instruction count
         if (type == "signed int") {
             switch(stmt.mName[0]) {
                 case '+':
                     *out << (char)BytecodeInstructions::IADD;
-                    s.elements.push(t.first + t.second); // simulate this step
                     break;
                 case '-':
                     *out << (char)BytecodeInstructions::ISUB;
-                    s.elements.push(t.first - t.second); // simulate this step
                     break;
                 case '*':
                     *out << (char)BytecodeInstructions::IMUL;
-                    s.elements.push(t.first * t.second); // simulate this step
                     break;
                 case '/':
                     *out << (char)BytecodeInstructions::IDIV;
-                    s.elements.push(t.first / t.second); // simulate this step
                     break;
             }
         } else if (type == "long") {
             switch(stmt.mName[0]) {
                 case '+':
                     *out << (char)BytecodeInstructions::LADD;
-                    s.elements.push(t.first + t.second); // simulate this step
                     break;
                 case '-':
                     *out << (char)BytecodeInstructions::LSUB;
-                    s.elements.push(t.first - t.second); // simulate this step
                     break;
                 case '*':
                     *out << (char)BytecodeInstructions::LMUL;
-                    s.elements.push(t.first * t.second); // simulate this step
                     break;
                 case '/':
                     *out << (char)BytecodeInstructions::LDIV;
-                    s.elements.push(t.first / t.second); // simulate this step
                     break;
             }
         } else if (type == "double") {
             switch(stmt.mName[0]) {
                 case '+':
                     *out << (char)BytecodeInstructions::DADD;
-                    s.elements.push(t.first + t.second); // simulate this step
                     break;
                 case '-':
                     *out << (char)BytecodeInstructions::DSUB;
-                    s.elements.push(t.first - t.second); // simulate this step
                     break;
                 case '*':
                     *out << (char)BytecodeInstructions::DMUL;
-                    s.elements.push(t.first * t.second); // simulate this step
                     break;
                 case '/':
                     *out << (char)BytecodeInstructions::DDIV;
-                    s.elements.push(t.first / t.second); // simulate this step
+                    break;
+            }
+        } else if (type == "char") {
+            switch(stmt.mName[0]) {
+                case '+':
+                    *out << (char)BytecodeInstructions::CADD;
+                    break;
+                case '-':
+                    *out << (char)BytecodeInstructions::CSUB;
+                    break;
+                default:
+                    throw runtime_error("char mlutiplication and division are not available");
                     break;
             }
         }
+    }
+
+    void Compiler::compileLogicCall(Statement &stmt, Stack &s) {
+        bool rev = (stmt.mName == "<" || stmt.mName == "<=");
+        compileStatement(stmt.mStatements[rev ? 1 : 0], s);
+        if (stmt.mStatements.size() == 2) { // compile second argument if there is one
+            compileStatement(stmt.mStatements[rev ? 0 : 1], s);            
+        }
+
+        ++ci;
+        if (stmt.mName == "==") {
+            *out << (char)BytecodeInstructions::IFEQ;
+        } else if (stmt.mName == "!=") {
+            *out << (char)BytecodeInstructions::IFNE;
+        } else if (stmt.mName == "<") {
+            *out << (char)BytecodeInstructions::IFGT;
+        } else if (stmt.mName == "<=") {
+            *out << (char)BytecodeInstructions::IFGE;
+        } else if (stmt.mName == ">") {
+            *out << (char)BytecodeInstructions::IFGT;
+        } else if (stmt.mName == ">=") {
+            *out << (char)BytecodeInstructions::IFGE;
+        } else if (stmt.mName == "!") {
+            *out << (char)BytecodeInstructions::NOT;
+        } else if (stmt.mName == "()") { /* do nothing */ }
     }
 
     void Compiler::compileVariableDeclaration(Statement &stmt, Stack &s) {
         // compile whatever value this have
         compileStatement(stmt.mStatements[0], s);
 
-        // store this variable in the memory heap
+        // store this variable type for later
         s.varTypes[stmt.mName] = stmt.mType.mName;
         // ensure that values have the same type
         tryConvertValue(getStatementType(stmt.mStatements[0], s), stmt.mType.mName);
+        ++ci; // increase instruction count
+        // add this variable to the scope
+        if (!s.scope.empty()) s.scope.top()->emplace_back(stmt.mName);
         if (stmt.mType.mName == "signed int") 
-            {*out << (char)BytecodeInstructions::ISTORE; writeInteger(getNumericalName(stmt.mName, s)); s.values[stmt.mName] = s.pop(); }
+            {*out << (char)BytecodeInstructions::ISTORE; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (stmt.mType.mName == "long") 
-            {*out << (char)BytecodeInstructions::LSTORE; writeInteger(getNumericalName(stmt.mName, s)); s.values[stmt.mName] = s.pop(); }
+            {*out << (char)BytecodeInstructions::LSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (stmt.mType.mName == "double") 
-            {*out << (char)BytecodeInstructions::DSTORE; writeInteger(getNumericalName(stmt.mName, s)); s.values[stmt.mName] = s.pop(); }
+            {*out << (char)BytecodeInstructions::DSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (stmt.mType.mName == "char") 
+            {*out << (char)BytecodeInstructions::CSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (stmt.mType.mName == "bool") 
+            {*out << (char)BytecodeInstructions::BSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
     }
     
     // compiles variable call statement
     void Compiler::compileVariableCall(Statement &stmt, Stack &s) {
+        // special variables
+        // TRUE / FALSE
+        if (stmt.mName == "true" || stmt.mName == "false") {
+            ++ci;
+            *out << (char)BytecodeInstructions::BCONST; 
+            *out << (stmt.mName == "true");
+            return;
+        }
+
+        // BREAK
+        if (stmt.mName == "break") {
+            ++ci;
+            *out << (char)BytecodeInstructions::GOTO;
+            if (s.breaks.empty()) throw runtime_error("'break' usage outside of the loop");
+            s.breaks.top()->emplace_back(out->tellp());
+            writeULong(0LL);
+            return;
+        }
+
+
         if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("Variable " + stmt.mName + " should be defined before call");
         string t = s.varTypes[stmt.mName];
         // load or store based on what operation user wants to do
         BytecodeInstructions itype = stmt.mStatements.size() == 0 ? BytecodeInstructions::ILOAD : BytecodeInstructions::ISTORE;
         BytecodeInstructions ltype = stmt.mStatements.size() == 0 ? BytecodeInstructions::LLOAD : BytecodeInstructions::LSTORE;
         BytecodeInstructions dtype = stmt.mStatements.size() == 0 ? BytecodeInstructions::DLOAD : BytecodeInstructions::DSTORE;
+        BytecodeInstructions ctype = stmt.mStatements.size() == 0 ? BytecodeInstructions::CLOAD : BytecodeInstructions::CSTORE;
+        BytecodeInstructions btype = stmt.mStatements.size() == 0 ? BytecodeInstructions::BLOAD : BytecodeInstructions::BSTORE;
 
         if (stmt.mStatements.size() != 0) { // push value onto the stack if it's a set instruction
             compileStatement(stmt.mStatements[0], s);
-            s.pop();
             tryConvertValue(getStatementType(stmt.mStatements[0], s), t);
         }
+
+        ++ci; // increase instruction count
         if (t == "signed int")
-            { *out << (char)itype; writeInteger(getNumericalName(stmt.mName, s)); s.elements.push(s.values[stmt.mName]); }
+            { *out << (char)itype; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (t == "long")
-            { *out << (char)ltype; writeInteger(getNumericalName(stmt.mName, s)); s.elements.push(s.values[stmt.mName]); }
+            { *out << (char)ltype; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (t == "double")
-            { *out << (char)dtype; writeInteger(getNumericalName(stmt.mName, s)); s.elements.push(s.values[stmt.mName]); }
+            { *out << (char)dtype; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (t == "char")
+            { *out << (char)ctype; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (t == "bool")
+            { *out << (char)btype; writeInteger(getNumericalName(stmt.mName, s)); }
     }
 
     // compiles litteral statement
     void Compiler::compileLitteral(Statement &stmt, Stack &s) {
+        ++ci; // increase instruction count
         if (stmt.mType.mName == "signed int") {
-            *out << (char)BytecodeInstructions::ICONST; writeInteger(stoi(stmt.mName)); s.elements.push(stoi(stmt.mName));
+            *out << (char)BytecodeInstructions::ICONST; writeInteger(stoi(stmt.mName));
         } else if (stmt.mType.mName == "long"){
-            *out << (char)BytecodeInstructions::LCONST; writeLong(stoll(stmt.mName)); s.elements.push(stoll(stmt.mName));
+            *out << (char)BytecodeInstructions::LCONST; writeLong(stoll(stmt.mName));
         } else if (stmt.mType.mName == "double"){
             *out << (char)BytecodeInstructions::DCONST; 
             writeDouble(stod(stmt.mName));
-            double d = stod(stmt.mName);
-            void* tmp = (void*)&d;
-            s.elements.push(*(long long*)tmp);
+        } else if (stmt.mType.mName == "char") {
+            *out << (char)BytecodeInstructions::CCONST << (char)stmt.mName[0];
+        } else if (stmt.mType.mName == "bool") {
+            *out << (char)BytecodeInstructions::BCONST; 
+            *out << (stmt.mName == "1");
         }
     }
 
@@ -202,11 +446,14 @@ namespace compiler {
                 return stmt.mType.mName;
                 break;
             case StatementKind::VARIABLE_CALL:
+                if (stmt.mName == "true" || stmt.mName == "false") return "bool";
                 if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("variable " + stmt.mName + " should be declared before call");
                 return s.varTypes[stmt.mName];
                 break;
             case StatementKind::OPERATOR_CALL:
                 return getStatementType(stmt.mStatements[0], s);
+            case StatementKind::LOGIC_CALL:
+                return "bool";
         }
         stmt.DebugPrint(0);
         throw runtime_error("cannot discover type for statement above");
@@ -216,18 +463,33 @@ namespace compiler {
     void Compiler::tryConvertValue(string from, string to) {
         if (from == to) return;
         
-        if (from == "signed int" && to == "long") {*out << (char)BytecodeInstructions::I2L;}
-        if (from == "long" && to == "signed int") {*out << (char)BytecodeInstructions::L2I;}
-        if (from == "signed int" && to == "double") {*out << (char)BytecodeInstructions::I2D;}
-        // TODO: write conversions
+        ++ci;
+        if (from == "signed int" && to == "long") {*out << (char)BytecodeInstructions::I2L; }
+        else if (from == "signed int" && to == "double") {*out << (char)BytecodeInstructions::I2D; }
+        else if (from == "signed int" && to == "char") {*out << (char)BytecodeInstructions::I2C; }
+        else if (from == "signed int" && to == "bool") {*out << (char)BytecodeInstructions::I2B; }
+
+        else if (from == "long" && to == "signed int") {*out << (char)BytecodeInstructions::L2I; }
+        else if (from == "long" && to == "double") {*out << (char)BytecodeInstructions::L2D; }
+        else if (from == "long" && to == "char") {*out << (char)BytecodeInstructions::L2C; }
+        else if (from == "long" && to == "bool") {*out << (char)BytecodeInstructions::L2B; }
+
+        else if (from == "double" && to == "signed int") {*out << (char)BytecodeInstructions::D2I; }
+        else if (from == "double" && to == "long") {*out << (char)BytecodeInstructions::D2L; }
+        else if (from == "double" && to == "bool") {*out << (char)BytecodeInstructions::D2B; }
+       
+        else if (from == "char" && to == "signed int") {*out << (char)BytecodeInstructions::C2I; }
+        else if (from == "char" && to == "long") {*out << (char)BytecodeInstructions::C2L; }
+
+        else throw runtime_error("Cannot find conversion for " + from + " and " + to);
     }
 
 
     uint32_t Compiler::getNumericalName(string name, Stack &s) {
-        if (numerical_names.find(name) == numerical_names.end()) {
-            numerical_names[name] = nextNumericalName++;
+        if (s.numerical_names.find(name) == s.numerical_names.end()) {
+            s.numerical_names[name] = nextNumericalName++;
         }
-        return numerical_names[name];
+        return s.numerical_names[name];
     }
 
     void Compiler::writeInteger(int n) {
@@ -235,6 +497,10 @@ namespace compiler {
         out->write(reinterpret_cast<const char *>(&n), sizeof(n));
     }
     void Compiler::writeLong(long long n) {
+        static_assert(sizeof(n) == 8, "Field n has to have size 8.");
+        out->write(reinterpret_cast<const char *>(&n), sizeof(n));
+    }
+    void Compiler::writeULong(unsigned long long n) {
         static_assert(sizeof(n) == 8, "Field n has to have size 8.");
         out->write(reinterpret_cast<const char *>(&n), sizeof(n));
     }

@@ -1,8 +1,10 @@
 func main() {
-    int a = 2;
-    long b = a + 1;
-    double c = a;
+    int a = 155;
+    if (a == 1) {
+        a = 2;
+    } elif (a == 155) {
+        a = 3;
+    } else {
+        a = 1;
+    } 
 }
-# iconst 2
-# i2l
-# lstore 0
