@@ -1,7 +1,20 @@
 func main() {
     int a = 0;
-    
-    antis = wrr();
+}
+
+class Antis {
+    func Antis() {
+        int b = 3;
+    }
+
+    func ~Antis() {
+        int d = 3;
+    }
+
+    func xxx() {
+        int c = 4;
+    }
+
 }
 
 |

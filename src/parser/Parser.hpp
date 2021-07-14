@@ -57,7 +57,7 @@ namespace parser {
             optional<Statement> parseNamespaceAlias();
             optional<Statement> parseLoopStatement();
             optional<vector<Statement>> parseFunctionBody();
-            optional<FunctionDefinition> expectMethodDefinition();
+            optional<FunctionDefinition> expectMethodDefinition(const string &cName = string());
             optional<Statement> parseIfStatement();
             optional<Statement> parseTryStatement();
             optional<Statement> expectTernaryOperator();

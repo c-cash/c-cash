@@ -84,13 +84,21 @@ namespace parser {
 				classDef.mName = possibleName->mText;
 
                 vector<FunctionDefinition> functions;
+                vector<FunctionDefinition> conDes;
 
                 while (!expectOperator("}").has_value()){
-                    optional<FunctionDefinition> func = expectMethodDefinition();
-                    if(func.has_value()) functions.emplace_back(func.value());                    
+                    optional<FunctionDefinition> func = expectMethodDefinition(classDef.mName);
+                    if(func.has_value()) {
+                        if(func->mName == "constructor" || func->mName == "destructor") {
+                            conDes.emplace_back(func.value());
+                        } else {
+                            functions.emplace_back(func.value());
+                        }                         
+                    }                
                 }
 
                 classDef.mFunctions.insert(classDef.mFunctions.begin(), functions.begin(), functions.end());
+                classDef.mConDes.insert(classDef.mConDes.begin(), conDes.begin(), conDes.end());
                 mClass[classDef.mName] = classDef;
                 return true;
             }
@@ -291,7 +299,7 @@ namespace parser {
         return statements;
 	}
 
-    optional<FunctionDefinition> Parser::expectMethodDefinition() {
+    optional<FunctionDefinition> Parser::expectMethodDefinition(const string &cName) {
 		vector<Token>::iterator parseStart = mCurrentToken;
 		optional<Type> possibleType = expectType();
 
@@ -304,7 +312,13 @@ namespace parser {
                     optional<Type> possibleParamType;
                     bool ifArray;
 
-					func.mName = possibleName->mText;
+                    if(possibleName->mText == cName) {
+                        func.mName = "constructor";
+                    } else if(possibleName->mText == ('~'+cName)) {
+                        func.mName = "destructor";
+                    } else {
+                        func.mName = possibleName->mText;
+                    }
 
                     while (!expectOperator(")").has_value()) {
                         //Set value
