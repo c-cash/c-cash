@@ -547,6 +547,7 @@ namespace parser {
                 mCurrentToken = startToken;
                 optional<Statement> funccall = expectFunctionCall();
                 if (funccall.has_value()) { // this is function call
+                    statementVar.mKind = StatementKind::CLASS_CALL;
                     statementVar.mStatements.emplace_back(funccall.value());
                 } else {
                     throw runtime_error(string("Expected variable or function call after '.' in line ") + to_string(mCurrentToken->mLine));
