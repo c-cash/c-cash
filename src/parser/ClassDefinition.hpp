@@ -13,6 +13,8 @@ namespace parser {
     class ClassDefinition {
         public:
             string mName;
+            vector<string> mInheritance;
+            vector<FunctionDefinition> mConDes;
             vector<FunctionDefinition> mFunctions;
 
             void DebugPrint() const;
