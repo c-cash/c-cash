@@ -2,7 +2,7 @@ func main() {
     int a = 0;
 }
 
-class Antis {
+class Antis : c1, c2, c3, c4 {
     func Antis() {
         int b = 3;
     }
