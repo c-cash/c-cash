@@ -1,5 +1,7 @@
 func main() {
     int a = 0;
+    Antis.xxx();
+    Antis = xxx();
 }
 
 class Antis {
@@ -16,10 +18,3 @@ class Antis {
     }
 
 }
-
-|
-VARIABLE_CALL func antis (
-        FUNCTION_CALL func wrr (
-        )
-)
-|

@@ -78,9 +78,22 @@ namespace parser {
 
         optional<Token> possibleName = expectIdentifier();
         if(possibleName.has_value()) { //Name
-            optional<Token> possibleOperator = expectOperator("{"); 
+            ClassDefinition classDef;
+            optional<Token> possibleOperator = expectOperator(":"); 
+
+            if(possibleOperator.has_value()) {
+                while (!expectOperator("{").has_value()) {
+                    optional<Token> inhClass = expectIdentifier();
+                    if(!inhClass.has_value()) throw runtime_error(string("You need to write the name of the class you want to inherit from after : in line: ") + to_string(mCurrentToken->mLine));
+                    classDef.mInheritance.emplace_back(inhClass->mText);
+                    if(expectOperator("{").has_value()) break;
+                    if(!expectOperator(",").has_value()) throw runtime_error(string("You have to separate the classes you want to inherit with a comma in line: ") + to_string(mCurrentToken->mLine));
+                }
+            } else {
+                possibleOperator = expectOperator("{"); 
+            }
+            
             if(possibleOperator.has_value()) { //Function or varible
-			    ClassDefinition classDef;
 				classDef.mName = possibleName->mText;
 
                 vector<FunctionDefinition> functions;
@@ -534,6 +547,7 @@ namespace parser {
                 mCurrentToken = startToken;
                 optional<Statement> funccall = expectFunctionCall();
                 if (funccall.has_value()) { // this is function call
+                    statementVar.mKind = StatementKind::CLASS_CALL;
                     statementVar.mStatements.emplace_back(funccall.value());
                 } else {
                     throw runtime_error(string("Expected variable or function call after '.' in line ") + to_string(mCurrentToken->mLine));
