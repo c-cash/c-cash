@@ -40,6 +40,7 @@ namespace compiler {
             void compileCode(vector<Statement> &statements, Stack &s);
             
             void compileFunctionCall(Statement &stmt, Stack &s);
+            void compileClassCall(Statement &stmt, Stack &s);
             void compileSpecialFunctionCall(Statement &stmt, Stack &s);
             void compileStatement(Statement &stmt, Stack &s);
             void compileVariableDeclaration(Statement &stmt, Stack &s);

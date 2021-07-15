@@ -3,14 +3,14 @@ class Antis {
     func Antis() {
 
     }
-    func wrr(){
-        int b = 2;
+    func wrr(int a) {
+        int b = a;
     }
 }
 
 func main() {
     new Antis antis(); # class
-    antis.wrr();
+    antis.wrr(1010);
     int a = 3;
     #write(new Antis());
 }

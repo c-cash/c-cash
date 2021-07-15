@@ -53,7 +53,9 @@ namespace compiler {
             }
             // other functions
             for (auto &fp : p.second.mFunctions) {
-                compileFunction(fp, p.first, 0b0000'0000); // TODO: change to static if flag is set
+                char flags = 0b0000'0000;
+                if (std::find(fp.mKeywords.begin(), fp.mKeywords.end(), "static") != fp.mKeywords.end()) flags |= 0b0000'0001;
+                compileFunction(fp, p.first, flags); // TODO: change to static if flag is set
             }
         }
 
@@ -66,6 +68,14 @@ namespace compiler {
         // save function name
         writeInteger(d.mName.size());
         *out << d.mName;
+        // add 'this' parameter if function is not static
+        if ((int)(flags & 0b0000'0001) != 1) {
+            ParameterDefinition* def = new ParameterDefinition();
+            def->mName = "this";
+            def->mType.mName = "class";
+            d.mParameters.insert(d.mParameters.begin(), *def);
+        }
+
         // save parameters count
         writeInteger(d.mParameters.size());
         // Create new stack and compile this function
@@ -89,6 +99,7 @@ namespace compiler {
             compileStatement(stmt, s);
         }
     }
+
     void Compiler::compileStatement(Statement &stmt, Stack &s) {
         switch (stmt.mKind) {
             case StatementKind::MULTIPLE_VARIABLE_DECLARATION: {
@@ -128,8 +139,29 @@ namespace compiler {
                 compileNewClass(stmt, s);
                 break;
             }
+            case StatementKind::CLASS_CALL: {
+                compileClassCall(stmt, s);
+                break;
+            }
             default:
                 break;
+        }
+    }
+
+    void Compiler::compileClassCall(Statement &stmt, Stack &s) {
+        // load class
+        ++ci;
+        *out << (char)BytecodeInstructions::OLOAD;
+        writeInteger(getNumericalName(stmt.mName, s));
+        // execute everything inside
+        if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
+            bool isStatic = (*staticFunctionsMap[s.className])[stmt.mStatements[0].mName];
+            if (!isStatic) {
+                string tmp = s.className;
+                s.className = getStatementType(stmt, s);
+                compileFunctionCall(stmt.mStatements[0], s);
+                s.className = tmp;
+            }
         }
     }
 
@@ -158,24 +190,25 @@ namespace compiler {
             return;
         }
 
-        bool isStatic = (*staticFunctionsMap[s.className])[stmt.mName];
-        if (!isStatic) {
-            // TODO: put objectref onto the stack?
-        }
-        // for later usage
-        string cName = "$Main"; // TODO: add other class?
+        string cName = s.className;
+
+        bool isStatic = (*staticFunctionsMap[cName])[stmt.mName];
         // put all arguments onto the stack
-        int i = 0;
+        int i = isStatic ? 0 : 1;
         for (Statement &arg : stmt.mStatements) {
             compileStatement(arg, s);
             tryConvertValue(getStatementType(arg, s), (*(*functionParamDefs[cName])[stmt.mName])[i].mType.mName);
             ++i;
         }
 
-        if (isStatic) {
+        if (!isStatic) {
             ++ci;
             *out << (char)BytecodeInstructions::CALLSTATIC;
             writeUTF8(cName);
+            writeUTF8(stmt.mName);
+        } else {
+            ++ci;
+            *out << (char)BytecodeInstructions::CALLMETHOD;
             writeUTF8(stmt.mName);
         }
     }
@@ -443,7 +476,11 @@ namespace compiler {
         compileStatement(stmt.mStatements[0], s);
 
         // store this variable type for later
-        s.varTypes[stmt.mName] = stmt.mType.mName;
+        if (stmt.mType.mName == "class") {
+            s.varTypes[stmt.mName] = stmt.mStatements[0].mName;
+        } else {
+            s.varTypes[stmt.mName] = stmt.mType.mName;
+        }
         // ensure that values have the same type
         tryConvertValue(getStatementType(stmt.mStatements[0], s), stmt.mType.mName);
         ++ci; // increase instruction count
@@ -561,6 +598,10 @@ namespace compiler {
                 return "bool";
             case StatementKind::FUNCTION_CALL:
                 return "$$$";
+            case StatementKind::CLASS_CALL:
+                if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("variable " + stmt.mName + " should be declared before call");
+                return s.varTypes[stmt.mName];
+                break;
         }
         stmt.DebugPrint(0);
         throw runtime_error("cannot discover type for statement above");
