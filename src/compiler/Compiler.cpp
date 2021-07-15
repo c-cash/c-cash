@@ -32,7 +32,22 @@ namespace compiler {
         // Compile other classes
         for (auto &p : cDefinitions) {
             out << p.first << NOP;
-            writeInteger(p.second.mFunctions.size());
+            writeInteger(p.second.mFunctions.size() + p.second.mConDes.size());
+            // constructor
+            if ((*staticFunctionsMap[p.first]).find("$C") != (*staticFunctionsMap[p.first]).end()) {
+                bool isFirst = (*staticFunctionsMap[p.first])["$C"];
+                FunctionDefinition &d = p.second.mConDes[isFirst ? 0 : 1];
+                d.mName = "$C";
+                compileFunction(d, p.first, 0b0000'0001); // TODO: add private constructors
+            }
+            // destructor
+            if ((*staticFunctionsMap[p.first]).find("$D") != (*staticFunctionsMap[p.first]).end()) {
+                bool isFirst = (*staticFunctionsMap[p.first])["$D"];
+                FunctionDefinition &d = p.second.mConDes[isFirst ? 0 : 1];
+                d.mName = "$D";
+                compileFunction(d, p.first, 0b0000'0001); // TODO: add private constructors
+            }
+            // other functions
             for (auto &fp : p.second.mFunctions) {
                 compileFunction(fp, p.first, 0b0000'0000); // TODO: change to static if flag is set
             }
@@ -384,6 +399,7 @@ namespace compiler {
         compileStatement(stmt.mStatements[rev ? 1 : 0], s);
         if (stmt.mStatements.size() == 2) { // compile second argument if there is one
             compileStatement(stmt.mStatements[rev ? 0 : 1], s);            
+            tryConvertValue(getStatementType(stmt.mStatements[rev ? 0 : 1], s), getStatementType(stmt.mStatements[rev ? 1 : 0], s));
         }
 
         ++ci;
@@ -547,7 +563,10 @@ namespace compiler {
         else if (from == "char" && to == "signed int") {*out << (char)BytecodeInstructions::C2I; }
         else if (from == "char" && to == "long") {*out << (char)BytecodeInstructions::C2L; }
 
-        else throw runtime_error("Cannot find conversion for " + from + " and " + to);
+        else if (from.substr(0, 2) == "c$") {
+            throw runtime_error("Class '" + getClassData(from).second + "' does not have user-defined conversion to type '" + to + "'");
+        }
+        else throw runtime_error("Cannot find conversion from '" + from + "' to '" + to + "'");
     }
 
 
@@ -575,7 +594,41 @@ namespace compiler {
 
                 (*functionParamDefs[p.first])[fp.mName] = &fp.mParameters;
             }
+
+            // contructor
+            if (p.second.mConDes.size() > 0) {
+                bool isFirst = p.second.mConDes[0].mName == "constructor";
+                if ((!isFirst && p.second.mConDes.size() == 2) || isFirst) {
+                    FunctionDefinition &cd = p.second.mConDes[isFirst ? 0 : 1];
+                    ParameterDefinition pd;
+                    pd.mName = "this";
+                    pd.mType.mName = "c$" + p.first;
+                    cd.mParameters.insert(cd.mParameters.begin(), pd);
+                    (*staticFunctionsMap[p.first])["$C"] = isFirst;
+                    (*functionParamDefs[p.first])["$C"] = &p.second.mConDes[isFirst ? 0 : 1].mParameters;
+                }
+            }
+            // destructor
+            if (p.second.mConDes.size() > 0) {
+                bool isFirst = p.second.mConDes[0].mName == "destructor";
+                if ((!isFirst && p.second.mConDes.size() == 2) || isFirst) {
+                    FunctionDefinition &cd = p.second.mConDes[isFirst ? 0 : 1];
+                    ParameterDefinition pd;
+                    pd.mName = "this";
+                    pd.mType.mName = "c$" + p.first;
+                    cd.mParameters.insert(cd.mParameters.begin(), pd);
+                    (*staticFunctionsMap[p.first])["$D"] = isFirst;
+                    if (p.second.mConDes[isFirst ? 0 : 1].mParameters.size() > 1) throw runtime_error("Class destructor doesn't accept any parameters");
+                    (*functionParamDefs[p.first])["$D"] = &p.second.mConDes[isFirst ? 0 : 1].mParameters;
+                }
+            }
         }
+    }
+
+    pair<string, string> Compiler::getClassData(string c) {
+        string prefix = c.substr(0, 2);
+        if (prefix != "c$") throw runtime_error(c + " is not a class");
+        return {prefix, c.substr(2)};
     }
 
     void Compiler::writeInteger(int n) {

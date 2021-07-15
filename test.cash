@@ -3,8 +3,8 @@ func main() {
 }
 
 class Antis {
-    func Antis() {
-        int b = 3;
+    func Antis(int b) {
+        int a = b;
     }
 
     func ~Antis() {

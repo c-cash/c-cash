@@ -53,6 +53,8 @@ namespace compiler {
 
             string getStatementType(Statement &stmt, Stack &s);
 
+            pair<string, string> getClassData(string c);
+
             uint32_t getNumericalName(string name, Stack &s);
             void writeInteger(int n);
             void writeUTF8(string text);
