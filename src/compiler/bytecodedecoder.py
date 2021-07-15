@@ -2,7 +2,7 @@
 # 00100100 01001101 01100001 01101001 01101110 11111111 00000010 00000000 00000000 00000000 00000001 00000000 00000000 00000000 00101010 00000000 00000000 00000000 00000000 11111111 00000100 00000000 00000000 00000000 01101101 01100001 01101001 01101110 00000000 00000000 00000000 00000000 00000000 00000010 00000000 00000000 00000000 00000001 00000000 00000000 00000000 00000000 11111111
 # $        M        a        i        n        NOP      <---------------int---------------> <---------------int---------------> *        <---------------int---------------> NOP
 # settings
-filepath = r"C:\Users\olimi\Desktop\CCash\c-cash\build\test.ccbin"
+filepath = r"../../build/test.ccbin"
 
 def loadInt(f):
     temp = f.read(4)
@@ -160,6 +160,15 @@ def parse(code, f):
     elif opcode == "00100110":
         return "baload"
 
+    elif opcode == "00101101":
+        return "ostore " + loadInt(f)
+    elif opcode == "00101110":
+        return "oastore"
+    elif opcode == "00101111":
+        return "oload " + loadInt(f)
+    elif opcode == "00110000":
+        return "oaload"
+
     elif opcode == "00110010":
         return "ifeq"
     elif opcode == "00110011":
@@ -204,6 +213,9 @@ def parse(code, f):
 
     elif opcode == "01011001":
         return "anystore " + loadInt(f)
+
+    elif opcode == "00101000":
+        return "oconst " + loadUTF8(f)
 
     elif opcode == "11111101":
         return "NULL"

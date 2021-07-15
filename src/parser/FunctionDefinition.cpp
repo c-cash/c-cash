@@ -4,7 +4,12 @@ namespace parser {
     using namespace std;
 
     void FunctionDefinition::DebugPrint(size_t indent) const{
-        cout << string(indent, '\t') << "\u001B[36m" << "func " << "\u001B[32m" << mName << "\u001B[0m" << " (\n";
+        cout << string(indent, '\t');
+        for(string keyword : mKeywords) {
+            cout << "\u001B[33m" << keyword << ' ' << "\u001B[0m";
+        }
+        
+        cout << "\u001B[36m" << "func " << "\u001B[32m" << mName << "\u001B[0m" << " (\n";
 
         for(ParameterDefinition param : mParameters) {
             param.DebugPrint(indent + 1);

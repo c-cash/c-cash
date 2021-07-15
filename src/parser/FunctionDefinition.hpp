@@ -21,6 +21,7 @@ namespace parser {
     class FunctionDefinition {
         public:
             string mName;
+            vector<string> mKeywords;
             vector<ParameterDefinition> mParameters;
             vector<Statement> mStatements;
 

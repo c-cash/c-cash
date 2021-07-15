@@ -26,13 +26,32 @@ namespace compiler {
         getFunctionsMap(mFunctions, cDefinitions);
         // Complie funcions
         for (auto &p : mFunctions) {
-            compileFunction(p.second, "$Main", 0b0000'0001);
+            char flags = 0b0;
+            if (std::find(p.second.mKeywords.begin(), p.second.mKeywords.end(), "static") == p.second.mKeywords.end()) {
+                flags = flags | 0b0000'0001;
+            }
+            compileFunction(p.second, "$Main", flags);
         }
 
         // Compile other classes
         for (auto &p : cDefinitions) {
             out << p.first << NOP;
-            writeInteger(p.second.mFunctions.size());
+            writeInteger(p.second.mFunctions.size() + p.second.mConDes.size());
+            // constructor
+            if ((*staticFunctionsMap[p.first]).find("$C") != (*staticFunctionsMap[p.first]).end()) {
+                bool isFirst = (*staticFunctionsMap[p.first])["$C"];
+                FunctionDefinition &d = p.second.mConDes[isFirst ? 0 : 1];
+                d.mName = "$C";
+                compileFunction(d, p.first, 0b0000'0001); // TODO: add private constructors
+            }
+            // destructor
+            if ((*staticFunctionsMap[p.first]).find("$D") != (*staticFunctionsMap[p.first]).end()) {
+                bool isFirst = (*staticFunctionsMap[p.first])["$D"];
+                FunctionDefinition &d = p.second.mConDes[isFirst ? 0 : 1];
+                d.mName = "$D";
+                compileFunction(d, p.first, 0b0000'0001); // TODO: add private constructors
+            }
+            // other functions
             for (auto &fp : p.second.mFunctions) {
                 compileFunction(fp, p.first, 0b0000'0000); // TODO: change to static if flag is set
             }
@@ -41,7 +60,7 @@ namespace compiler {
         out << EOP;
     }
 
-    void Compiler::compileFunction(FunctionDefinition &d, string className, char flags) {
+    Stack* Compiler::compileFunction(FunctionDefinition &d, string className, char flags) {
         *out << flags;
         ci = 0; // set current instruction to 0
         // save function name
@@ -50,18 +69,19 @@ namespace compiler {
         // save parameters count
         writeInteger(d.mParameters.size());
         // Create new stack and compile this function
-        Stack s;
-        s.className = className;
+        Stack* s = new Stack();
+        s->className = className;
         // create vartypes and names for parameters
         for (ParameterDefinition &def : d.mParameters) {
-            s.varTypes[def.mName] = def.mType.mName;
+            s->varTypes[def.mName] = def.mType.mName;
             ++ci;
             *out << (char)BytecodeInstructions::ANYSTORE;
-            writeInteger(getNumericalName(def.mName, s));
+            writeInteger(getNumericalName(def.mName, *s));
         }
         // TODO: add simulated parameters
-        compileCode(d.mStatements, s);
+        compileCode(d.mStatements, *s);
         *out << (char)BytecodeInstructions::null << NOP;
+        return s;
     }
 
     void Compiler::compileCode(vector<Statement> &statements, Stack &s) {
@@ -104,9 +124,22 @@ namespace compiler {
                 compileFunctionCall(stmt, s);
                 break;
             }
+            case StatementKind::NEW: {
+                compileNewClass(stmt, s);
+                break;
+            }
             default:
                 break;
         }
+    }
+
+    void Compiler::compileNewClass(Statement &stmt, Stack &s) {
+        for (Statement &st : stmt.mStatements) {
+            compileStatement(st, s);
+        }
+        ++ci;
+        *out << (char)BytecodeInstructions::OCONST;
+        writeUTF8(stmt.mName);
     }
 
     void Compiler::compileFunctionCall(Statement &stmt, Stack &s) {
@@ -384,6 +417,7 @@ namespace compiler {
         compileStatement(stmt.mStatements[rev ? 1 : 0], s);
         if (stmt.mStatements.size() == 2) { // compile second argument if there is one
             compileStatement(stmt.mStatements[rev ? 0 : 1], s);            
+            tryConvertValue(getStatementType(stmt.mStatements[rev ? 0 : 1], s), getStatementType(stmt.mStatements[rev ? 1 : 0], s));
         }
 
         ++ci;
@@ -425,6 +459,8 @@ namespace compiler {
             {*out << (char)BytecodeInstructions::CSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (stmt.mType.mName == "bool") 
             {*out << (char)BytecodeInstructions::BSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (stmt.mType.mName == "class") 
+            {*out << (char)BytecodeInstructions::OSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
     }
     
     // compiles variable call statement
@@ -465,6 +501,7 @@ namespace compiler {
         BytecodeInstructions dtype = stmt.mStatements.size() == 0 ? BytecodeInstructions::DLOAD : BytecodeInstructions::DSTORE;
         BytecodeInstructions ctype = stmt.mStatements.size() == 0 ? BytecodeInstructions::CLOAD : BytecodeInstructions::CSTORE;
         BytecodeInstructions btype = stmt.mStatements.size() == 0 ? BytecodeInstructions::BLOAD : BytecodeInstructions::BSTORE;
+        BytecodeInstructions otype = stmt.mStatements.size() == 0 ? BytecodeInstructions::OLOAD : BytecodeInstructions::OSTORE;
 
         if (stmt.mStatements.size() != 0) { // push value onto the stack if it's a set instruction
             compileStatement(stmt.mStatements[0], s);
@@ -482,6 +519,8 @@ namespace compiler {
             { *out << (char)ctype; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (t == "bool")
             { *out << (char)btype; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (t == "class")
+            { *out << (char)otype; writeInteger(getNumericalName(stmt.mName, s)); }
     }
 
     // compiles litteral statement
@@ -507,6 +546,9 @@ namespace compiler {
         switch(stmt.mKind) {
             case StatementKind::LITERAL:
                 return stmt.mType.mName;
+                break;
+            case StatementKind::NEW:
+                return "class";
                 break;
             case StatementKind::VARIABLE_CALL:
                 if (stmt.mName == "true" || stmt.mName == "false") return "bool";
@@ -546,8 +588,12 @@ namespace compiler {
        
         else if (from == "char" && to == "signed int") {*out << (char)BytecodeInstructions::C2I; }
         else if (from == "char" && to == "long") {*out << (char)BytecodeInstructions::C2L; }
+        else if (from == "class" && to == "func") { return; }
 
-        else throw runtime_error("Cannot find conversion for " + from + " and " + to);
+        else if (from.substr(0, 2) == "c$") {
+            throw runtime_error("Class '" + getClassData(from).second + "' does not have user-defined conversion to type '" + to + "'");
+        }
+        else throw runtime_error("Cannot find conversion from '" + from + "' to '" + to + "'");
     }
 
 
@@ -575,7 +621,41 @@ namespace compiler {
 
                 (*functionParamDefs[p.first])[fp.mName] = &fp.mParameters;
             }
+
+            // contructor
+            if (p.second.mConDes.size() > 0) {
+                bool isFirst = p.second.mConDes[0].mName == "constructor";
+                if ((!isFirst && p.second.mConDes.size() == 2) || isFirst) {
+                    FunctionDefinition &cd = p.second.mConDes[isFirst ? 0 : 1];
+                    ParameterDefinition pd;
+                    pd.mName = "this";
+                    pd.mType.mName = "c$" + p.first;
+                    cd.mParameters.insert(cd.mParameters.begin(), pd);
+                    (*staticFunctionsMap[p.first])["$C"] = isFirst;
+                    (*functionParamDefs[p.first])["$C"] = &p.second.mConDes[isFirst ? 0 : 1].mParameters;
+                }
+            }
+            // destructor
+            if (p.second.mConDes.size() > 0) {
+                bool isFirst = p.second.mConDes[0].mName == "destructor";
+                if ((!isFirst && p.second.mConDes.size() == 2) || isFirst) {
+                    FunctionDefinition &cd = p.second.mConDes[isFirst ? 0 : 1];
+                    ParameterDefinition pd;
+                    pd.mName = "this";
+                    pd.mType.mName = "c$" + p.first;
+                    cd.mParameters.insert(cd.mParameters.begin(), pd);
+                    (*staticFunctionsMap[p.first])["$D"] = isFirst;
+                    if (p.second.mConDes[isFirst ? 0 : 1].mParameters.size() > 1) throw runtime_error("Class destructor doesn't accept any parameters");
+                    (*functionParamDefs[p.first])["$D"] = &p.second.mConDes[isFirst ? 0 : 1].mParameters;
+                }
+            }
         }
+    }
+
+    pair<string, string> Compiler::getClassData(string c) {
+        string prefix = c.substr(0, 2);
+        if (prefix != "c$") throw runtime_error(c + " is not a class");
+        return {prefix, c.substr(2)};
     }
 
     void Compiler::writeInteger(int n) {

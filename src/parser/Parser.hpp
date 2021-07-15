@@ -11,6 +11,8 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <regex>
 
 namespace parser {
     using namespace std;
@@ -37,6 +39,7 @@ namespace parser {
             optional<Token> expectAssignmentOperator(const string &name = string());
             optional<Token> expectIncDecOperator(const string &name = string());
             optional<Token> expectFuncOperator(const string &name = string());
+            optional<Token> expectKeyword(const string &name = string());
             optional<Token> expectIdentifierIf(const string &name = string());
             optional<Statement> expectOneValue();
             optional<Statement> expectStatement();
@@ -48,10 +51,11 @@ namespace parser {
             optional<Statement> expectOneValueFunc();
             optional<Statement> expectArrayDeclaration();
             optional<Statement> expectLogicExpression();
+            optional<Statement> expectNewStatement();
             optional<Token> expectLogic(const string &name = string());
             bool isDeclaration();
             bool expectFunctionDefinition();
-            bool expectClassDefinition();
+            bool expectClassDefinition(vector<string> &keywords);
             bool nextTokenIsAlias();
 
             optional<Statement> parseNamespaceAlias();
@@ -92,6 +96,14 @@ namespace parser {
                 {"or", OperatorEntry{"or", 1}},
                 {"()", OperatorEntry{"()", 1}},
                 {"!", OperatorEntry{"!", 1}}
+            };
+
+            vector<string> sKeywords {
+                "static",
+                "abstract",
+                "sealed",
+                "virtual",
+                "override"
             };
     };
 }
