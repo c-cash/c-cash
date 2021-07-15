@@ -26,7 +26,11 @@ namespace compiler {
         getFunctionsMap(mFunctions, cDefinitions);
         // Complie funcions
         for (auto &p : mFunctions) {
-            compileFunction(p.second, "$Main", 0b0000'0001);
+            char flags = 0b0;
+            if (std::find(p.second.mKeywords.begin(), p.second.mKeywords.end(), "static") == p.second.mKeywords.end()) {
+                flags = flags | 0b0000'0001;
+            }
+            compileFunction(p.second, "$Main", flags);
         }
 
         // Compile other classes
@@ -56,7 +60,7 @@ namespace compiler {
         out << EOP;
     }
 
-    void Compiler::compileFunction(FunctionDefinition &d, string className, char flags) {
+    Stack* Compiler::compileFunction(FunctionDefinition &d, string className, char flags) {
         *out << flags;
         ci = 0; // set current instruction to 0
         // save function name
@@ -65,18 +69,19 @@ namespace compiler {
         // save parameters count
         writeInteger(d.mParameters.size());
         // Create new stack and compile this function
-        Stack s;
-        s.className = className;
+        Stack* s = new Stack();
+        s->className = className;
         // create vartypes and names for parameters
         for (ParameterDefinition &def : d.mParameters) {
-            s.varTypes[def.mName] = def.mType.mName;
+            s->varTypes[def.mName] = def.mType.mName;
             ++ci;
             *out << (char)BytecodeInstructions::ANYSTORE;
-            writeInteger(getNumericalName(def.mName, s));
+            writeInteger(getNumericalName(def.mName, *s));
         }
         // TODO: add simulated parameters
-        compileCode(d.mStatements, s);
+        compileCode(d.mStatements, *s);
         *out << (char)BytecodeInstructions::null << NOP;
+        return s;
     }
 
     void Compiler::compileCode(vector<Statement> &statements, Stack &s) {
@@ -119,9 +124,22 @@ namespace compiler {
                 compileFunctionCall(stmt, s);
                 break;
             }
+            case StatementKind::NEW: {
+                compileNewClass(stmt, s);
+                break;
+            }
             default:
                 break;
         }
+    }
+
+    void Compiler::compileNewClass(Statement &stmt, Stack &s) {
+        for (Statement &st : stmt.mStatements) {
+            compileStatement(st, s);
+        }
+        ++ci;
+        *out << (char)BytecodeInstructions::OCONST;
+        writeUTF8(stmt.mName);
     }
 
     void Compiler::compileFunctionCall(Statement &stmt, Stack &s) {
@@ -441,6 +459,8 @@ namespace compiler {
             {*out << (char)BytecodeInstructions::CSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (stmt.mType.mName == "bool") 
             {*out << (char)BytecodeInstructions::BSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (stmt.mType.mName == "class") 
+            {*out << (char)BytecodeInstructions::OSTORE; writeInteger(getNumericalName(stmt.mName, s)); }
     }
     
     // compiles variable call statement
@@ -481,6 +501,7 @@ namespace compiler {
         BytecodeInstructions dtype = stmt.mStatements.size() == 0 ? BytecodeInstructions::DLOAD : BytecodeInstructions::DSTORE;
         BytecodeInstructions ctype = stmt.mStatements.size() == 0 ? BytecodeInstructions::CLOAD : BytecodeInstructions::CSTORE;
         BytecodeInstructions btype = stmt.mStatements.size() == 0 ? BytecodeInstructions::BLOAD : BytecodeInstructions::BSTORE;
+        BytecodeInstructions otype = stmt.mStatements.size() == 0 ? BytecodeInstructions::OLOAD : BytecodeInstructions::OSTORE;
 
         if (stmt.mStatements.size() != 0) { // push value onto the stack if it's a set instruction
             compileStatement(stmt.mStatements[0], s);
@@ -498,6 +519,8 @@ namespace compiler {
             { *out << (char)ctype; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (t == "bool")
             { *out << (char)btype; writeInteger(getNumericalName(stmt.mName, s)); }
+        else if (t == "class")
+            { *out << (char)otype; writeInteger(getNumericalName(stmt.mName, s)); }
     }
 
     // compiles litteral statement
@@ -523,6 +546,9 @@ namespace compiler {
         switch(stmt.mKind) {
             case StatementKind::LITERAL:
                 return stmt.mType.mName;
+                break;
+            case StatementKind::NEW:
+                return "class";
                 break;
             case StatementKind::VARIABLE_CALL:
                 if (stmt.mName == "true" || stmt.mName == "false") return "bool";
@@ -562,6 +588,7 @@ namespace compiler {
        
         else if (from == "char" && to == "signed int") {*out << (char)BytecodeInstructions::C2I; }
         else if (from == "char" && to == "long") {*out << (char)BytecodeInstructions::C2L; }
+        else if (from == "class" && to == "func") { return; }
 
         else if (from.substr(0, 2) == "c$") {
             throw runtime_error("Class '" + getClassData(from).second + "' does not have user-defined conversion to type '" + to + "'");

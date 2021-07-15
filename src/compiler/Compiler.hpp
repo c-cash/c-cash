@@ -36,7 +36,7 @@ namespace compiler {
     class Compiler {
         public:
             void compile(map<string, FunctionDefinition> &mFunctions, ofstream &out, map<string, ClassDefinition> &cDefinitions);
-            void compileFunction(FunctionDefinition &d, string className, char flags);
+            Stack* compileFunction(FunctionDefinition &d, string className, char flags);
             void compileCode(vector<Statement> &statements, Stack &s);
             
             void compileFunctionCall(Statement &stmt, Stack &s);
@@ -47,6 +47,7 @@ namespace compiler {
             void compileMathOperation(Statement &stmt, Stack &s);
             void compileLogicCall(Statement &stmt, Stack &s);
             void compileVariableCall(Statement &stmt, Stack &s);
+            void compileNewClass(Statement &stmt, Stack &s);
             void tryConvertValue(string from, string to);
             
             void popScope(Stack &s);

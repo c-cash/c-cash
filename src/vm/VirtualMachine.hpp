@@ -6,6 +6,7 @@
 #include <variant>
 #include <stack>
 #include "../compiler/Compiler.hpp"
+#include "VMClass.hpp"
 
 typedef std::variant<int, long long, double, char, bool, void*, unsigned long long> dataType;
 typedef std::variant<int, long long, double, char, bool, void*, unsigned long long, std::string> iDataType;
@@ -25,6 +26,7 @@ namespace vm {
         vector<instruction*> instructions;
     };
     struct Class {
+        string name;
         map<string, Method*> methods;
     };
 
@@ -33,6 +35,7 @@ namespace vm {
 
             void exectuteProgram(map<string, Class*>& classes);
             void executeMethod(Method* method, VMStack &stack);
+            void* executeConstructor(Method* method, VMStack &stack, Class* cls);
             
             void printStackAndHeap(VMStack &stack);
             void printData(dataType &d);

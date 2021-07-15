@@ -14,6 +14,7 @@ namespace parser {
         public:
             string mName;
             vector<string> mInheritance;
+            vector<string> mKeywords;
             vector<FunctionDefinition> mConDes;
             vector<FunctionDefinition> mFunctions;
 

@@ -29,6 +29,7 @@ set(COMPILER
 )
 set(VM
     src/vm/VirtualMachine.cpp
+    src/vm/VMClass.cpp
 )
 
 set(VARIABLE

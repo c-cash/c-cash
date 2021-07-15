@@ -3,7 +3,12 @@
 namespace parser {
     using namespace std;
 
-    void ClassDefinition::DebugPrint() const{
+    void ClassDefinition::DebugPrint() const {
+        
+        for(string keyword : mKeywords) {
+            cout << "\u001B[33m" << keyword << ' ' << "\u001B[0m";
+        }
+
         cout << "\u001B[36m" << "class " << "\u001B[32m" << mName << "\u001B[0m";
         
         if(!mInheritance.empty()) {

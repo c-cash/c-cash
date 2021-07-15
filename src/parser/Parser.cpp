@@ -5,75 +5,77 @@ namespace parser {
 
 	bool Parser::expectFunctionDefinition() {
 		vector<Token>::iterator parseStart = mCurrentToken;
-		optional<Type> possibleType = expectType();
-
-        if(possibleType.has_value()) { //Value
-            if(possibleType->mType == CLASS) return expectClassDefinition();
-            optional<Token> possibleName = expectIdentifier();
-            if(possibleName.has_value()) { //Name
-                optional<Token> possibleOperator = expectOperator("("); 
-                if(possibleOperator.has_value()) { //Function or varible
-				    FunctionDefinition func;
-                    optional<Type> possibleParamType;
-                    bool ifArray;
-
-					func.mName = possibleName->mText;
-
-                    while (!expectOperator(")").has_value()) {
-                        //Set value
-                        possibleParamType = expectType();
-                        ifArray = false; //Check bool for arrays
-
-                        if(!possibleParamType.has_value()){
-                            throw runtime_error(string("Expected a type at start of argument list in line ") + to_string(mCurrentToken->mLine));
-                        } else {
-                            if(expectOperator("[").has_value() && expectOperator("]").has_value()) ifArray = true;
+        vector<string> keywords;
+        while(true) {
+            optional<Token> keyword = expectKeyword();
+            if(keyword.has_value()) {
+                keywords.emplace_back(keyword->mText);
+                parseStart = mCurrentToken;
+                continue;
+            }
+            optional<Type> type = expectType();
+            if(type.has_value()) {
+                if(type->mType == CLASS) return expectClassDefinition(keywords);
+                optional<Token> possibleName = expectIdentifier();
+                if(possibleName.has_value()) { //Name
+                    //Check if name is correct 
+                    optional<Token> possibleOperator = expectOperator("("); 
+                    if(possibleOperator.has_value()) { //Function or varible
+		        	    FunctionDefinition func;
+                        optional<Type> possibleParamType;
+                        bool ifArray;       
+		        		func.mName = possibleName->mText;       
+                        while (!expectOperator(")").has_value()) {
+                            //Set value
+                            possibleParamType = expectType();
+                            ifArray = false; //Check bool for arrays        
+                            if(!possibleParamType.has_value()){
+                                throw runtime_error(string("Expected a type at start of argument list in line ") + to_string(mCurrentToken->mLine));
+                            } else {
+                                if(expectOperator("[").has_value() && expectOperator("]").has_value()) ifArray = true;
+                            }       
+                            optional<Token> possibleVaribleName = expectIdentifier();       
+                            ParameterDefinition param;
+                            param.mType = possibleParamType->mName;
+                            if(ifArray) param.isArray = true;       
+                            if(possibleVaribleName.has_value()){
+                                param.mName = possibleVaribleName->mText;
+                            }
+                            func.mParameters.emplace_back(param);       
+                            if(expectOperator(")").has_value()) break;
+                            if(!expectOperator(",").has_value()) {
+                                throw runtime_error(string("Expected ',' to separate parametrs or ')' to indicate end of argument list in line ") + to_string(mCurrentToken->mLine));
+                            }
+                        }       
+                        optional<vector<Statement>> statements = parseFunctionBody();
+                        if(!statements.has_value()){
+                           mCurrentToken = parseStart;
+                           return false;
                         }
-
-                        optional<Token> possibleVaribleName = expectIdentifier();
-
-                        ParameterDefinition param;
-                        param.mType = possibleParamType->mName;
-                        if(ifArray) param.isArray = true;
-
-                        if(possibleVaribleName.has_value()){
-                            param.mName = possibleVaribleName->mText;
-                        }
-                        func.mParameters.emplace_back(param);
-
-                        if(expectOperator(")").has_value()) break;
-                        if(!expectOperator(",").has_value()) {
-                            throw runtime_error(string("Expected ',' to separate parametrs or ')' to indicate end of argument list in line ") + to_string(mCurrentToken->mLine));
-                        }
+                        func.mKeywords.insert(func.mKeywords.begin(), keywords.begin(), keywords.end());
+                        func.mStatements.insert(func.mStatements.begin(), statements->begin(), statements->end());
+                        mFunction[func.mName] = func;
+                        return true;
+                    }  else {
+                        mCurrentToken = parseStart;
                     }
-
-                    optional<vector<Statement>> statements = parseFunctionBody();
-                    if(!statements.has_value()){
-                       mCurrentToken = parseStart;
-                       return false;
-                    }
-                    func.mStatements.insert(func.mStatements.begin(), statements->begin(), statements->end());
-                    mFunction[func.mName] = func;
-                    return true;
                 }  else {
                     mCurrentToken = parseStart;
-                }
-            }  else {
+                } 
+            } else {
                 mCurrentToken = parseStart;
+                optional<Statement> statement = expectStatement();
+                if(statement.has_value()) {
+                    if(!expectOperator(";").has_value()) {throw runtime_error(string("Expected semicolon in line: ") + to_string(parseStart->mLine));}
+                    includes.mStatements.emplace_back(statement.value());
+                }
+                return true;
             }
-        } else {
-            mCurrentToken = parseStart;
-            optional<Statement> statement = expectStatement();
-            if(statement.has_value()) {
-                if(!expectOperator(";").has_value()) {throw runtime_error(string("Expected semicolon in line: ") + to_string(parseStart->mLine));}
-                includes.mStatements.emplace_back(statement.value());
-            }
-            return true;
+            return false;
         }
-		return false;
 	}
 
-    bool Parser::expectClassDefinition() {
+    bool Parser::expectClassDefinition(vector<string> &keywords) {
 		vector<Token>::iterator parseStart = mCurrentToken;
 
         optional<Token> possibleName = expectIdentifier();
@@ -110,6 +112,7 @@ namespace parser {
                     }                
                 }
 
+                classDef.mKeywords.insert(classDef.mKeywords.begin(), keywords.begin(), keywords.end());
                 classDef.mFunctions.insert(classDef.mFunctions.begin(), functions.begin(), functions.end());
                 classDef.mConDes.insert(classDef.mConDes.begin(), conDes.begin(), conDes.end());
                 mClass[classDef.mName] = classDef;
@@ -161,11 +164,32 @@ namespace parser {
 		}
     }
 
+    //checking if the current token is keyword
+    optional<Token> Parser::expectKeyword(const string &name) {
+        if(mCurrentToken == mEndToken) { return nullopt; }
+        if(mCurrentToken->mType != IDENTIFIER) { return nullopt; }
+        if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+
+        vector<string>::iterator found = find(sKeywords.begin(), sKeywords.end(), mCurrentToken->mText);
+
+        if(found == sKeywords.end()) {
+			return nullopt;
+		}
+
+        Token returnToken = *mCurrentToken;
+        ++mCurrentToken;
+        return returnToken;
+    }
+
     //checking if the current token is Identifier
     optional<Token> Parser::expectIdentifier(const string &name) {
         if(mCurrentToken == mEndToken) { return nullopt; }
         if(mCurrentToken->mType != IDENTIFIER) {return nullopt;}
         if(!name.empty() && mCurrentToken->mText != name) { return nullopt; }
+
+        regex pattern("[A-Za-z_]\\w*");
+        smatch result;
+        if(!regex_match(mCurrentToken->mText, result, pattern)) throw runtime_error(string("You can use only letters, digits and _ in names in line ") + to_string(mCurrentToken->mLine)); 
 
         Token returnToken = *mCurrentToken;
         ++mCurrentToken;
@@ -298,7 +322,6 @@ namespace parser {
             
             optional<Statement> statement = expectStatement();
             if(statement.has_value()) { statements.emplace_back(statement.value()); }
-
             if(specialStatement == false) {
                 //Check ';' char at the end of line 
                 if(!expectOperator(";").has_value()) { 
@@ -314,67 +337,77 @@ namespace parser {
 
     optional<FunctionDefinition> Parser::expectMethodDefinition(const string &cName) {
 		vector<Token>::iterator parseStart = mCurrentToken;
-		optional<Type> possibleType = expectType();
+        vector<string> keywords;
 
-        if(possibleType.has_value()) { //Value
-            optional<Token> possibleName = expectIdentifier();
-            if(possibleName.has_value()) { //Name
-                optional<Token> possibleOperator = expectOperator("("); 
-                if(possibleOperator.has_value()) { //Function or varible
-				    FunctionDefinition func;
-                    optional<Type> possibleParamType;
-                    bool ifArray;
+        while(true) {
+            optional<Token> keyword = expectKeyword();
+            if(keyword.has_value()) {
+                keywords.emplace_back(keyword->mText);
+                parseStart = mCurrentToken;
+                continue;
+            }
+            optional<Type> possibleType = expectType();
+            if(possibleType.has_value()) { //Value
+                optional<Token> possibleName = expectIdentifier();
+                if(possibleName.has_value()) { //Name
+                    optional<Token> possibleOperator = expectOperator("("); 
+                    if(possibleOperator.has_value()) { //Function or varible
+			    	    FunctionDefinition func;
+                        optional<Type> possibleParamType;
+                        bool ifArray;
 
-                    if(possibleName->mText == cName) {
-                        func.mName = "constructor";
-                    } else if(possibleName->mText == ('~'+cName)) {
-                        func.mName = "destructor";
-                    } else {
-                        func.mName = possibleName->mText;
-                    }
-
-                    while (!expectOperator(")").has_value()) {
-                        //Set value
-                        possibleParamType = expectType();
-                        ifArray = false; //Check bool for arrays
-
-                        if(!possibleParamType.has_value()){
-                            throw runtime_error(string("Expected a type at start of argument list in line ") + to_string(mCurrentToken->mLine));
+                        if(possibleName->mText == cName) {
+                            func.mName = "constructor";
+                        } else if(possibleName->mText == ('~'+cName)) {
+                            func.mName = "destructor";
                         } else {
-                            if(expectOperator("[").has_value() && expectOperator("]").has_value()) ifArray = true;
+                            func.mName = possibleName->mText;
                         }
 
-                        optional<Token> possibleVaribleName = expectIdentifier();
+                        while (!expectOperator(")").has_value()) {
+                            //Set value
+                            possibleParamType = expectType();
+                            ifArray = false; //Check bool for arrays
 
-                        ParameterDefinition param;
-                        param.mType = possibleParamType->mName;
-                        if(ifArray) param.isArray = true;
+                            if(!possibleParamType.has_value()){
+                                throw runtime_error(string("Expected a type at start of argument list in line ") + to_string(mCurrentToken->mLine));
+                            } else {
+                                if(expectOperator("[").has_value() && expectOperator("]").has_value()) ifArray = true;
+                            }
 
-                        if(possibleVaribleName.has_value()){
-                            param.mName = possibleVaribleName->mText;
+                            optional<Token> possibleVaribleName = expectIdentifier();
+
+                            ParameterDefinition param;
+                            param.mType = possibleParamType->mName;
+                            if(ifArray) param.isArray = true;
+
+                            if(possibleVaribleName.has_value()){
+                                param.mName = possibleVaribleName->mText;
+                            }
+                            func.mParameters.emplace_back(param);
+
+                            if(expectOperator(")").has_value()) break;
+                            if(!expectOperator(",").has_value()) {
+                                throw runtime_error(string("Expected ',' to separate parametrs or ')' to indicate end of argument list in line ") + to_string(mCurrentToken->mLine));
+                            }
                         }
-                        func.mParameters.emplace_back(param);
 
-                        if(expectOperator(")").has_value()) break;
-                        if(!expectOperator(",").has_value()) {
-                            throw runtime_error(string("Expected ',' to separate parametrs or ')' to indicate end of argument list in line ") + to_string(mCurrentToken->mLine));
+                        optional<vector<Statement>> statements = parseFunctionBody();
+                        if(statements.has_value()){
+                           func.mStatements.insert(func.mStatements.begin(), statements->begin(), statements->end());
                         }
+                        func.mKeywords.insert(func.mKeywords.begin(), keywords.begin(), keywords.end());
+
+                        return func;
+                    }  else {
+                        mCurrentToken = parseStart;
                     }
-
-                    optional<vector<Statement>> statements = parseFunctionBody();
-                    if(statements.has_value()){
-                       func.mStatements.insert(func.mStatements.begin(), statements->begin(), statements->end());
-                    }
-                    
-                    return func;
                 }  else {
                     mCurrentToken = parseStart;
                 }
-            }  else {
-                mCurrentToken = parseStart;
-            }
-        } 
-		return nullopt;
+            } 
+            return nullopt;
+        }
 	}
 
     //checks type of Statement
@@ -501,6 +534,7 @@ namespace parser {
         optional<Token> possibleVaribleName = expectIdentifier();
         statementVar.mName = possibleVaribleName->mText;
         if(expectOperator("(")) return nullopt;
+        if(expectIdentifier().has_value()) { --mCurrentToken; return nullopt; }
 
         if(expectOperator("=").has_value()) {
             optional<Statement> initialValue = expectExpressionFunc();
@@ -640,7 +674,10 @@ namespace parser {
         Statement statement;
 
         if(!possibleType.has_value()) {
-            return expectVariableCall();
+            optional<Statement> checkVaribleCall = expectVariableCall();
+            if(checkVaribleCall.has_value()) return checkVaribleCall;
+            statement.mKind = StatementKind::MULTIPLE_VARIABLE_DECLARATION;
+            statement.mLine = mCurrentToken->mLine;
         } else {
             if(expectOperator("[").has_value() && expectOperator("]").has_value()){
                 //Run table init function
@@ -715,6 +752,7 @@ namespace parser {
         functionCall.mKind = StatementKind::FUNCTION_CALL;
         functionCall.mName = possibleFunctionName->mText;
         functionCall.mLine = mCurrentToken->mLine;
+
         while (!expectOperator(")").has_value()){
             startToken  = mCurrentToken;
             optional<Statement> parameter = expectLogicExpression();
@@ -784,6 +822,8 @@ namespace parser {
             result = parseLoopStatement();
         } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "try")) {
             result = parseTryStatement();
+        } else if(mCurrentToken != mEndToken && mCurrentToken->mType == IDENTIFIER && (mCurrentToken->mText == "new")) {
+            result = expectNewStatement();
         } else {
             result = expectExpression();
 
@@ -821,8 +861,8 @@ namespace parser {
     //Check expression    
     optional<Statement> Parser::expectExpression() {
         optional<Statement> lhs = expectOneValue();
-        lhs->mLine = mCurrentToken->mLine;
 		if(!lhs.has_value()) { return nullopt; }
+        lhs->mLine = mCurrentToken->mLine;
 
         while (true){
 			optional<Token> op = expectOperator();
@@ -1238,4 +1278,41 @@ namespace parser {
         ternary.mStatements.emplace_back(r_value.value());
         return ternary;
     }
+
+    optional<Statement> Parser::expectNewStatement() {
+        Statement res;
+        res.mKind = StatementKind::VARIABLE_DECLARATION;
+        res.mType.mType = CLASS; res.mType.mName = "class";
+        ++mCurrentToken;
+
+        //Compile statement
+        optional<Token> type = expectIdentifier();
+        if(!type.has_value()) throw runtime_error(string("After new you have to write the object type in line: ") + to_string(mCurrentToken->mLine));
+        vector<Token>::iterator startToken = mCurrentToken;
+        res.mName = type.value().mText;
+        
+        optional<Statement> checkFuncCall = expectFunctionCall();
+        if(checkFuncCall.has_value()) {
+            res.mName = checkFuncCall.value().mName;
+            checkFuncCall.value().mKind = StatementKind::NEW;
+            checkFuncCall.value().mName = type.value().mText;
+            checkFuncCall.value().mType.mType = CLASS;
+            checkFuncCall.value().mType.mName = "class";
+
+            res.mStatements.emplace_back(checkFuncCall.value());
+            return res;
+        }
+
+        mCurrentToken = startToken;
+        optional<Token> name = expectIdentifier();
+        if(!name.has_value()) throw runtime_error(string("After type you have to write the object name in line: ") + to_string(mCurrentToken->mLine));
+        res.mName = name.value().mText;
+        if(!expectOperator("=").has_value()) throw runtime_error(string("You have to put '=' in line: ") + to_string(mCurrentToken->mLine));
+        optional<Statement> checkExpression = expectExpressionFunc();
+        if(checkExpression.has_value()) {
+            res.mStatements.emplace_back(checkExpression.value());
+            return res;
+        }
+        throw runtime_error(string("Bad expression while object creation in line: ") + to_string(mCurrentToken->mLine));
+    }  
 }

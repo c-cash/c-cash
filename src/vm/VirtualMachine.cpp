@@ -403,6 +403,24 @@ namespace vm {
                     break;
                 }
 
+                // ===< OBJECTS >===
+                case BytecodeInstructions::OCONST: {
+                    Class* cls = classMap[getData(string, i, 0)];
+                    Method* mt = cls->methods["$C"];
+                    VMStack* ns = new VMStack();
+                    void* t = executeConstructor(mt, *ns, cls);
+                    for (int i{0}; i<mt->pcount-1; ++i) // add all arguments to the beggining stack
+                        { ns->push(stack.top()); stack.pop(); }
+                    executeMethod(mt, *ns);
+                    stack.push(t);
+                    break;
+                }
+                case BytecodeInstructions::OSTORE: {
+                    heap[getData(int, i, 0)] = stack.top();
+                    stack.pop();
+                    break;
+                }
+
                 // ===< CALLS >===
                 case BytecodeInstructions::CALLSTATIC: {
                     Class* cls = classMap[getData(string, i, 0)];
@@ -435,6 +453,12 @@ namespace vm {
         }
     }
 
+    void* VirtualMachine::executeConstructor(Method* method, VMStack &stack, Class* cls) {
+        void* c = (void*)new VMClass(cls->name);
+        stack.push(c);
+        return c;
+    }
+
     void VirtualMachine::exectuteProgram(map<string, Class*> &classes) {
         VMStack* s = new VMStack();
         classMap = classes;
@@ -456,6 +480,7 @@ namespace vm {
             if (c == NOP) {
                 Class* cls = new Class();
                 classes[name] = cls;
+                cls->name = name;
                 name = ""; // reset class name for the future class
 
                 // get methods count and iterate over all of them 
@@ -480,8 +505,9 @@ namespace vm {
                         instruction = readByte(in);
                     }
                 }
+            } else {
+                name += c;
             }
-            name += c;
             c = readByte(in);
         }
         return classes;
@@ -577,6 +603,19 @@ namespace vm {
                 i->instruction = BytecodeInstructions::CALLSTATIC;
                 i->data.emplace_back(readUTF8(in));
                 i->data.emplace_back(readUTF8(in));
+                break;
+
+            case BytecodeInstructions::OCONST:
+                i->instruction = BytecodeInstructions::OCONST;
+                i->data.emplace_back(readUTF8(in));
+                break;
+            case BytecodeInstructions::OSTORE:
+                i->instruction = BytecodeInstructions::OSTORE;
+                i->data.emplace_back(readNext<int>(in));
+                break;
+            case BytecodeInstructions::OLOAD:
+                i->instruction = BytecodeInstructions::OLOAD;
+                i->data.emplace_back(readNext<int>(in));
                 break;
 
             default:
