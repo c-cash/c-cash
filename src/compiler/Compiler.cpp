@@ -143,6 +143,10 @@ namespace compiler {
                 compileClassCall(stmt, s);
                 break;
             }
+            case StatementKind::ARRAY_ELEMENT: {
+                compileArrayElement(stmt, s);
+                break;
+            }
             default:
                 break;
         }
@@ -442,7 +446,26 @@ namespace compiler {
                     throw runtime_error("char mlutiplication and division are not available");
                     break;
             }
+        } else {
+            switch(stmt.mName[0]) {
+                case '+':
+                    addMethodCall("BinaryPlus"); break;
+                case '-':
+                    addMethodCall("BinaryMinus"); break;
+                case '*':
+                    addMethodCall("BinaryMultiply"); break;
+                case '/':
+                    addMethodCall("BinaryDivide"); break;
+                case '%':
+                    addMethodCall("BinaryRemainder"); break;
+            }
         }
+    }
+
+    void Compiler::addMethodCall(string name) {
+        ++ci;
+        *out << (char)BytecodeInstructions::CALLMETHOD;
+        writeUTF8(name);
     }
 
     void Compiler::compileLogicCall(Statement &stmt, Stack &s) {
@@ -556,8 +579,17 @@ namespace compiler {
             { *out << (char)ctype; writeInteger(getNumericalName(stmt.mName, s)); }
         else if (t == "bool")
             { *out << (char)btype; writeInteger(getNumericalName(stmt.mName, s)); }
-        else if (t == "class")
+        else
             { *out << (char)otype; writeInteger(getNumericalName(stmt.mName, s)); }
+    }
+
+    void Compiler::compileArrayElement(Statement &stmt, Stack &s) {
+        stmt.mStatements[1].mKind = StatementKind::VARIABLE_CALL;
+        // compile those two statements
+        compileStatement(stmt.mStatements[1], s);
+        compileStatement(stmt.mStatements[0], s);
+        // add method call
+        addMethodCall("ElementCall");
     }
 
     // compiles litteral statement
@@ -602,6 +634,14 @@ namespace compiler {
                 if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("variable " + stmt.mName + " should be declared before call");
                 return s.varTypes[stmt.mName];
                 break;
+            case StatementKind::ARRAY_ELEMENT:
+                return getStatementType(stmt.mStatements[1], s);
+                break;
+            case StatementKind::ARRAY_CALL:
+                if (stmt.mName == "true" || stmt.mName == "false") return "bool";
+                if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("variable " + stmt.mName + " should be declared before call");
+                return s.varTypes[stmt.mName];
+                break;
         }
         stmt.DebugPrint(0);
         throw runtime_error("cannot discover type for statement above");
@@ -634,6 +674,8 @@ namespace compiler {
         else if (from.substr(0, 2) == "c$") {
             throw runtime_error("Class '" + getClassData(from).second + "' does not have user-defined conversion to type '" + to + "'");
         }
+        else if (from != "signed int" && from != "long" && from != "double" && from != "char") return;
+        else if (to != "signed int" && to != "long" && to != "double" && to != "char") return;
         else throw runtime_error("Cannot find conversion from '" + from + "' to '" + to + "'");
     }
 

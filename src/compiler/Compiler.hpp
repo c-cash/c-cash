@@ -49,6 +49,7 @@ namespace compiler {
             void compileLogicCall(Statement &stmt, Stack &s);
             void compileVariableCall(Statement &stmt, Stack &s);
             void compileNewClass(Statement &stmt, Stack &s);
+            void compileArrayElement(Statement &stmt, Stack &s);
             void tryConvertValue(string from, string to);
             
             void popScope(Stack &s);
@@ -63,6 +64,8 @@ namespace compiler {
             void writeLong(long long n);
             void writeULong(unsigned long long n);
             void writeDouble(double n);
+
+            void addMethodCall(string name);
 
         private:
             static const char NOP {(char)0xff};
