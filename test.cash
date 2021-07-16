@@ -2,5 +2,4 @@ include("../tegfgfst2.cash");
 include("../test3.cash");
 
 func main() {
-
 }

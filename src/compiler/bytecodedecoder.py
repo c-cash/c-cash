@@ -4,6 +4,7 @@
 # settings
 filepath = r"/home/antis/ccash/ccash-main/build/test.ccbin"
 
+
 def loadInt(f):
     temp = f.read(4)
     i = int.from_bytes(temp, byteorder='little', signed=True)
