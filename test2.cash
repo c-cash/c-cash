@@ -1,0 +1,4 @@
+include("../test3.cash");
+func a() {
+    int a = 1;
+}

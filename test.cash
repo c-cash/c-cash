@@ -1,14 +1,5 @@
-class String {
-    func String() {
-
-    }
-
-    func ElementCall(int index) {
-        return(100);
-    }
-}
+include("../tegfgfst2.cash");
+include("../test3.cash");
 
 func main() {
-    new String s();
-    int a = s[0];
 }
