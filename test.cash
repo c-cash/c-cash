@@ -1,5 +1,12 @@
-include("../tegfgfst2.cash");
-include("../test3.cash");
-
 func main() {
+    new Antis a();
+    a.test(a);
+}
+
+class Antis {
+    func Antis() {
+    }
+
+    func test(Antis b) {
+    }
 }

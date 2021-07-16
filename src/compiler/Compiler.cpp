@@ -17,6 +17,7 @@ namespace compiler {
     }
 
     void Compiler::compile(map<string, FunctionDefinition> &mFunctions, ofstream &out, map<string, ClassDefinition> &cDefinitions) {
+        classMap = cDefinitions;
         this->out = &out;
         // check if there is a main function
         if (mFunctions.find("main") == mFunctions.end()) throw runtime_error("Code must have a main function");
@@ -153,16 +154,25 @@ namespace compiler {
     }
 
     void Compiler::compileClassCall(Statement &stmt, Stack &s) {
-        // load class
-        ++ci;
-        *out << (char)BytecodeInstructions::OLOAD;
-        writeInteger(getNumericalName(stmt.mName, s));
         // execute everything inside
         if (stmt.mStatements[0].mKind == StatementKind::FUNCTION_CALL) {
-            bool isStatic = (*staticFunctionsMap[s.className])[stmt.mStatements[0].mName];
+            bool isStatic = false;
+            if (classMap.find(stmt.mName) != classMap.end()) {
+                isStatic = (*staticFunctionsMap[stmt.mName])[stmt.mStatements[0].mName];
+            }
             if (!isStatic) {
+                // load class
+                ++ci;
+                *out << (char)BytecodeInstructions::OLOAD;
+                writeInteger(getNumericalName(stmt.mName, s));
+                // compile function
                 string tmp = s.className;
                 s.className = getStatementType(stmt, s);
+                compileFunctionCall(stmt.mStatements[0], s);
+                s.className = tmp;
+            } else {
+                string tmp = s.className;
+                s.className = stmt.mName;
                 compileFunctionCall(stmt.mStatements[0], s);
                 s.className = tmp;
             }
@@ -198,14 +208,14 @@ namespace compiler {
 
         bool isStatic = (*staticFunctionsMap[cName])[stmt.mName];
         // put all arguments onto the stack
-        int i = isStatic ? 0 : 1;
+        int i = 0; //isStatic ? 0 : 1;
         for (Statement &arg : stmt.mStatements) {
             compileStatement(arg, s);
             tryConvertValue(getStatementType(arg, s), (*(*functionParamDefs[cName])[stmt.mName])[i].mType.mName);
             ++i;
         }
 
-        if (!isStatic) {
+        if (isStatic) {
             ++ci;
             *out << (char)BytecodeInstructions::CALLSTATIC;
             writeUTF8(cName);
@@ -631,14 +641,14 @@ namespace compiler {
             case StatementKind::FUNCTION_CALL:
                 return "$$$";
             case StatementKind::CLASS_CALL:
-                if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("variable " + stmt.mName + " should be declared before call");
+                if (classMap.find(stmt.mName) != classMap.end()) return "class";
+                if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("class variable " + stmt.mName + " should be declared before call");
                 return s.varTypes[stmt.mName];
                 break;
             case StatementKind::ARRAY_ELEMENT:
                 return getStatementType(stmt.mStatements[1], s);
                 break;
             case StatementKind::ARRAY_CALL:
-                if (stmt.mName == "true" || stmt.mName == "false") return "bool";
                 if (s.varTypes.find(stmt.mName) == s.varTypes.end()) throw runtime_error("variable " + stmt.mName + " should be declared before call");
                 return s.varTypes[stmt.mName];
                 break;
@@ -691,7 +701,7 @@ namespace compiler {
         staticFunctionsMap["$Main"] = new map<string, bool>();
         functionParamDefs["$Main"] = new map<string, vector<ParameterDefinition>*>();
         for (auto &p : globalDefs) {
-            (*staticFunctionsMap["$Main"])[p.first] = true;
+            (*staticFunctionsMap["$Main"])[p.first] = std::find(p.second.mKeywords.begin(), p.second.mKeywords.end(), "static") != p.second.mKeywords.end();
 
             (*functionParamDefs["$Main"])[p.first] = &p.second.mParameters;
         }
@@ -700,7 +710,7 @@ namespace compiler {
             staticFunctionsMap[p.first] = new map<string, bool>();
             functionParamDefs[p.first] = new map<string, vector<ParameterDefinition>*>();
             for (auto &fp : p.second.mFunctions) {
-                (*staticFunctionsMap[p.first])[fp.mName] = true;
+                (*staticFunctionsMap[p.first])[fp.mName] = std::find(fp.mKeywords.begin(), fp.mKeywords.end(), "static") != fp.mKeywords.end();
 
                 (*functionParamDefs[p.first])[fp.mName] = &fp.mParameters;
             }
