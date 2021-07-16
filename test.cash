@@ -1,32 +1,6 @@
-
-class Antis {
-    func Antis() {
-
-    }
-    func wrr(){
-        int b = 2;
-    }
-}
+include("../tegfgfst2.cash");
+include("../test3.cash");
 
 func main() {
-    new Antis antis(); # class
-    antis.wrr();
-    int a = 3;
-    #write(new Antis());
-}
 
-|
-$Main:
-        static * 0:
-                0: NULL
-        static main 0:
-                0: oconst Antis
-                1: ostore 0
-                2: iconst 3
-                3: istore 1
-                4: NULL
-Antis:
-        static $C 1:
-                0: anystore 2
-                1: NULL
-|
+}

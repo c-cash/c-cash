@@ -208,7 +208,7 @@ namespace vm {
                 }
                 // load value from the memory heap
                 case BytecodeInstructions::CLOAD: {
-                    stack.push(heap[getData(char, i, 0)]);
+                    stack.push(heap[getData(int, i, 0)]);
                     break;
                 }
                 // load an int from an array
@@ -253,7 +253,7 @@ namespace vm {
                 }
                 // load value from the memory heap
                 case BytecodeInstructions::BLOAD: {
-                    stack.push(heap[getData(bool, i, 0)]);
+                    stack.push(heap[getData(int, i, 0)]);
                     break;
                 }
                 // load an int from an array
@@ -420,6 +420,10 @@ namespace vm {
                     stack.pop();
                     break;
                 }
+                case BytecodeInstructions::OLOAD: {
+                    stack.push(heap[getData(int, i, 0)]);
+                    break;
+                }
 
                 // ===< CALLS >===
                 case BytecodeInstructions::CALLSTATIC: {
@@ -430,6 +434,21 @@ namespace vm {
                         { ns->push(stack.top()); stack.pop(); }
                     executeMethod(mt, *ns);
                     stack.push(ns->top()); // put return value onto the stack
+                    delete ns;
+                    break;
+                }
+                case BytecodeInstructions::CALLMETHOD: {
+                    string name;
+                    VMStack* ns = new VMStack();
+                    while(!stack.empty()) {
+                        if (stack.size() == 1) name = ((VMClass*)(std::get<void*>(stack.top())))->name;
+                        ns->push(stack.top()); stack.pop();
+                    }
+                    Class* cls = classMap[name];
+                    Method* mt = cls->methods[getData(string, i, 0)];
+                    executeMethod(mt, *ns);
+                    if(!ns->empty())
+                        stack.push(ns->top()); // put return value onto the stack
                     delete ns;
                     break;
                 }
@@ -599,9 +618,14 @@ namespace vm {
                 i->instruction = BytecodeInstructions::BSTORE;
                 i->data.emplace_back(readNext<int>(in));
                 break;
+
             case BytecodeInstructions::CALLSTATIC:
                 i->instruction = BytecodeInstructions::CALLSTATIC;
                 i->data.emplace_back(readUTF8(in));
+                i->data.emplace_back(readUTF8(in));
+                break;
+            case BytecodeInstructions::CALLMETHOD:
+                i->instruction = BytecodeInstructions::CALLMETHOD;
                 i->data.emplace_back(readUTF8(in));
                 break;
 
