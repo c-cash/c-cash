@@ -29,7 +29,8 @@ namespace parser {
         TERNARY,
         CLASS,
         CLASS_CALL,
-        NEW
+        NEW,
+        DELETE
     };
 
     static const char* sStatementKindStrings[] = {
@@ -52,7 +53,8 @@ namespace parser {
         "TERNARY",
         "CLASS",
         "CLASS_CALL",
-        "NEW"
+        "NEW",
+        "DELETE"
     };
 
     class Statement {

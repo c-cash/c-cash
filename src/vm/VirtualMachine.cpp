@@ -433,7 +433,8 @@ namespace vm {
                     for (int i{0}; i<mt->pcount; ++i) // add all arguments to the beggining stack
                         { ns->push(stack.top()); stack.pop(); }
                     executeMethod(mt, *ns);
-                    stack.push(ns->top()); // put return value onto the stack
+                    if (!ns->empty())
+                        stack.push(ns->top()); // put return value onto the stack
                     delete ns;
                     break;
                 }

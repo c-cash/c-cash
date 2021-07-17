@@ -2,7 +2,7 @@
 
 namespace linker {
     void Linker::link(map<string, FunctionDefinition> &aFunctions, map<string, ClassDefinition> &aClasses) {
-        for(Statement s : aFunctions["*"].mStatements) {
+        for(Statement &s : aFunctions["*"].mStatements) {
             if(s.mName != "include") continue;
             linkInclude(s, aFunctions, aClasses);
         }   
@@ -32,7 +32,7 @@ namespace linker {
             throw runtime_error(string("Can't find file '") + name + string("' in include!!"));
         }
         
-        string line, allCode="";
+        string line, allCode;
         while (getline(file, line)){
             allCode += line + '\n';
         }

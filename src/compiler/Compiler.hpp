@@ -74,6 +74,7 @@ namespace compiler {
 
             void getFunctionsMap(map<string, FunctionDefinition> &globalDefs, map<string, ClassDefinition> &cDefinitions);
             map<string, map<string, bool>*> staticFunctionsMap;
+            map<string, ClassDefinition> classMap;
             map<string, map<string, vector<ParameterDefinition>*>*> functionParamDefs;
 
             uint32_t nextNumericalName = 0;
