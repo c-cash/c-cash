@@ -90,7 +90,7 @@ ___________WYDANIE NOWEJ WERSJI______________
 2. do loop
 3. switch
 4. struct
-5. zmienne globalne -- 5
+5. zmienne globalne
 6. foreach loop
 7. Odwołanie do stringa jak do tablicy charów                                           (done)
 8. funkcja remove() do usuwania elemntów z tablic                                       (done)

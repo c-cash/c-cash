@@ -40,7 +40,6 @@ namespace parser {
             optional<Token> expectIncDecOperator(const string &name = string());
             optional<Token> expectFuncOperator(const string &name = string());
             optional<Token> expectKeyword(const string &name = string());
-            optional<Token> expectIdentifierIf(const string &name = string());
             optional<Statement> expectOneValue();
             optional<Statement> expectStatement();
             optional<Statement> expectVariableDeclaration();
@@ -52,6 +51,7 @@ namespace parser {
             optional<Statement> expectArrayDeclaration();
             optional<Statement> expectLogicExpression();
             optional<Statement> expectNewStatement();
+            optional<Statement> parseDeleteStatement();
             optional<Token> expectLogic(const string &name = string());
             bool isDeclaration();
             bool expectFunctionDefinition();

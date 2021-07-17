@@ -5,6 +5,7 @@
 filepath = r"C:\Users\olimi\Desktop\CCash\c-cash\build\test.ccbin"
 
 
+
 def loadInt(f):
     temp = f.read(4)
     i = int.from_bytes(temp, byteorder='little', signed=True)
