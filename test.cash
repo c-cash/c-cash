@@ -1,7 +1,5 @@
 func main() {
-    loop(2) {
 
-    }
 }
 
 func abc(){

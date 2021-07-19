@@ -189,8 +189,9 @@ namespace compiler {
     }
 
     void Compiler::compileFunctionCall(Statement &stmt, Stack &s) {
-        if (stmt.mName == "IF" || stmt.mName == "LOOP" || stmt.mName == "ELSE" || stmt.mName == "ELIF") 
-            {compileSpecialFunctionCall(stmt, s); return; }
+        if (stmt.mName == "IF" || stmt.mName == "COUNTING_LOOP" || stmt.mName == "CONDITION_LOOP" 
+            || stmt.mName == "ITERATION_LOOP" || stmt.mName == "EACH_LOOP" || stmt.mName == "ELSE" || stmt.mName == "ELIF") 
+            { compileSpecialFunctionCall(stmt, s); return; }
 
         if (stmt.mName == "return") {
             if (stmt.mStatements.size() == 0) { // void function
@@ -311,80 +312,86 @@ namespace compiler {
             ++ci;
             *out << (char)BytecodeInstructions::null;
 
-        } else if (stmt.mName == "LOOP") {
+        } else if (stmt.mName == "CONDITION_LOOP") {
             s.breaks.push(new vector<streampos>());
-            // while loop
-            if (stmt.mStatements[0].mStatements[0].mKind == StatementKind::LOGIC_CALL) {
-                // write goto and save current position for later
-                ++ci;
-                *out << (char)BytecodeInstructions::GOTO;
-                unsigned long long gotoci = ci;
-                streampos gotopos = out->tellp();
-                s.loopbegins.push(ci-1);
-                writeULong(0LL);
-
-                // write all instructions
-                s.scope.push(new vector<string>());
-                for (int i{1}; i < stmt.mStatements.size(); ++i) {
-                    compileStatement(stmt.mStatements[i], s);
-                }
-                popScope(s);
-
-                // change goto position
-                streampos tmp = out->tellp();
-                out->seekp(gotopos);
-                writeULong(ci);
-                out->seekp(tmp);
-
-                // write check and jump
-                compileStatement(stmt.mStatements[0].mStatements[0], s);
-                ++ci;
-                *out << (char)BytecodeInstructions::JMPFALSE;
-                writeULong(gotoci);
-            } else if (stmt.mStatements[0].mStatements.size() == 3) { // normal for loop
-                s.scope.push(new vector<string>());
-                // code before loop
-                compileStatement(stmt.mStatements[0].mStatements[0], s);
-
-                // goto check
-                ++ci;
-                *out << (char)BytecodeInstructions::GOTO;
-                unsigned long long gotoci = ci;
-                streampos gotopos = out->tellp();
-                s.loopbegins.push(ci-1);
-                writeULong(0LL);
-
-                // code inside loop
-                for (int i{1}; i < stmt.mStatements.size(); ++i) {
-                    compileStatement(stmt.mStatements[i], s);
-                }
-
-                // code after loop
-                compileStatement(stmt.mStatements[0].mStatements[2], s);
-
-                // update goto
-                streampos tmp = out->tellp();
-                out->seekp(gotopos);
-                writeULong(ci);
-                out->seekp(tmp);
-
-                // check and jump to start
-                compileStatement(stmt.mStatements[0].mStatements[1], s);
-                popScope(s);
-                ++ci;
-                *out << (char)BytecodeInstructions::JMPFALSE;
-                writeULong(gotoci);
-
+            // write goto and save current position for later
+            ++ci;
+            *out << (char)BytecodeInstructions::GOTO;
+            unsigned long long gotoci = ci;
+            streampos gotopos = out->tellp();
+            s.loopbegins.push(ci-1);
+            writeULong(0LL);
+            
+            // write all instructions
+            s.scope.push(new vector<string>());
+            for (int i{1}; i < stmt.mStatements.size(); ++i) {
+                compileStatement(stmt.mStatements[i], s);
             }
+            popScope(s);
+
+            // change goto position
+            streampos tmp = out->tellp();
+            out->seekp(gotopos);
+            writeULong(ci);
+            out->seekp(tmp);
+
+            // write check and jump
+            compileStatement(stmt.mStatements[0].mStatements[0], s);
+            ++ci;
+            *out << (char)BytecodeInstructions::JMPFALSE;
+            writeULong(gotoci);
 
             // breaks
-            streampos tmp = out->tellp();
+            tmp = out->tellp();
             for (streampos p : *s.breaks.top()) {
                 out->seekp(p);
                 writeULong(ci);
             }
             s.breaks.pop();
             out->seekp(tmp);
+        } else if (stmt.mName == "ITERATION_LOOP") {
+            // normal for loop
+            s.breaks.push(new vector<streampos>());
+            s.scope.push(new vector<string>());
+            // code before loop
+            compileStatement(stmt.mStatements[0].mStatements[0], s);
+            // goto check
+            ++ci;
+            *out << (char)BytecodeInstructions::GOTO;
+            unsigned long long gotoci = ci;
+            streampos gotopos = out->tellp();
+            s.loopbegins.push(ci-1);
+            writeULong(0LL);
+            // code inside loop
+            for (int i{1}; i < stmt.mStatements.size(); ++i) {
+                compileStatement(stmt.mStatements[i], s);
+            }
+            // code after loop
+            compileStatement(stmt.mStatements[0].mStatements[2], s);
+            // update goto
+            streampos tmp = out->tellp();
+            out->seekp(gotopos);
+            writeULong(ci);
+            out->seekp(tmp);
+            // check and jump to start
+            compileStatement(stmt.mStatements[0].mStatements[1], s);
+            popScope(s);
+            ++ci;
+            *out << (char)BytecodeInstructions::JMPFALSE;
+            writeULong(gotoci);
+
+            // breaks
+            tmp = out->tellp();
+            for (streampos p : *s.breaks.top()) {
+                out->seekp(p);
+                writeULong(ci);
+            }
+            s.breaks.pop();
+            out->seekp(tmp);
+        } else if(stmt.mName == "EACH_LOOP") {
+            //To implement
+        } else if(stmt.mName == "COUNTING_LOOP") {
+            //To implement
         }
     }
 

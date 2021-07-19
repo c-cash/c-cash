@@ -90,8 +90,8 @@ ___________WYDANIE NOWEJ WERSJI______________
 2. do loop
 3. switch
 4. struct
-5. zmienne globalne
-6. foreach loop
+5. kod globalny - w tym zmienne globalne (done in parser)
+6. foreach loop (done in parser)
 7. Odwołanie do stringa jak do tablicy charów                                           (done)
 8. funkcja remove() do usuwania elemntów z tablic                                       (done)
 9. ternary operator                                                                     (done)
