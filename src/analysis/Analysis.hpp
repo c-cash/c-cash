@@ -1,12 +1,24 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <algorithm>
+#include <variant>
+#include <string>
 #include "../parser/FunctionDefinition.hpp"
 #include "../parser/ClassDefinition.hpp"
+
+typedef std::variant<int, long long, double, char, bool, void*, unsigned long long> dataType;
 
 namespace analysis {
     using namespace std;
     using namespace parser;
+
+    struct varClass {
+        BUILTIN_TYPE type;
+        string name;
+        double val;
+    };
 
     class Analysis {
         public:
@@ -14,6 +26,9 @@ namespace analysis {
         private:
             void checkStatement(Statement &stmt);
             void checkDeclaration(Statement &statement);
-            void checkDeclarationChecks(Statement &stmt);
+            void checkVariblesOutOfRange(Statement &stmt, varClass &var);
+            void checkVaribleCall(Statement &statement);
+
+            vector<varClass> varibles;
     };
 }

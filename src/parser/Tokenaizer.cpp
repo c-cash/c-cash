@@ -29,7 +29,6 @@ namespace parser {
                     
                     default:
                         throw runtime_error(string("unknow sentence") + string(1, currCh) + " in string on line " + to_string(currentToken.mLine));
-                        break;
                 }
                 currentToken.mType = STRING_LITERAL;
                 continue;
@@ -301,7 +300,7 @@ namespace parser {
             tokens.push_back(token);
         }
         if(token.mType == POTENTIAL_DOUBLE) {
-            if(token.mText.compare(".") == 0) {
+            if(token.mText == ".") {
                 token.mType = OPERATOR; 
             }
             else {

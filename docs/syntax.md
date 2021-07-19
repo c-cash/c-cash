@@ -152,19 +152,24 @@ func main() {
 In many languages there are two types of loop: `for` and `while`. In C$ we have only one, that does three things!
 You can use `loop` with expression inside (like `while`) or with three arguments (like `for`) or provide it just a number to execute code `n` times.
 ```clike
-// while loop
+// condition loop
 int a=0;
 loop(a < 5) {
     write(a);
     a++;
 }
-// for loop
+// iteration loop
 loop(int i=0; i<5; i++) {
     write(i);
 }
-// n loop
+// counting loop
 loop(5) {
     write("n loop");
+}
+// each loop
+int[] b = [1, 2, 3, 4]
+loop(int c in b) {
+    write(c);
 }
 ```
 

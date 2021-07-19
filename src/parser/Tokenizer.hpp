@@ -60,7 +60,7 @@ namespace parser {
         public:
             vector<Token> parse(const string &filename);
         private:
-            void endToken(Token &token, vector<Token> &tokens);
+            static void endToken(Token &token, vector<Token> &tokens);
     };
 }
 

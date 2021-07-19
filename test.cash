@@ -1,4 +1,9 @@
 func main() {
-    int a=0, b=2, c=2;
-    bool d = 22;
+    loop(2) {
+
+    }
+}
+
+func abc(){
+
 }
